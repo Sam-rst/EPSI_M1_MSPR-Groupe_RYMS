@@ -1,0 +1,155 @@
+[project]
+name = "electio-analytics"
+version = "0.1.0"
+description = "POC Electio-Analytics - Prédictions électorales présidentielles 2027 pour Bordeaux"
+readme = "README.md"
+requires-python = ">=3.9,<3.13"
+license = {text = "MIT"}
+authors = [
+    {name = "Groupe RYMS", email = "contact@electio-analytics.fr"}
+]
+keywords = ["elections", "machine-learning", "predictions", "data-science"]
+
+dependencies = [
+    # === Core Data Processing ===
+    "pandas>=2.0.0",
+    "numpy>=1.24.0",
+
+    # === Database & Storage ===
+    "sqlalchemy>=2.0.0",
+    "psycopg2-binary>=2.9.0",  # PostgreSQL driver
+
+    # === HTTP & API ===
+    "requests>=2.31.0",
+
+    # === Machine Learning ===
+    "scikit-learn>=1.3.0",
+    "xgboost>=2.0.0",
+    "scipy>=1.11.0",
+
+    # === Visualization ===
+    "matplotlib>=3.7.0",
+    "seaborn>=0.12.0",
+
+    # === Geospatial ===
+    "geopandas>=0.14.0",
+    "shapely>=2.0.0",
+    "folium>=0.15.0",
+
+    # === Configuration ===
+    "python-dotenv>=1.0.0",
+
+    # === Progress & Logging ===
+    "tqdm>=4.66.0",
+]
+
+[project.optional-dependencies]
+# Dépendances pour les notebooks
+notebooks = [
+    "jupyter>=1.0.0",
+    "ipykernel>=6.25.0",
+    "notebook>=7.0.0",
+]
+
+# Dépendances pour les visualisations interactives
+viz = [
+    "plotly>=5.17.0",
+]
+
+# Dépendances pour le développement
+dev = [
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+    "black>=23.0.0",
+    "ruff>=0.1.0",
+    "mypy>=1.5.0",
+]
+
+# Dépendances pour la documentation
+docs = [
+    "mkdocs>=1.5.0",
+    "mkdocs-material>=9.4.0",
+]
+
+# Toutes les dépendances optionnelles
+all = [
+    "electio-analytics[notebooks,viz,dev,docs]",
+]
+
+[project.scripts]
+# Scripts CLI pour le projet
+electio-download = "src.etl.extract.download_elections:main"
+electio-train = "src.models.train_model:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.uv]
+# Configuration spécifique à uv
+dev-dependencies = [
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+    "black>=23.0.0",
+    "ruff>=0.1.0",
+]
+
+[tool.black]
+line-length = 100
+target-version = ['py39', 'py310', 'py311', 'py312']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # Directories
+  \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | build
+  | dist
+)/
+'''
+
+[tool.ruff]
+line-length = 100
+target-version = "py39"
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "B",   # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "UP",  # pyupgrade
+]
+ignore = [
+    "E501",  # line too long (handled by black)
+    "B008",  # do not perform function calls in argument defaults
+    "C901",  # too complex
+]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401"]  # imported but unused
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = [
+    "--verbose",
+    "--cov=src",
+    "--cov-report=term-missing",
+    "--cov-report=html",
+]
+
+[tool.mypy]
+python_version = "3.9"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false
+ignore_missing_imports = true
