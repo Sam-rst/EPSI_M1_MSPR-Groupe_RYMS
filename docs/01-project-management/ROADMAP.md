@@ -72,31 +72,47 @@
 
 ---
 
-## Phase 3 : Data Engineering (8h)
+## Phase 3 : Data Engineering ✅ EN COURS (8h) - 50% complété
 
-**Agent :** `@dataeng`
+**Agent :** `@de`
 
 ### Objectifs
-- Collecter les données brutes des 3 sources
-- Nettoyer et transformer les données
-- Charger dans la base de données
+- ✅ Collecter les données brutes via API data.gouv.fr (élections + sécurité)
+- ⏳ Nettoyer et transformer les données
+- ⏳ Charger dans la base de données
 
 ### Livrables
-| Livrable | Fichier | Description |
-|----------|---------|-------------|
-| **Script ETL Elections** | `src/etl/extract_elections.py` | Extraction résultats présidentielles 2017 & 2022 (1er et 2nd tours) depuis data.gouv.fr |
-| **Script ETL Sécurité** | `src/etl/extract_securite.py` | Extraction crimes/délits SSMSI (2017-2024) |
-| **Script ETL Emploi** | `src/etl/extract_emploi.py` | Extraction données emploi/chômage INSEE IRIS |
-| **Script Nettoyage** | `src/etl/transform.py` | Harmonisation géographique (Bureaux → IRIS), gestion valeurs manquantes |
-| **Script Chargement** | `src/etl/load.py` | Insertion en base + validation intégrité |
-| **Base de données** | `data/processed/electio_analytics.db` | Base SQLite ou PostgreSQL |
+| Livrable | Fichier | Statut | Description |
+|----------|---------|--------|-------------|
+| **Module API Client** | `src/etl/extract/api_datagouv.py` | ✅ FAIT | Client REST générique pour data.gouv.fr |
+| **Script ETL Elections** | `src/etl/extract/download_elections.py` | ✅ FAIT | Extraction 4 fichiers présidentielles 2017 & 2022 (69 MB) |
+| **Script ETL Sécurité** | `src/etl/extract/download_securite.py` | ✅ FAIT | Extraction crimes/délits SSMSI Bordeaux (135 lignes) |
+| **Script Nettoyage** | `src/etl/transform/` | ⏳ TODO | Harmonisation géographique, filtrage Bordeaux |
+| **Script Chargement** | `src/etl/load/` | ⏳ TODO | Insertion en base PostgreSQL |
+| **Base de données** | `data/processed/electio_analytics.db` | ⏳ TODO | Base PostgreSQL avec PostGIS |
+
+### ⚠️ CHANGEMENT VALIDÉ : Sources de données finales
+**Décision @pm :** Utiliser uniquement les sources disponibles via API (approche pragmatique POC)
+
+| Source | Statut | Justification |
+|--------|--------|---------------|
+| **Élections 2017 & 2022** | ✅ Téléchargé (4 fichiers, 69 MB) | Source principale, données officielles MI |
+| **Sécurité SSMSI** | ✅ Téléchargé (135 lignes Bordeaux) | Indicateur criminalité/sécurité |
+| **Emploi INSEE** | ❌ Abandonné | API indisponible, remplacé par indicateurs dérivés |
+
+**Indicateurs socio-économiques retenus :**
+1. **Criminalité** : Taux de délinquance par habitant (SSMSI)
+2. **Démographie** : Population inscrite électorale (proxy population active)
+3. **Engagement civique** : Taux de participation électorale
+4. **Évolution démographique** : Comparaison 2017 → 2022
 
 ### Tâches
-1. Télécharger datasets sources (data.gouv.fr, INSEE, SSMSI)
-2. Harmoniser les granularités géographiques (Bureaux de vote ↔ IRIS)
-3. Gérer les valeurs manquantes (imputation ou exclusion)
-4. Valider la cohérence temporelle (2017-2024)
-5. Documenter le dictionnaire de données
+1. ✅ Télécharger datasets via API (élections + sécurité)
+2. ⏳ Filtrer données pour Bordeaux uniquement
+3. ⏳ Harmoniser les granularités géographiques
+4. ⏳ Calculer indicateurs dérivés (taux participation, criminalité/habitant)
+5. ⏳ Charger en base PostgreSQL
+6. ⏳ Documenter le dictionnaire de données
 
 ---
 
@@ -232,23 +248,28 @@ Phase 6 (Revue Qualité)
 |-------|--------|-------|----------|
 | **Phase 1** : Cadrage | ✅ TERMINÉE | 1h | 100% |
 | **Phase 2** : Architecture | ✅ TERMINÉE | 5h/5h | 100% |
-| **Phase 3** : Data Engineering | ⏸️ PAS COMMENCÉE | 0h/8h | 0% |
+| **Phase 3** : Data Engineering | 🔄 EN COURS | 4h/8h | 50% |
 | **Phase 4** : Data Science | ⏸️ PAS COMMENCÉE | 0h/6h | 0% |
 | **Phase 5** : Visualisation | ⏸️ PAS COMMENCÉE | 0h/4h | 0% |
 | **Phase 6** : Revue Qualité | ⏸️ PAS COMMENCÉE | 0h/1h | 0% |
 
-**Total consommé :** 6h / 25h (24%)
+**Total consommé :** 10h / 25h (40%)
 
-### Livrables Phase 1 & 2 Complétés (9 documents)
+### Livrables Phase 1, 2 & 3 (Extraction) Complétés
+**Phase 1 & 2** (9 documents) :
 - ✅ ROADMAP.md (planning 25h, 6 phases)
 - ✅ MCD.md (5 entités, relations, volumétrie)
 - ✅ ADR-001 (PostgreSQL vs NoSQL)
 - ✅ ADR-002 (Random Forest vs autres algos ML)
 - ✅ ARCHITECTURE.md (Pipeline ETL complet)
-- ✅ SOURCES_DONNEES.md (4 fichiers élections + métadonnées)
-- ✅ download_elections.py (téléchargement automatisé)
-- ✅ requirements.txt (dépendances Python)
-- ✅ Documentation corrigée (1er et 2nd tours précisés)
+- ✅ SOURCES_DONNEES.md (sources de données validées)
+
+**Phase 3 - Extraction** (7 modules, 923 lignes) :
+- ✅ Module API data.gouv.fr (217 lignes)
+- ✅ Scripts téléchargement (élections + sécurité)
+- ✅ Configuration centralisée
+- ✅ 5 fichiers de données téléchargés (70 MB)
+- ✅ Documentation complète (README extract)
 
 ---
 
