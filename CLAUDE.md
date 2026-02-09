@@ -13,11 +13,11 @@ Ce projet est une Preuve de Concept (POC) pour la startup "Electio-Analytics".
 Utilise ces commandes pour activer un agent spécifique selon la phase du projet :
 
 - `@pm` : Active le **Project Manager**. Pour le cadrage, le suivi des besoins et la roadmap.
-- `@archi` : Active le **Tech Lead / Architecte**. Pour les choix techniques, le MCD, l'ETL et les ADR.
-- `@review` : Active le **Code Reviewer**. Pour la qualité du code, la validation ML et la documentation.
-- `@dataeng` : Active le **Data Engineer**. Pour l'ETL, le nettoyage et la base de données.
-- `@datasci` : Active le **Data Scientist**. Pour le Machine Learning et les algos.
-- `@analyst` : Active le **Data Analyst**. Pour les graphiques, le rapport et les slides.
+- `@tech` : Active le **Tech Lead / Architecte**. Pour les choix techniques, le MCD, l'ETL et les ADR.
+- `@rv` : Active le **Code Reviewer**. Pour la qualité du code, la validation ML et la documentation.
+- `@de` : Active le **Data Engineer**. Pour l'ETL, le nettoyage et la base de données.
+- `@ds` : Active le **Data Scientist**. Pour le Machine Learning et les algos.
+- `@da` : Active le **Data Analyst**. Pour les graphiques, le rapport et les slides.
 
 ## Règles Fondamentales (Non négociables)
 1. **Périmètre Géographique Unique :** Le POC doit porter sur UNE seule zone (ville, arrondissement ou circonscription) pour limiter la volumétrie[cite: 52, 53].
