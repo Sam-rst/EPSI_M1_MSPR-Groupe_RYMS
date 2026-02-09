@@ -33,7 +33,7 @@
 
 ---
 
-## Phase 2 : Architecture & Modélisation ✅ QUASI TERMINÉE (4.5h/5h complétées - 90%)
+## Phase 2 : Architecture & Modélisation ✅ TERMINÉE (5h/5h complétées - 100%)
 
 **Agent :** `@archi`
 
@@ -48,7 +48,7 @@
 | **MCD** | `docs/MCD.md` | ✅ FAIT | Schéma entités-relations (5 entités: Territoire, Election_Result, Indicateur_Securite, Indicateur_Emploi, Prediction) |
 | **ADR-001** | `docs/adr/ADR-001-choix-bdd.md` | ✅ FAIT | Choix SQL (PostgreSQL) vs NoSQL justifié |
 | **Architecture ETL** | `docs/ARCHITECTURE.md` | ✅ FAIT | Pipeline ETL complet (Extract → Transform → Load), diagrammes Mermaid, modules |
-| **ADR-002** | `docs/adr/ADR-002-algo-ml.md` | 🔄 REPORTÉ | Algorithme de prédiction → Sera fait en Phase 4 après exploration données |
+| **ADR-002** | `docs/adr/ADR-002-choix-algo-ml.md` | ✅ FAIT | Random Forest retenu (vs Régression Linéaire baseline, XGBoost fallback) |
 
 ### Livrables Complémentaires Créés
 | Livrable | Fichier | Statut | Description |
@@ -56,8 +56,10 @@
 | **Sources de données** | `docs/SOURCES_DONNEES.md` | ✅ FAIT | URLs et métadonnées des 4 fichiers élections (2017/2022 T1/T2) + Sécurité + Emploi |
 | **Script téléchargement** | `src/etl/extract/download_elections.py` | ✅ FAIT | Script Python automatisé pour télécharger les 4 CSV électoraux via API data.gouv.fr |
 | **README Extract** | `src/etl/extract/README.md` | ✅ FAIT | Documentation d'usage des scripts d'extraction |
-| **Requirements** | `requirements.txt` | ✅ FAIT | Dépendances Python (Pandas, SQLAlchemy, Scikit-Learn, etc.) |
+| **Requirements** | `requirements.txt` | ✅ FAIT | Dépendances Python (Pandas, SQLAlchemy, Scikit-Learn, Random Forest, XGBoost) |
 | **Docs corrigées** | CLAUDE.md, ROADMAP.md, MCD.md, ARCHITECTURE.md | ✅ FAIT | Précision "1er et 2nd tours" intégrée partout |
+
+**Total Phase 2 :** 8 livrables (4 principaux + 5 complémentaires)
 
 ### Tâches
 1. ✅ Identifier les entités principales (Bureaux de vote, IRIS, Indicateurs, Résultats)
@@ -66,6 +68,7 @@
 4. ✅ Documenter l'architecture ETL (Sources → Staging → Warehouse → ML)
 5. ✅ Créer les scripts de téléchargement automatisé
 6. ✅ Documenter les sources de données (4 fichiers élections obligatoires)
+7. ✅ Choisir l'algorithme ML (Random Forest + Régression Linéaire baseline)
 
 ---
 
@@ -218,7 +221,7 @@ Phase 6 (Revue Qualité)
 | **Données ingérées** | 3 sources (Élections, Sécurité, Emploi) |
 | **Modèle ML** | R² > 0.65 sur validation |
 | **Prédictions 2027** | Générées par IRIS |
-| **Documentation** | MCD + 1 ADR (min) + Rapport |
+| **Documentation** | MCD + 2 ADRs + Rapport |
 | **Code qualité** | PEP8 + Docstrings + Reproductible |
 
 ---
@@ -228,17 +231,19 @@ Phase 6 (Revue Qualité)
 | Phase | Statut | Durée | Complété |
 |-------|--------|-------|----------|
 | **Phase 1** : Cadrage | ✅ TERMINÉE | 1h | 100% |
-| **Phase 2** : Architecture | ✅ QUASI TERMINÉE | 4.5h/5h | 90% |
+| **Phase 2** : Architecture | ✅ TERMINÉE | 5h/5h | 100% |
 | **Phase 3** : Data Engineering | ⏸️ PAS COMMENCÉE | 0h/8h | 0% |
 | **Phase 4** : Data Science | ⏸️ PAS COMMENCÉE | 0h/6h | 0% |
 | **Phase 5** : Visualisation | ⏸️ PAS COMMENCÉE | 0h/4h | 0% |
 | **Phase 6** : Revue Qualité | ⏸️ PAS COMMENCÉE | 0h/1h | 0% |
 
-**Total consommé :** 5.5h / 25h (22%)
+**Total consommé :** 6h / 25h (24%)
 
-### Livrables Phase 2 Complétés
+### Livrables Phase 1 & 2 Complétés (9 documents)
+- ✅ ROADMAP.md (planning 25h, 6 phases)
 - ✅ MCD.md (5 entités, relations, volumétrie)
 - ✅ ADR-001 (PostgreSQL vs NoSQL)
+- ✅ ADR-002 (Random Forest vs autres algos ML)
 - ✅ ARCHITECTURE.md (Pipeline ETL complet)
 - ✅ SOURCES_DONNEES.md (4 fichiers élections + métadonnées)
 - ✅ download_elections.py (téléchargement automatisé)
