@@ -36,7 +36,7 @@ source .venv/bin/activate    # macOS/Linux
 cp .env.example .env
 ```
 
-**Documentation complète :** [docs/SETUP_UV.md](docs/SETUP_UV.md)
+**Documentation complète :** [docs/04-setup-installation/SETUP_UV.md](docs/04-setup-installation/SETUP_UV.md)
 
 ---
 
@@ -82,15 +82,19 @@ EPSI_M1_MSPR-Groupe_RYMS/
 
 ## 📚 Documentation
 
-- [ROADMAP.md](docs/ROADMAP.md) - Planning 25h
-- [MCD.md](docs/MCD.md) - Base de données
-- [ARCHITECTURE.md](docs/ARCHITECTURE.md) - Pipeline ETL
-- [SETUP_UV.md](docs/SETUP_UV.md) - Installation UV
-- [ADR-001](docs/adr/ADR-001-choix-bdd.md) - PostgreSQL
-- [ADR-002](docs/adr/ADR-002-choix-algo-ml.md) - Random Forest
+**Index complet :** [docs/README.md](docs/README.md)
+
+**Documents principaux :**
+- [ROADMAP.md](docs/01-project-management/ROADMAP.md) - Planning 25h
+- [MCD.md](docs/02-architecture/MCD.md) - Base de données
+- [ARCHITECTURE.md](docs/02-architecture/ARCHITECTURE.md) - Pipeline ETL
+- [SOURCES_DONNEES.md](docs/03-data-sources/SOURCES_DONNEES.md) - URLs data.gouv.fr
+- [SETUP_UV.md](docs/04-setup-installation/SETUP_UV.md) - Installation UV
+- [ADR-001](docs/02-architecture/adr/ADR-001-choix-bdd.md) - PostgreSQL
+- [ADR-002](docs/02-architecture/adr/ADR-002-choix-algo-ml.md) - Random Forest
 
 ---
 
 ## 📞 Support
 
-Consulter la documentation dans `docs/` ou contacter l'équipe projet.
+Consulter l'[index de la documentation](docs/README.md) ou contacter l'équipe projet.

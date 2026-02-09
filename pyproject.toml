@@ -85,9 +85,12 @@ electio-train = "src.models.train_model:main"
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
-[tool.uv]
-# Configuration spécifique à uv
-dev-dependencies = [
+[tool.hatch.build.targets.wheel]
+packages = ["src"]
+
+[dependency-groups]
+# Groupes de dépendances (remplace tool.uv.dev-dependencies)
+dev = [
     "pytest>=7.4.0",
     "pytest-cov>=4.1.0",
     "black>=23.0.0",
