@@ -4,6 +4,11 @@
 Ce projet est une Preuve de Concept (POC) pour la startup "Electio-Analytics".
 **Objectif :** Développer un outil de prédiction des tendances électorales à moyen terme (1-3 ans) en croisant des données de votes historiques avec des indicateurs socio-économiques (sécurité, emploi, etc.)[cite: 36, 41, 50].
 
+**Périmètre validé :**
+- **Zone :** Bordeaux (Gironde - 33)
+- **Élections :** Présidentielles 2017 & 2022 (1er et 2nd tours obligatoires)
+- **Prédiction :** Présidentielles 2027
+
 ## Commandes Agents
 Utilise ces commandes pour activer un agent spécifique selon la phase du projet :
 

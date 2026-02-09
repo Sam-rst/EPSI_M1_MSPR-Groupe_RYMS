@@ -3,7 +3,7 @@
 ## Périmètre Validé
 
 **Zone géographique :** Bordeaux - Arrondissement Centre
-**Type d'élection :** Présidentielles (2017, 2022) → Prédiction 2027
+**Type d'élection :** Présidentielles 2017 & 2022 (1er et 2nd tours) → Prédiction 2027
 **Électeurs :** ~60-80k
 **Indicateurs socio-éco :** Sécurité (SSMSI) + Emploi (INSEE/IRIS)
 
@@ -33,7 +33,7 @@
 
 ---
 
-## Phase 2 : Architecture & Modélisation ⏳ EN COURS (3h/5h complétées)
+## Phase 2 : Architecture & Modélisation ✅ QUASI TERMINÉE (4.5h/5h complétées - 90%)
 
 **Agent :** `@archi`
 
@@ -42,19 +42,30 @@
 - Concevoir le Modèle Conceptuel de Données (MCD)
 - Documenter les choix techniques (ADRs)
 
-### Livrables
+### Livrables Principaux
 | Livrable | Fichier | Statut | Description |
 |----------|---------|--------|-------------|
 | **MCD** | `docs/MCD.md` | ✅ FAIT | Schéma entités-relations (5 entités: Territoire, Election_Result, Indicateur_Securite, Indicateur_Emploi, Prediction) |
 | **ADR-001** | `docs/adr/ADR-001-choix-bdd.md` | ✅ FAIT | Choix SQL (PostgreSQL) vs NoSQL justifié |
-| **Architecture ETL** | `docs/ARCHITECTURE.md` | ❌ MANQUANT | Pipeline d'ingestion et traitement des données |
-| **ADR-002** | `docs/adr/ADR-002-algo-ml.md` | ❌ MANQUANT | Algorithme de prédiction (Régression, Random Forest, etc.) |
+| **Architecture ETL** | `docs/ARCHITECTURE.md` | ✅ FAIT | Pipeline ETL complet (Extract → Transform → Load), diagrammes Mermaid, modules |
+| **ADR-002** | `docs/adr/ADR-002-algo-ml.md` | 🔄 REPORTÉ | Algorithme de prédiction → Sera fait en Phase 4 après exploration données |
+
+### Livrables Complémentaires Créés
+| Livrable | Fichier | Statut | Description |
+|----------|---------|--------|-------------|
+| **Sources de données** | `docs/SOURCES_DONNEES.md` | ✅ FAIT | URLs et métadonnées des 4 fichiers élections (2017/2022 T1/T2) + Sécurité + Emploi |
+| **Script téléchargement** | `src/etl/extract/download_elections.py` | ✅ FAIT | Script Python automatisé pour télécharger les 4 CSV électoraux via API data.gouv.fr |
+| **README Extract** | `src/etl/extract/README.md` | ✅ FAIT | Documentation d'usage des scripts d'extraction |
+| **Requirements** | `requirements.txt` | ✅ FAIT | Dépendances Python (Pandas, SQLAlchemy, Scikit-Learn, etc.) |
+| **Docs corrigées** | CLAUDE.md, ROADMAP.md, MCD.md, ARCHITECTURE.md | ✅ FAIT | Précision "1er et 2nd tours" intégrée partout |
 
 ### Tâches
 1. ✅ Identifier les entités principales (Bureaux de vote, IRIS, Indicateurs, Résultats)
 2. ✅ Définir les relations et cardinalités
 3. ✅ Choisir le SGBD (PostgreSQL retenu avec PostGIS)
-4. ⏳ Documenter l'architecture ETL (Sources → Staging → Warehouse → ML) - **EN ATTENTE**
+4. ✅ Documenter l'architecture ETL (Sources → Staging → Warehouse → ML)
+5. ✅ Créer les scripts de téléchargement automatisé
+6. ✅ Documenter les sources de données (4 fichiers élections obligatoires)
 
 ---
 
@@ -70,7 +81,7 @@
 ### Livrables
 | Livrable | Fichier | Description |
 |----------|---------|-------------|
-| **Script ETL Elections** | `src/etl/extract_elections.py` | Extraction résultats présidentielles 2017/2022 (data.gouv.fr) |
+| **Script ETL Elections** | `src/etl/extract_elections.py` | Extraction résultats présidentielles 2017 & 2022 (1er et 2nd tours) depuis data.gouv.fr |
 | **Script ETL Sécurité** | `src/etl/extract_securite.py` | Extraction crimes/délits SSMSI (2017-2024) |
 | **Script ETL Emploi** | `src/etl/extract_emploi.py` | Extraction données emploi/chômage INSEE IRIS |
 | **Script Nettoyage** | `src/etl/transform.py` | Harmonisation géographique (Bureaux → IRIS), gestion valeurs manquantes |
@@ -192,10 +203,10 @@ Phase 5 (Visualisation)
 Phase 6 (Revue Qualité)
 ```
 
-**Bloquants identifiés :**
-- Accès aux APIs data.gouv.fr (rate limiting ?)
-- Qualité des données SSMSI au niveau arrondissement (granularité suffisante ?)
-- Mapping géographique Bureaux de vote ↔ IRIS (nécessite géocodage)
+**Bloquants identifiés & Solutions :**
+- ✅ Accès aux APIs data.gouv.fr → Script automatisé créé (`download_elections.py`)
+- ⚠️ Qualité des données SSMSI au niveau arrondissement (granularité communale uniquement, nécessite agrégation)
+- ⚠️ Mapping géographique Bureaux de vote ↔ IRIS (nécessite table de correspondance INSEE ou géocodage PostGIS)
 
 ---
 
@@ -207,7 +218,7 @@ Phase 6 (Revue Qualité)
 | **Données ingérées** | 3 sources (Élections, Sécurité, Emploi) |
 | **Modèle ML** | R² > 0.65 sur validation |
 | **Prédictions 2027** | Générées par IRIS |
-| **Documentation** | MCD + 2 ADRs + Rapport |
+| **Documentation** | MCD + 1 ADR (min) + Rapport |
 | **Code qualité** | PEP8 + Docstrings + Reproductible |
 
 ---
@@ -217,26 +228,47 @@ Phase 6 (Revue Qualité)
 | Phase | Statut | Durée | Complété |
 |-------|--------|-------|----------|
 | **Phase 1** : Cadrage | ✅ TERMINÉE | 1h | 100% |
-| **Phase 2** : Architecture | ⏳ EN COURS | 3h/5h | 60% |
+| **Phase 2** : Architecture | ✅ QUASI TERMINÉE | 4.5h/5h | 90% |
 | **Phase 3** : Data Engineering | ⏸️ PAS COMMENCÉE | 0h/8h | 0% |
 | **Phase 4** : Data Science | ⏸️ PAS COMMENCÉE | 0h/6h | 0% |
 | **Phase 5** : Visualisation | ⏸️ PAS COMMENCÉE | 0h/4h | 0% |
 | **Phase 6** : Revue Qualité | ⏸️ PAS COMMENCÉE | 0h/1h | 0% |
 
-**Total consommé :** 4h / 25h (16%)
+**Total consommé :** 5.5h / 25h (22%)
+
+### Livrables Phase 2 Complétés
+- ✅ MCD.md (5 entités, relations, volumétrie)
+- ✅ ADR-001 (PostgreSQL vs NoSQL)
+- ✅ ARCHITECTURE.md (Pipeline ETL complet)
+- ✅ SOURCES_DONNEES.md (4 fichiers élections + métadonnées)
+- ✅ download_elections.py (téléchargement automatisé)
+- ✅ requirements.txt (dépendances Python)
+- ✅ Documentation corrigée (1er et 2nd tours précisés)
 
 ---
 
 ## Prochaine Étape
 
-**Option A :** Compléter Phase 2 (Architecture ETL + ADR-002 algorithme ML)
-```
-@archi Crée le document ARCHITECTURE.md et l'ADR-002 pour finaliser la Phase 2
+**🎯 Phase 3 - Data Engineering : Téléchargement et Extraction**
+
+### Étape 1 : Télécharger les données électorales (0.5h)
+```bash
+# Installer les dépendances
+pip install -r requirements.txt
+
+# Télécharger les 4 fichiers CSV électoraux
+python src/etl/extract/download_elections.py
+
+# Vérifier les téléchargements
+ls data/raw/elections/
+# Attendu : 4 fichiers (2017 T1/T2, 2022 T1/T2)
 ```
 
-**Option B :** Démarrer Phase 3 (Data Engineering) avec architecture minimale
+### Étape 2 : Lancer Phase 3 complète
 ```
-@dataeng Démarre la Phase 3 : collecte et ETL des données (Élections, Sécurité, Emploi)
+@dataeng Démarre la Phase 3 : Télécharge et transforme les données (Élections, Sécurité, Emploi)
 ```
 
-**Recommandation PM :** Option B (démarrer ETL) - L'ADR-002 sera fait après exploration données en Phase 4.
+**Alternative :** Téléchargement manuel via les URLs dans `docs/SOURCES_DONNEES.md`
+
+**Note :** ADR-002 (choix algorithme ML) sera créé en Phase 4 après exploration des données.

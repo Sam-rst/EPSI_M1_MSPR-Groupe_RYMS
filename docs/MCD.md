@@ -3,7 +3,7 @@
 
 **Version :** 1.0
 **Date :** 2026-02-09
-**Périmètre :** Bordeaux Arrondissement Centre - Présidentielles 2017/2022 → Prédiction 2027
+**Périmètre :** Bordeaux Arrondissement Centre - Présidentielles 2017 & 2022 (1er et 2nd tours) → Prédiction 2027
 
 ---
 
@@ -48,7 +48,7 @@ Le MCD structure les données en **5 entités principales** liées par des relat
 
 ## Entité 2 : `Election_Result`
 
-**Description :** Résultats électoraux présidentielles par territoire (2017, 2022).
+**Description :** Résultats électoraux présidentielles 2017 & 2022 (1er et 2nd tours) par territoire.
 
 | Champ | Type | Contrainte | Description |
 |-------|------|------------|-------------|
