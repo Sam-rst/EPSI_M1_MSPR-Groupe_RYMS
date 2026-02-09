@@ -33,7 +33,7 @@
 
 ---
 
-## Phase 2 : Architecture & Modélisation (5h)
+## Phase 2 : Architecture & Modélisation ⏳ EN COURS (3h/5h complétées)
 
 **Agent :** `@archi`
 
@@ -43,18 +43,18 @@
 - Documenter les choix techniques (ADRs)
 
 ### Livrables
-| Livrable | Fichier | Description |
-|----------|---------|-------------|
-| **MCD** | `docs/MCD.md` | Schéma entités-relations (Élections, Indicateurs Socio-Éco, Prédictions) |
-| **Architecture ETL** | `docs/ARCHITECTURE.md` | Pipeline d'ingestion et traitement des données |
-| **ADR-001** | `docs/adr/ADR-001-choix-bdd.md` | Choix SQL vs NoSQL |
-| **ADR-002** | `docs/adr/ADR-002-algo-ml.md` | Algorithme de prédiction (Régression, Random Forest, etc.) |
+| Livrable | Fichier | Statut | Description |
+|----------|---------|--------|-------------|
+| **MCD** | `docs/MCD.md` | ✅ FAIT | Schéma entités-relations (5 entités: Territoire, Election_Result, Indicateur_Securite, Indicateur_Emploi, Prediction) |
+| **ADR-001** | `docs/adr/ADR-001-choix-bdd.md` | ✅ FAIT | Choix SQL (PostgreSQL) vs NoSQL justifié |
+| **Architecture ETL** | `docs/ARCHITECTURE.md` | ❌ MANQUANT | Pipeline d'ingestion et traitement des données |
+| **ADR-002** | `docs/adr/ADR-002-algo-ml.md` | ❌ MANQUANT | Algorithme de prédiction (Régression, Random Forest, etc.) |
 
 ### Tâches
-1. Identifier les entités principales (Bureaux de vote, IRIS, Indicateurs, Résultats)
-2. Définir les relations et cardinalités
-3. Choisir le SGBD (PostgreSQL recommandé pour données tabulaires)
-4. Documenter l'architecture ETL (Sources → Staging → Warehouse → ML)
+1. ✅ Identifier les entités principales (Bureaux de vote, IRIS, Indicateurs, Résultats)
+2. ✅ Définir les relations et cardinalités
+3. ✅ Choisir le SGBD (PostgreSQL retenu avec PostGIS)
+4. ⏳ Documenter l'architecture ETL (Sources → Staging → Warehouse → ML) - **EN ATTENTE**
 
 ---
 
@@ -212,8 +212,31 @@ Phase 6 (Revue Qualité)
 
 ---
 
+## État d'Avancement Global
+
+| Phase | Statut | Durée | Complété |
+|-------|--------|-------|----------|
+| **Phase 1** : Cadrage | ✅ TERMINÉE | 1h | 100% |
+| **Phase 2** : Architecture | ⏳ EN COURS | 3h/5h | 60% |
+| **Phase 3** : Data Engineering | ⏸️ PAS COMMENCÉE | 0h/8h | 0% |
+| **Phase 4** : Data Science | ⏸️ PAS COMMENCÉE | 0h/6h | 0% |
+| **Phase 5** : Visualisation | ⏸️ PAS COMMENCÉE | 0h/4h | 0% |
+| **Phase 6** : Revue Qualité | ⏸️ PAS COMMENCÉE | 0h/1h | 0% |
+
+**Total consommé :** 4h / 25h (16%)
+
+---
+
 ## Prochaine Étape
 
-**→ Lancer Phase 2 avec `@archi` pour définir le MCD et l'architecture ETL**
+**Option A :** Compléter Phase 2 (Architecture ETL + ADR-002 algorithme ML)
+```
+@archi Crée le document ARCHITECTURE.md et l'ADR-002 pour finaliser la Phase 2
+```
 
-**Commande :** `@archi Démarre la Phase 2 : crée le MCD et les ADRs`
+**Option B :** Démarrer Phase 3 (Data Engineering) avec architecture minimale
+```
+@dataeng Démarre la Phase 3 : collecte et ETL des données (Élections, Sécurité, Emploi)
+```
+
+**Recommandation PM :** Option B (démarrer ETL) - L'ADR-002 sera fait après exploration données en Phase 4.
