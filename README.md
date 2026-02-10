@@ -44,14 +44,31 @@ cp .env.example .env
 
 ```
 EPSI_M1_MSPR-Groupe_RYMS/
-├── data/raw/              # Données brutes (CSV)
-├── data/processed/        # Données nettoyées
-├── docs/                  # Documentation (MCD, ADRs, ROADMAP)
-├── src/etl/               # Scripts ETL
-├── src/models/            # Modèles ML
-├── notebooks/             # Jupyter notebooks
-├── pyproject.toml         # Configuration + dépendances
-└── README.md              # CE FICHIER
+├── data/
+│   ├── raw/                          # Données brutes (128 MB)
+│   │   ├── elections/               # 4 fichiers présidentielles
+│   │   └── securite/                # Délinquance SSMSI
+│   └── processed/                   # Données nettoyées
+│       ├── elections/               # Résultats Bordeaux (4 lignes)
+│       └── indicateurs/             # Sécurité Bordeaux (135 lignes)
+│
+├── docs/                            # Documentation complète
+│   ├── 01-project-management/      # ROADMAP, planning
+│   ├── 02-architecture/            # MCD, ARCHITECTURE, ADRs
+│   ├── 03-data-sources/            # Sources de données
+│   ├── 04-setup-installation/      # Guides d'installation
+│   └── 05-reports/                 # Rapports et analyses
+│
+├── src/
+│   ├── etl/                         # Module ETL (Architecture Option 3)
+│   │   ├── extract/                # Extraction (config/, core/, utils/, main.py)
+│   │   ├── transform/              # Transformation (config/, core/, utils/, main.py)
+│   │   └── README.md               # Documentation ETL complète
+│   └── models/                      # Modèles ML
+│
+├── notebooks/                       # Jupyter notebooks
+├── pyproject.toml                   # Configuration UV + dépendances
+└── README.md                        # CE FICHIER
 ```
 
 ---
@@ -67,16 +84,57 @@ EPSI_M1_MSPR-Groupe_RYMS/
 
 ---
 
-## 📊 Avancement (6h/25h - 24%)
+## 📊 Avancement (14h/25h - 56%)
 
 | Phase | Statut | Durée |
 |-------|--------|-------|
 | Phase 1 : Cadrage | ✅ TERMINÉE | 1h |
 | Phase 2 : Architecture | ✅ TERMINÉE | 5h |
-| Phase 3 : Data Engineering | ⏸️ EN ATTENTE | 8h |
-| Phase 4 : Data Science | ⏸️ EN ATTENTE | 6h |
+| Phase 3 : Data Engineering | ✅ TERMINÉE | 8h |
+| Phase 4 : Data Science | 🎯 PROCHAINE | 6h |
 | Phase 5 : Visualisation | ⏸️ EN ATTENTE | 4h |
 | Phase 6 : Revue Qualité | ⏸️ EN ATTENTE | 1h |
+
+### ✨ Nouveauté Phase 3
+- ✅ **Architecture modulaire** refactorisée (ADR-003)
+- ✅ **18 modules Python** (~1500 lignes)
+- ✅ **128 MB de données** téléchargées et transformées
+- ✅ **Documentation complète** (src/etl/README.md)
+
+---
+
+## 🔄 Pipeline ETL (Architecture Modulaire)
+
+### Extraction des données
+
+```bash
+# Télécharger toutes les données (élections + sécurité)
+python -m src.etl.extract.main
+
+# Résultat : 128 MB dans data/raw/
+# - 4 fichiers élections (94 MB)
+# - 1 fichier sécurité (34 MB gzip)
+```
+
+### Transformation des données
+
+```bash
+# Nettoyer et filtrer pour Bordeaux
+python -m src.etl.transform.main
+
+# Résultat : 2 fichiers dans data/processed/
+# - elections/resultats_elections_bordeaux.csv (4 lignes)
+# - indicateurs/delinquance_bordeaux.csv (135 lignes)
+```
+
+### Pipeline complet
+
+```bash
+# Extraction + Transformation en une commande
+python -m src.etl.extract.main && python -m src.etl.transform.main
+```
+
+**Documentation détaillée :** [src/etl/README.md](src/etl/README.md)
 
 ---
 
@@ -85,13 +143,19 @@ EPSI_M1_MSPR-Groupe_RYMS/
 **Index complet :** [docs/README.md](docs/README.md)
 
 **Documents principaux :**
-- [ROADMAP.md](docs/01-project-management/ROADMAP.md) - Planning 25h
-- [MCD.md](docs/02-architecture/MCD.md) - Base de données
-- [ARCHITECTURE.md](docs/02-architecture/ARCHITECTURE.md) - Pipeline ETL
+- [ROADMAP.md](docs/01-project-management/ROADMAP.md) - Planning 25h (Phase 3 terminée)
+- [ARCHITECTURE.md](docs/02-architecture/ARCHITECTURE.md) - Pipeline ETL (v2.0)
+- [MCD.md](docs/02-architecture/MCD.md) - Modèle de données
 - [SOURCES_DONNEES.md](docs/03-data-sources/SOURCES_DONNEES.md) - URLs data.gouv.fr
 - [SETUP_UV.md](docs/04-setup-installation/SETUP_UV.md) - Installation UV
-- [ADR-001](docs/02-architecture/adr/ADR-001-choix-bdd.md) - PostgreSQL
-- [ADR-002](docs/02-architecture/adr/ADR-002-choix-algo-ml.md) - Random Forest
+
+**Architecture Decision Records (ADRs) :**
+- [ADR-001](docs/02-architecture/adr/ADR-001-choix-bdd.md) - Choix PostgreSQL vs NoSQL
+- [ADR-002](docs/02-architecture/adr/ADR-002-choix-algo-ml.md) - Choix Random Forest
+- [ADR-003](docs/02-architecture/adr/ADR-003-architecture-modulaire-etl.md) - Architecture Option 3 ⭐ NOUVEAU
+
+**Documentation technique :**
+- [src/etl/README.md](src/etl/README.md) - Guide complet module ETL ⭐ NOUVEAU
 
 ---
 
