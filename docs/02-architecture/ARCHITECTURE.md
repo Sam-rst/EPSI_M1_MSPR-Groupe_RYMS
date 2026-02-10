@@ -1,18 +1,98 @@
 # Architecture ETL - Electio-Analytics
 
-**Version :** 1.0
+**Version :** 2.0 (Architecture Modulaire Enterprise-Grade)
 
-**Date :** 2026-02-09
+**Date :** 2026-02-10
 
-**Périmètre :** Bordeaux Arrondissement Centre - Présidentielles 2017 & 2022 (1er et 2nd tours) → Prédiction 2027
+**Périmètre :** Bordeaux - Présidentielles 2017 & 2022 (1er et 2nd tours) → Prédiction 2027
 
-**Tech Lead :** @archi
+**Tech Lead :** @tech + @de
+
+**Décision Architecturale :** ADR-003 (Architecture Option 3)
 
 ---
 
 ## Vue d'Ensemble
 
-Le pipeline ETL (Extract-Transform-Load) centralise les données électorales (1er et 2nd tours des présidentielles 2017 & 2022) et socio-économiques depuis 3 sources externes vers une base PostgreSQL unique, en garantissant la **traçabilité**, la **qualité** et la **reproductibilité**.
+Le pipeline ETL (Extract-Transform-Load) centralise les données électorales (1er et 2nd tours des présidentielles 2017 & 2022) et socio-économiques depuis 3 sources externes, en garantissant la **traçabilité**, la **qualité** et la **reproductibilité**.
+
+**Nouvelle architecture :** Le module ETL a été refactorisé selon l'**Architecture Option 3** (séparation par type de fonction) pour une scalabilité et maintenabilité maximales.
+
+---
+
+## 🏗️ Architecture Modulaire (Version 2.0)
+
+### Structure du Module ETL
+
+```
+src/etl/
+├── extract/                    # Extraction des données brutes
+│   ├── config/                # Configuration centralisée
+│   │   ├── __init__.py
+│   │   └── settings.py        # URLs, chemins, constantes
+│   ├── core/                  # Logique métier par source
+│   │   ├── __init__.py
+│   │   ├── elections.py       # Téléchargement élections
+│   │   └── securite.py        # Téléchargement sécurité
+│   ├── utils/                 # Utilitaires génériques
+│   │   ├── __init__.py
+│   │   └── download.py        # download_file()
+│   ├── __init__.py            # Exports publics
+│   └── main.py                # Orchestrateur extraction
+│
+├── transform/                  # Transformation des données
+│   ├── config/                # Configuration centralisée
+│   │   ├── __init__.py
+│   │   └── settings.py        # Chemins, constantes
+│   ├── core/                  # Logique métier par source
+│   │   ├── __init__.py
+│   │   ├── elections.py       # Transformation élections
+│   │   └── securite.py        # Transformation sécurité
+│   ├── utils/                 # Utilitaires de parsing
+│   │   ├── __init__.py
+│   │   └── parsing.py         # parse_french_number()
+│   ├── __init__.py            # Exports publics
+│   └── main.py                # Orchestrateur transformation
+│
+└── README.md                   # Documentation complète
+```
+
+### Principes Architecturaux
+
+1. **Séparation des responsabilités (SRP)**
+   - `config/` : Configuration uniquement (URLs, chemins, constantes)
+   - `core/` : Logique métier spécifique à chaque source de données
+   - `utils/` : Fonctions génériques réutilisables
+   - `main.py` : Orchestration pure sans logique métier
+
+2. **Scalabilité**
+   - Ajout d'une nouvelle source = 1 fichier dans `core/`
+   - Pas de modification des modules existants (Open/Closed Principle)
+
+3. **Testabilité**
+   - Chaque module peut être testé indépendamment
+   - Imports isolés facilitent les mocks et stubs
+
+4. **Réutilisabilité**
+   - Utilitaires dans `utils/` réutilisables partout
+   - API publique claire via `__init__.py`
+
+5. **Maintenabilité**
+   - Code organisé et documenté
+   - Type hints sur toutes les fonctions
+   - Docstrings au format Google
+
+### Avantages de l'Architecture Option 3
+
+| Aspect | Avant | Après |
+|--------|-------|-------|
+| **Fichiers racine** | 6 fichiers | 1 fichier (main.py) + 3 packages |
+| **Scalabilité** | Moyenne | Excellente |
+| **Testabilité** | Bonne | Parfaite |
+| **Patterns** | Simple | Enterprise-grade |
+| **Lignes de code** | 621 lignes | 1220 lignes (mieux organisées) |
+
+**Référence :** Voir `docs/02-architecture/adr/ADR-003-architecture-modulaire-etl.md`
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐

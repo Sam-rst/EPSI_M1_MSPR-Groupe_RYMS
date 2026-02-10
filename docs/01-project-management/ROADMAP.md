@@ -72,24 +72,46 @@
 
 ---
 
-## Phase 3 : Data Engineering ✅ EN COURS (8h) - 50% complété
+## Phase 3 : Data Engineering ✅ TERMINÉE (8h/8h) - 100% complété
 
 **Agent :** `@de`
 
 ### Objectifs
 - ✅ Collecter les données brutes via API data.gouv.fr (élections + sécurité)
-- ⏳ Nettoyer et transformer les données
-- ⏳ Charger dans la base de données
+- ✅ Nettoyer et transformer les données
+- ✅ Refactoriser en architecture modulaire enterprise-grade
+- ⏳ Charger dans la base de données (reporté Phase 4)
+
+### 🏗️ Architecture Option 3 Implémentée
+**Décision @tech + @de :** Refactorisation complète du module ETL en architecture modulaire pour scalabilité maximale.
+
+**Structure finale :**
+```
+src/etl/
+├── extract/                 # Extraction (128 MB données brutes)
+│   ├── config/             # Configuration centralisée
+│   ├── core/               # Logique métier (elections, securite)
+│   ├── utils/              # Utilitaires génériques (download_file)
+│   └── main.py             # Orchestrateur
+├── transform/               # Transformation (4 lignes + 135 lignes)
+│   ├── config/             # Configuration centralisée
+│   ├── core/               # Logique métier (elections, securite)
+│   ├── utils/              # Utilitaires parsing (parse_french_number)
+│   └── main.py             # Orchestrateur
+└── README.md                # Documentation complète
+```
 
 ### Livrables
 | Livrable | Fichier | Statut | Description |
 |----------|---------|--------|-------------|
-| **Module API Client** | `src/etl/extract/api_datagouv.py` | ✅ FAIT | Client REST générique pour data.gouv.fr |
-| **Script ETL Elections** | `src/etl/extract/download_elections.py` | ✅ FAIT | Extraction 4 fichiers présidentielles 2017 & 2022 (69 MB) |
-| **Script ETL Sécurité** | `src/etl/extract/download_securite.py` | ✅ FAIT | Extraction crimes/délits SSMSI Bordeaux (135 lignes) |
-| **Script Nettoyage** | `src/etl/transform/` | ⏳ TODO | Harmonisation géographique, filtrage Bordeaux |
-| **Script Chargement** | `src/etl/load/` | ⏳ TODO | Insertion en base PostgreSQL |
-| **Base de données** | `data/processed/electio_analytics.db` | ⏳ TODO | Base PostgreSQL avec PostGIS |
+| **Module Extract** | `src/etl/extract/` | ✅ FAIT | Architecture Option 3 (config/, core/, utils/, main.py) |
+| **Module Transform** | `src/etl/transform/` | ✅ FAIT | Architecture Option 3 (config/, core/, utils/, main.py) |
+| **Extract Elections** | `src/etl/extract/core/elections.py` | ✅ FAIT | Téléchargement 4 fichiers (94 MB) |
+| **Extract Sécurité** | `src/etl/extract/core/securite.py` | ✅ FAIT | Téléchargement SSMSI (34 MB gzip) |
+| **Transform Elections** | `src/etl/transform/core/elections.py` | ✅ FAIT | Agrégation Bordeaux (4 lignes) |
+| **Transform Sécurité** | `src/etl/transform/core/securite.py` | ✅ FAIT | Filtrage Bordeaux (135 lignes) |
+| **Documentation ETL** | `src/etl/README.md` | ✅ FAIT | Guide complet (usage, API, exemples) |
+| **Script Chargement** | `src/etl/load/` | ⏳ TODO | Insertion en base PostgreSQL (Phase 4) |
 
 ### ⚠️ CHANGEMENT VALIDÉ : Sources de données finales
 **Décision @pm :** Utiliser uniquement les sources disponibles via API (approche pragmatique POC)
@@ -107,12 +129,13 @@
 4. **Évolution démographique** : Comparaison 2017 → 2022
 
 ### Tâches
-1. ✅ Télécharger datasets via API (élections + sécurité)
-2. ⏳ Filtrer données pour Bordeaux uniquement
-3. ⏳ Harmoniser les granularités géographiques
-4. ⏳ Calculer indicateurs dérivés (taux participation, criminalité/habitant)
-5. ⏳ Charger en base PostgreSQL
-6. ⏳ Documenter le dictionnaire de données
+1. ✅ Télécharger datasets via API (élections + sécurité) - 128 MB
+2. ✅ Filtrer données pour Bordeaux uniquement (33063)
+3. ✅ Harmoniser les granularités géographiques (bureau → commune)
+4. ✅ Calculer indicateurs dérivés (taux participation: 71-78%)
+5. ✅ Refactoriser en architecture modulaire (config/, core/, utils/)
+6. ✅ Documenter le module ETL complet (README.md)
+7. ⏳ Charger en base PostgreSQL (reporté Phase 4)
 
 ---
 
@@ -248,15 +271,15 @@ Phase 6 (Revue Qualité)
 |-------|--------|-------|----------|
 | **Phase 1** : Cadrage | ✅ TERMINÉE | 1h | 100% |
 | **Phase 2** : Architecture | ✅ TERMINÉE | 5h/5h | 100% |
-| **Phase 3** : Data Engineering | 🔄 EN COURS | 4h/8h | 50% |
+| **Phase 3** : Data Engineering | ✅ TERMINÉE | 8h/8h | 100% |
 | **Phase 4** : Data Science | ⏸️ PAS COMMENCÉE | 0h/6h | 0% |
 | **Phase 5** : Visualisation | ⏸️ PAS COMMENCÉE | 0h/4h | 0% |
 | **Phase 6** : Revue Qualité | ⏸️ PAS COMMENCÉE | 0h/1h | 0% |
 
-**Total consommé :** 10h / 25h (40%)
+**Total consommé :** 14h / 25h (56%)
 
-### Livrables Phase 1, 2 & 3 (Extraction) Complétés
-**Phase 1 & 2** (9 documents) :
+### Livrables Phase 1, 2 & 3 Complétés
+**Phase 1 & 2** (6 documents) :
 - ✅ ROADMAP.md (planning 25h, 6 phases)
 - ✅ MCD.md (5 entités, relations, volumétrie)
 - ✅ ADR-001 (PostgreSQL vs NoSQL)
@@ -264,37 +287,41 @@ Phase 6 (Revue Qualité)
 - ✅ ARCHITECTURE.md (Pipeline ETL complet)
 - ✅ SOURCES_DONNEES.md (sources de données validées)
 
-**Phase 3 - Extraction** (7 modules, 923 lignes) :
-- ✅ Module API data.gouv.fr (217 lignes)
-- ✅ Scripts téléchargement (élections + sécurité)
-- ✅ Configuration centralisée
-- ✅ 5 fichiers de données téléchargés (70 MB)
-- ✅ Documentation complète (README extract)
+**Phase 3 - ETL Complet** (18 modules Python, ~1500 lignes) :
+- ✅ Module Extract refactorisé (9 fichiers, architecture Option 3)
+- ✅ Module Transform refactorisé (9 fichiers, architecture Option 3)
+- ✅ Utilitaires génériques (download_file, parse_french_number)
+- ✅ 5 fichiers de données téléchargés (128 MB)
+- ✅ 2 fichiers transformés (4 lignes élections + 135 lignes sécurité)
+- ✅ Documentation complète ETL (src/etl/README.md)
 
 ---
 
 ## Prochaine Étape
 
-**🎯 Phase 3 - Data Engineering : Téléchargement et Extraction**
+**🎯 Phase 4 - Data Science & Machine Learning**
 
-### Étape 1 : Télécharger les données électorales (0.5h)
+### Étape 1 : Analyser les données transformées (1h)
 ```bash
-# Installer les dépendances
-pip install -r requirements.txt
+# Lancer l'exploration des données
+python -m jupyter notebook notebooks/01_exploration.ipynb
 
-# Télécharger les 4 fichiers CSV électoraux
-python src/etl/extract/download_elections.py
-
-# Vérifier les téléchargements
-ls data/raw/elections/
-# Attendu : 4 fichiers (2017 T1/T2, 2022 T1/T2)
+# Données disponibles :
+# - data/processed/elections/resultats_elections_bordeaux.csv (4 lignes)
+# - data/processed/indicateurs/delinquance_bordeaux.csv (135 lignes)
 ```
 
-### Étape 2 : Lancer Phase 3 complète
-```
-@dataeng Démarre la Phase 3 : Télécharge et transforme les données (Élections, Sécurité, Emploi)
+### Étape 2 : Entraîner le modèle ML (3h)
+```bash
+@datasci Démarre la Phase 4 : Analyse exploratoire, feature engineering,
+entraînement Random Forest pour prédiction 2027
 ```
 
-**Alternative :** Téléchargement manuel via les URLs dans `docs/SOURCES_DONNEES.md`
+**Objectifs Phase 4 :**
+1. Analyser corrélations entre criminalité et résultats électoraux
+2. Créer features temporelles (évolution 2017→2022)
+3. Entraîner Random Forest + Régression Linéaire baseline
+4. Valider le modèle (R² > 0.65)
+5. Générer prédictions 2027
 
-**Note :** ADR-002 (choix algorithme ML) sera créé en Phase 4 après exploration des données.
+**Note :** Le chargement en base PostgreSQL sera effectué si nécessaire pour la Phase 4.

@@ -1,23 +1,40 @@
 """
 Module d'extraction des données pour Electio-Analytics.
 
-Contient les scripts de téléchargement automatisés via API data.gouv.fr :
-- Élections présidentielles 2017 & 2022 (4 fichiers, 1er et 2nd tours)
-- Données de sécurité (SSMSI)
-- Données d'emploi (INSEE)
+Architecture modulaire enterprise-grade pour le téléchargement de données depuis data.gouv.fr.
+
+Packages:
+    - config/ : Configuration centralisée (settings.py avec URLs, chemins, constantes)
+    - utils/ : Fonctions génériques de téléchargement (download.py)
+    - core/ : Logique métier par source de données
+        - elections.py : Téléchargement des élections présidentielles
+        - securite.py : Téléchargement des données SSMSI
+    - main.py : Script orchestrateur principal
+
+Données téléchargées:
+    - Élections présidentielles 2017 & 2022 (4 fichiers, 1er et 2nd tours)
+    - Données de sécurité (SSMSI, délinquance)
+
+Usage:
+    python -m src.etl.extract.main
 
 Architecture:
-    api_datagouv.py → Client API REST générique
-    config.py → URLs et chemins centralisés
-    download_*.py → Scripts de téléchargement spécialisés
+    Cette structure suit le pattern de séparation par type de fonction :
+    - Configuration isolée dans config/
+    - Utilitaires génériques dans utils/
+    - Logique métier dans core/
+    - Orchestration dans main.py
+
+Auteur: @de (Data Engineer)
 """
 
-from .download_elections import download_all_elections_api
-from .download_emploi import download_emploi
-from .download_securite import download_securite
+from .core import download_elections, download_securite
+from .main import main
+from .utils import download_file
 
 __all__ = [
-    "download_all_elections_api",
+    "main",
+    "download_file",
+    "download_elections",
     "download_securite",
-    "download_emploi",
 ]
