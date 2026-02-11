@@ -2,7 +2,7 @@
 
 **Status :** ✅ ACCEPTÉ
 **Date :** 2026-02-09
-**Décideurs :** Tech Lead (@archi), Data Scientist (@datasci)
+**Décideurs :** Tech Lead (@tech), Data Scientist (@ds)
 **Contexte :** POC Electio-Analytics - Prédiction Présidentielles 2027
 
 ---
@@ -498,4 +498,4 @@ if __name__ == '__main__':
 ---
 
 **Statut :** ✅ Décision approuvée
-**Prochaine étape :** Phase 4 - `@datasci` implémente le modèle Random Forest + Baseline
+**Prochaine étape :** Phase 4 - `@ds` implémente le modèle Random Forest + Baseline

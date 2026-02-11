@@ -94,11 +94,16 @@ src/etl/
 
 **Référence :** Voir `docs/02-architecture/adr/ADR-003-architecture-modulaire-etl.md`
 
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│                         PIPELINE ETL                                │
-│  Sources Externes  →  Extraction  →  Transformation  →  Chargement  │
-└─────────────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart LR
+    A[Sources Externes] --> B[Extraction]
+    B --> C[Transformation]
+    C --> D[Chargement]
+
+    style A fill:#e1f5ff,stroke:#01579b, color: #020202
+    style B fill:#fff3e0,stroke:#e65100, color: #020202
+    style C fill:#f3e5f5,stroke:#4a148c, color: #020202
+    style D fill:#e8f5e9,stroke:#1b5e20, color: #020202
 ```
 
 ---
@@ -448,16 +453,24 @@ Insérer les données transformées dans PostgreSQL en garantissant l'intégrit�
 
 ### Ordre de Chargement (Respect des FK)
 
-```
-1. Territoire              (table parent, pas de FK)
-    ↓
-2. Election_Result         (FK → Territoire)
-    ↓
-3. Indicateur_Securite     (FK → Territoire)
-    ↓
-4. Indicateur_Emploi       (FK → Territoire)
-    ↓
-5. Prediction              (FK → Territoire, chargé en Phase 4)
+```mermaid
+flowchart TD
+    A[1. Territoire<br/>table parent, pas de FK]
+    B[2. Election_Result<br/>FK → Territoire]
+    C[3. Indicateur_Securite<br/>FK → Territoire]
+    D[4. Indicateur_Emploi<br/>FK → Territoire]
+    E[5. Prediction<br/>FK → Territoire, chargé en Phase 4]
+
+    A --> B
+    B --> C
+    C --> D
+    D --> E
+
+    style A fill:#e1f5ff,stroke:#01579b, color: #020202
+    style B fill:#fff3e0,stroke:#e65100, color: #020202
+    style C fill:#f3e5f5,stroke:#4a148c, color: #020202
+    style D fill:#fff3e0,stroke:#e65100, color: #020202
+    style E fill:#e8f5e9,stroke:#1b5e20, color: #020202
 ```
 
 ### Scripts de Chargement
@@ -824,4 +837,4 @@ docker-compose up etl            # Lance le pipeline ETL
 ---
 
 **Statut :** ✅ Documentation complétée
-**Prochaine étape :** Phase 3 - `@dataeng` implémente les scripts ETL (`extract_*.py`, `transform_*.py`, `load.py`)
+**Prochaine étape :** Phase 3 - `@de` implémente les scripts ETL (`extract_*.py`, `transform_*.py`, `load.py`)

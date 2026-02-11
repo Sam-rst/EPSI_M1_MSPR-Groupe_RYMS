@@ -2,7 +2,7 @@
 
 **Date :** 2026-02-09
 **Projet :** Electio-Analytics POC
-**Agent :** @archi
+**Agent :** @tech
 
 ---
 
@@ -406,7 +406,7 @@ uv run python src/etl/extract/download_elections.py
 ### Étape 4 : Lancer Phase 3 - Data Engineering
 
 ```
-@dataeng Démarre Phase 3 : Téléchargement et transformation des données
+@de Démarre Phase 3 : Téléchargement et transformation des données
 ```
 
 ---
@@ -470,6 +470,6 @@ uv run python src/etl/extract/download_elections.py
 
 ---
 
-**Validé par :** @archi
+**Validé par :** @tech
 **Date :** 2026-02-09
 **Prochaine phase :** Phase 3 - Data Engineering

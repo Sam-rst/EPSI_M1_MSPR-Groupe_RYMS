@@ -140,7 +140,7 @@ territoire (référentiel géographique stable)
 - Benchmarks requêtes ML
 
 ### Phase 4 : Migration v1.0 → v2.0 (si nécessaire)
-- Script SQL fourni dans MCD_v2_scalable.md
+- Script SQL fourni dans [MCD v2.0](../database/versions/v2.0/MCD.md)
 
 ---
 
@@ -157,8 +157,8 @@ territoire (référentiel géographique stable)
 
 ## Références
 
-- `docs/02-architecture/MCD_v2_scalable.md` : Schéma complet v2.0
-- `docs/02-architecture/MCD.md` : Schéma v1.0 (référence historique)
+- [MCD v2.0 (Architecture Scalable)](../database/versions/v2.0/MCD.md) : Schéma complet v2.0
+- [MCD v1.0 (Schéma Initial)](../database/versions/v1.0/MCD.md) : Schéma v1.0 (référence historique)
 - PostgreSQL JSONB Best Practices : https://www.postgresql.org/docs/current/datatype-json.html
 
 ---

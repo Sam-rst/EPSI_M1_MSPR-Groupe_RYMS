@@ -54,7 +54,7 @@ Tous les documents markdown doivent commencer par :
 # Titre du Document
 
 **Date :** YYYY-MM-DD
-**Agent :** @role (ex: @pm, @archi, @dataeng)
+**Agent :** @role (ex: @pm, @tech, @de)
 **Status :** Statut actuel
 
 ---
@@ -321,8 +321,8 @@ Chaque document majeur doit avoir un **historique de versions** en bas de page :
 
 | Version | Date | Auteur | Changements |
 |---------|------|--------|-------------|
-| 1.0 | 2026-02-09 | @archi | Création initiale |
-| 1.1 | 2026-02-10 | @archi | Ajout section validation |
+| 1.0 | 2026-02-09 | @tech | Création initiale |
+| 1.1 | 2026-02-10 | @tech | Ajout section validation |
 | 2.0 | 2026-02-15 | @pm | Refonte complète suite Phase 3 |
 ```
 
@@ -333,9 +333,9 @@ Chaque document majeur doit avoir un **historique de versions** en bas de page :
 | Rôle | Responsabilité Documentation |
 |------|------------------------------|
 | **@pm** | Maintien de `docs/README.md`, ROADMAP, conventions |
-| **@archi** | MCD, ARCHITECTURE, ADRs techniques |
-| **@dataeng** | SOURCES_DONNEES, documentation ETL |
-| **@datasci** | Documentation modèles ML, métriques |
+| **@tech** | MCD, ARCHITECTURE, ADRs techniques |
+| **@de** | SOURCES_DONNEES, documentation ETL |
+| **@ds** | Documentation modèles ML, métriques |
 | **@analyst** | Rapports, présentations |
 | **@review** | Validation qualité documentation |
 

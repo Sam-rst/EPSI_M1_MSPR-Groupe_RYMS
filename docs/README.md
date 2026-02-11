@@ -1,7 +1,7 @@
 # Documentation Electio-Analytics
 
 **Projet MSPR - M1 EPSI - Groupe RYMS**
-**Dernière mise à jour :** 2026-02-09
+**Dernière mise à jour :** 2026-02-11
 
 ---
 
@@ -133,6 +133,7 @@ docs/
 |----------|-------------|--------|
 | [SETUP_UV.md](04-setup-installation/SETUP_UV.md) | Guide d'installation UV (20 pages) | ✅ Complet |
 | [VALIDATION_UV.md](04-setup-installation/VALIDATION_UV.md) | Rapport validation environnement (10 pages) | ✅ Validé |
+| [SETUP_DATABASE.md](04-setup-installation/SETUP_DATABASE.md) | Configuration PostgreSQL + Alembic migrations | ✅ Complet |
 
 **SETUP_UV.md - Sections :**
 - Qu'est-ce que UV ? (10-100x plus rapide que pip)
@@ -146,6 +147,13 @@ docs/
 - ✅ Python 3.11.12
 - ✅ 19/19 packages critiques validés (pandas, scikit-learn, xgboost, geopandas, etc.)
 - ✅ Environnement prêt pour Phase 3
+
+**SETUP_DATABASE.md - Sections :**
+- Configuration Docker Compose (PostgreSQL 15 + PostGIS)
+- Setup Alembic (migrations automatiques)
+- Première migration (5 tables créées)
+- Commandes principales (upgrade, downgrade, history)
+- Troubleshooting (erreurs courantes)
 
 ---
 
@@ -187,16 +195,19 @@ docs/
 **...vérifier l'installation**
 → [VALIDATION_UV.md](04-setup-installation/VALIDATION_UV.md)
 
+**...configurer PostgreSQL et Alembic**
+→ [SETUP_DATABASE.md](04-setup-installation/SETUP_DATABASE.md)
+
 ---
 
 ## 📊 Statistiques Documentation
 
 | Métrique | Valeur |
 |----------|--------|
-| **Documents totaux** | 9 |
-| **Pages totales** | ~50 pages |
+| **Documents totaux** | 10 |
+| **Pages totales** | ~60 pages |
 | **ADRs** | 2 |
-| **Taille totale** | ~500 Ko (hors PDF) |
+| **Taille totale** | ~550 Ko (hors PDF) |
 
 ---
 
@@ -204,6 +215,8 @@ docs/
 
 | Date | Document | Changement |
 |------|----------|------------|
+| 2026-02-11 | SETUP_DATABASE.md | ✅ Création (PostgreSQL + Alembic migrations) |
+| 2026-02-11 | README.md (docs) | 🔄 Mise à jour (ajout SETUP_DATABASE.md) |
 | 2026-02-09 | VALIDATION_UV.md | ✅ Création (validation environnement) |
 | 2026-02-09 | ADR-002 | ✅ Création (choix Random Forest) |
 | 2026-02-09 | ARCHITECTURE.md | ✅ Création (pipeline ETL) |
@@ -247,4 +260,4 @@ docs/
 
 ---
 
-**Dernière révision :** 2026-02-09 par @pm
+**Dernière révision :** 2026-02-11 par @tech

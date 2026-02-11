@@ -11,18 +11,24 @@
 
 Le MCD structure les données en **5 entités principales** liées par des relations **1-N** autour de l'entité centrale `Territoire`.
 
-```
-                        ┌─────────────┐
-                        │  Territoire │ (Entité centrale)
-                        └──────┬──────┘
-                               │
-          ┌────────────────────┼────────────────────┬────────────────┐
-          │                    │                    │                │
-          ▼                    ▼                    ▼                ▼
-┌──────────────────┐  ┌──────────────────┐  ┌──────────────────┐  ┌──────────────┐
-│ Election_Result  │  │ Indicateur_      │  │ Indicateur_      │  │  Prediction  │
-│                  │  │ Securite         │  │ Emploi           │  │              │
-└──────────────────┘  └──────────────────┘  └──────────────────┘  └──────────────┘
+```mermaid
+graph TD
+    A[Territoire<br/>Entité centrale]
+    B[Election_Result]
+    C[Indicateur_Securite]
+    D[Indicateur_Emploi]
+    E[Prediction]
+
+    A --> B
+    A --> C
+    A --> D
+    A --> E
+
+    style A fill:#e1f5ff,stroke:#01579b, color: #020202
+    style B fill:#fff3e0,stroke:#e65100, color: #020202
+    style C fill:#f3e5f5,stroke:#4a148c, color: #020202
+    style D fill:#fff3e0,stroke:#e65100, color: #020202
+    style E fill:#e8f5e9,stroke:#1b5e20, color: #020202
 ```
 
 ---
@@ -189,37 +195,81 @@ Le MCD structure les données en **5 entités principales** liées par des relat
 
 ## Diagramme Entité-Association (ERD)
 
-```sql
-┌─────────────────────────────────────────────────────────────────┐
-│                         Territoire                              │
-├─────────────────────────────────────────────────────────────────┤
-│ PK  id_territoire        VARCHAR(20)                            │
-│     code_insee           VARCHAR(5)                             │
-│     type_territoire      ENUM('IRIS','BUREAU_VOTE','ARROND')   │
-│     nom_territoire       VARCHAR(100)                           │
-│     geometry             GEOMETRY                               │
-│     population           INTEGER                                │
-│     created_at           TIMESTAMP                              │
-└──────────────────────────┬──────────────────────────────────────┘
-                           │
-        ┌──────────────────┼──────────────────┬──────────────────┐
-        │                  │                  │                  │
-        ▼                  ▼                  ▼                  ▼
-┌──────────────────┐ ┌──────────────────┐ ┌──────────────────┐ ┌──────────────┐
-│ Election_Result  │ │ Indicateur_      │ │ Indicateur_      │ │  Prediction  │
-│                  │ │ Securite         │ │ Emploi           │ │              │
-├──────────────────┤ ├──────────────────┤ ├──────────────────┤ ├──────────────┤
-│ PK id_result     │ │ PK id_securite   │ │ PK id_emploi     │ │ PK id_pred   │
-│ FK id_territoire │ │ FK id_territoire │ │ FK id_territoire │ │ FK id_terr   │
-│    annee         │ │    annee         │ │    annee         │ │    candidat  │
-│    tour          │ │    mois          │ │    trimestre     │ │    annee_pred│
-│    candidat      │ │    type_fait     │ │    taux_chomage  │ │    %_predit  │
-│    parti         │ │    nombre_faits  │ │    population_   │ │    modele    │
-│    nombre_voix   │ │    taux_p_1000   │ │    active        │ │    r2_score  │
-│    %_voix        │ │    source        │ │    revenus_      │ │    date_gen  │
-│    nb_inscrits   │ │    created_at    │ │    median        │ │              │
-│    taux_part     │ │                  │ │    source        │ │              │
-└──────────────────┘ └──────────────────┘ └──────────────────┘ └──────────────┘
+```mermaid
+erDiagram
+    Territoire ||--o{ Election_Result : "1-N"
+    Territoire ||--o{ Indicateur_Securite : "1-N"
+    Territoire ||--o{ Indicateur_Emploi : "1-N"
+    Territoire ||--o{ Prediction : "1-N"
+
+    Territoire {
+        VARCHAR(20) id_territoire PK
+        VARCHAR(5) code_insee
+        ENUM type_territoire "IRIS, BUREAU_VOTE, ARROND"
+        VARCHAR(100) nom_territoire
+        GEOMETRY geometry
+        INTEGER population
+        TIMESTAMP created_at
+    }
+
+    Election_Result {
+        SERIAL id_result PK
+        VARCHAR(20) id_territoire FK
+        INTEGER annee
+        INTEGER tour
+        VARCHAR(100) candidat
+        VARCHAR(50) parti
+        INTEGER nombre_voix
+        DECIMAL pourcentage_voix
+        INTEGER nombre_inscrits
+        INTEGER nombre_votants
+        INTEGER nombre_exprimes
+        DECIMAL taux_participation
+        TIMESTAMP created_at
+    }
+
+    Indicateur_Securite {
+        SERIAL id_securite PK
+        VARCHAR(20) id_territoire FK
+        INTEGER annee
+        INTEGER mois
+        VARCHAR(100) type_fait
+        INTEGER nombre_faits
+        DECIMAL taux_pour_1000_hab
+        VARCHAR(50) source
+        TIMESTAMP created_at
+    }
+
+    Indicateur_Emploi {
+        SERIAL id_emploi PK
+        VARCHAR(20) id_territoire FK
+        INTEGER annee
+        INTEGER trimestre
+        INTEGER population_active
+        INTEGER nombre_emplois
+        INTEGER nombre_chomeurs
+        DECIMAL taux_chomage
+        DECIMAL taux_activite
+        DECIMAL revenus_median
+        VARCHAR(50) source
+        TIMESTAMP created_at
+    }
+
+    Prediction {
+        SERIAL id_prediction PK
+        VARCHAR(20) id_territoire FK
+        VARCHAR(100) candidat
+        VARCHAR(50) parti
+        INTEGER annee_prediction
+        INTEGER tour
+        DECIMAL pourcentage_predit
+        DECIMAL intervalle_confiance_inf
+        DECIMAL intervalle_confiance_sup
+        VARCHAR(50) modele_utilise
+        DECIMAL r2_score
+        DECIMAL mae
+        TIMESTAMP date_generation
+    }
 ```
 
 ---

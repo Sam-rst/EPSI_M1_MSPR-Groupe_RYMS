@@ -25,23 +25,29 @@
 - **Table générique** pour les indicateurs socio-économiques variables (`indicateur`)
 - **JSONB** pour métadonnées flexibles (PostgreSQL)
 
-```
-┌──────────────────────────────────────────────────────────────┐
-│                    ARCHITECTURE v2.0                         │
-│                                                              │
-│  ┌─────────────┐        ┌──────────────────────┐           │
-│  │  Territoire │◄───────│  Type_Indicateur     │           │
-│  │  (Core)     │        │  (Catalog)           │           │
-│  └──────┬──────┘        └──────────────────────┘           │
-│         │                                                    │
-│    ┌────┴────┬──────────────────┬──────────────┐          │
-│    │         │                  │              │          │
-│    ▼         ▼                  ▼              ▼          │
-│  Election  Indicateur       Prediction    Metadata       │
-│  Result    (Generic)        (ML Output)   (Flexible)     │
-│  (High     (EAV Pattern)                                  │
-│  Volume)                                                  │
-└──────────────────────────────────────────────────────────────┘
+```mermaid
+graph TD
+    subgraph "ARCHITECTURE v2.0"
+        A[Territoire<br/>Core]
+        B[Type_Indicateur<br/>Catalog]
+        C[Election_Result<br/>High Volume]
+        D[Indicateur<br/>Generic - EAV Pattern]
+        E[Prediction<br/>ML Output]
+        F[Metadata<br/>Flexible]
+
+        B -.-> A
+        A --> C
+        A --> D
+        A --> E
+        A --> F
+    end
+
+    style A fill:#e1f5ff,stroke:#01579b, color: #020202
+    style B fill:#fce4ec,stroke:#880e4f, color: #020202
+    style C fill:#fff3e0,stroke:#e65100, color: #020202
+    style D fill:#f3e5f5,stroke:#4a148c, color: #020202
+    style E fill:#e8f5e9,stroke:#1b5e20, color: #020202
+    style F fill:#e1f5ff,stroke:#01579b, color: #020202
 ```
 
 ---

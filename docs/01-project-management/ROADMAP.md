@@ -35,7 +35,7 @@
 
 ## Phase 2 : Architecture & Modélisation ✅ TERMINÉE (5h/5h complétées - 100%)
 
-**Agent :** `@archi`
+**Agent :** `@tech`
 
 ### Objectifs
 - Définir l'architecture technique du POC
@@ -141,7 +141,7 @@ src/etl/
 
 ## Phase 4 : Data Science & ML (6h)
 
-**Agent :** `@datasci`
+**Agent :** `@ds`
 
 ### Objectifs
 - Analyser les corrélations entre indicateurs socio-éco et résultats électoraux
@@ -313,7 +313,7 @@ python -m jupyter notebook notebooks/01_exploration.ipynb
 
 ### Étape 2 : Entraîner le modèle ML (3h)
 ```bash
-@datasci Démarre la Phase 4 : Analyse exploratoire, feature engineering,
+@ds Démarre la Phase 4 : Analyse exploratoire, feature engineering,
 entraînement Random Forest pour prédiction 2027
 ```
 

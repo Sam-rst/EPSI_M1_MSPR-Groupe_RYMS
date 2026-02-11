@@ -2,7 +2,7 @@
 
 **Status :** ✅ ACCEPTÉ
 **Date :** 2026-02-09
-**Décideurs :** Tech Lead (@archi)
+**Décideurs :** Tech Lead (@tech)
 **Contexte :** POC Electio-Analytics - Bordeaux Arrondissement Centre
 
 ---
@@ -268,4 +268,4 @@ docker run -d \
 ---
 
 **Statut :** ✅ Décision approuvée
-**Prochaine étape :** Phase 3 - Data Engineering (`@dataeng` crée scripts ETL + setup PostgreSQL)
+**Prochaine étape :** Phase 3 - Data Engineering (`@de` crée scripts ETL + setup PostgreSQL)
