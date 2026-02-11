@@ -72,15 +72,18 @@
 
 ---
 
-## Phase 3 : Data Engineering ✅ TERMINÉE (8h/8h) - 100% complété
+## Phase 3 : Data Engineering ✅ TERMINÉE (10h/8h) - 125% complété
 
-**Agent :** `@de`
+**Agent :** `@de` + `@rv` (Code Review)
+**Durée réelle :** 10h (incluant implémentation Load + corrections encodage + review)
 
 ### Objectifs
 - ✅ Collecter les données brutes via API data.gouv.fr (élections + sécurité)
 - ✅ Nettoyer et transformer les données
 - ✅ Refactoriser en architecture modulaire enterprise-grade
-- ⏳ Charger dans la base de données (reporté Phase 4)
+- ✅ **Charger dans la base de données PostgreSQL** (complété 2026-02-11)
+- ✅ **Corriger problèmes d'encodage UTF-8** (complété 2026-02-11)
+- ✅ **Code review complète et documentation** (complété 2026-02-11)
 
 ### 🏗️ Architecture Option 3 Implémentée
 **Décision @tech + @de :** Refactorisation complète du module ETL en architecture modulaire pour scalabilité maximale.
@@ -105,13 +108,18 @@ src/etl/
 | Livrable | Fichier | Statut | Description |
 |----------|---------|--------|-------------|
 | **Module Extract** | `src/etl/extract/` | ✅ FAIT | Architecture Option 3 (config/, core/, utils/, main.py) |
-| **Module Transform** | `src/etl/transform/` | ✅ FAIT | Architecture Option 3 (config/, core/, utils/, main.py) |
+| **Module Transform** | `src/etl/transform/` | ✅ FAIT (MAJ 2026-02-11) | Architecture Option 3 + encodage UTF-8/latin-1 + parsing candidats détaillé |
+| **Module Load** | `src/etl/load/` | ✅ FAIT (2026-02-11) | Architecture modulaire complète (9 fichiers, batch loading, validation) |
+| **Orchestrateur ETL** | `src/etl/main.py` | ✅ FAIT (2026-02-11) | Pipeline complet Extract → Transform → Load avec validation |
 | **Extract Elections** | `src/etl/extract/core/elections.py` | ✅ FAIT | Téléchargement 4 fichiers (94 MB) |
 | **Extract Sécurité** | `src/etl/extract/core/securite.py` | ✅ FAIT | Téléchargement SSMSI (34 MB gzip) |
-| **Transform Elections** | `src/etl/transform/core/elections.py` | ✅ FAIT | Agrégation Bordeaux (4 lignes) |
-| **Transform Sécurité** | `src/etl/transform/core/securite.py` | ✅ FAIT | Filtrage Bordeaux (135 lignes) |
+| **Transform Elections** | `src/etl/transform/core/elections.py` | ✅ FAIT (MAJ 2026-02-11) | Parsing détaillé candidats (27 lignes), encodage auto-détecté |
+| **Transform Sécurité** | `src/etl/transform/core/securite.py` | ✅ FAIT (MAJ 2026-02-11) | Mapping catégories + agrégation (45 lignes : 5 catégories × 9 ans) |
+| **Load Elections** | `src/etl/load/core/elections.py` | ✅ FAIT (2026-02-11) | Chargement 27 résultats électoraux avec gestion doublons |
+| **Load Indicateurs** | `src/etl/load/core/indicateurs.py` | ✅ FAIT (2026-02-11) | Chargement 45 indicateurs sécurité (batch 1000 rows) |
+| **Migration Alembic** | `src/database/migrations/.../nullable_election_columns.py` | ✅ FAIT (2026-02-11) | Colonnes nullable pour flexibilité données |
 | **Documentation ETL** | `src/etl/README.md` | ✅ FAIT | Guide complet (usage, API, exemples) |
-| **Script Chargement** | `src/etl/load/` | ⏳ TODO | Insertion en base PostgreSQL (Phase 4) |
+| **Code Review** | `docs/03-code-review/reviews/2026-02-11-etl-pipeline-load.md` | ✅ FAIT (2026-02-11) | Revue détaillée (Note: 7.5/10), recommandations critiques |
 
 ### ⚠️ CHANGEMENT VALIDÉ : Sources de données finales
 **Décision @pm :** Utiliser uniquement les sources disponibles via API (approche pragmatique POC)
@@ -135,7 +143,76 @@ src/etl/
 4. ✅ Calculer indicateurs dérivés (taux participation: 71-78%)
 5. ✅ Refactoriser en architecture modulaire (config/, core/, utils/)
 6. ✅ Documenter le module ETL complet (README.md)
-7. ⏳ Charger en base PostgreSQL (reporté Phase 4)
+7. ✅ **Implémenter module Load complet (2026-02-11)**
+8. ✅ **Corriger encodage UTF-8 et re-télécharger fichiers corrompus (2026-02-11)**
+9. ✅ **Refactoriser Transform pour parsing détaillé candidats (2026-02-11)**
+10. ✅ **Créer orchestrateur ETL end-to-end (2026-02-11)**
+11. ✅ **Charger 72 lignes en PostgreSQL (27 élections + 45 indicateurs) (2026-02-11)**
+12. ✅ **Code review et documentation qualité (2026-02-11)**
+
+### 🎯 Réalisations du 2026-02-11 (Session complète)
+
+**Durée :** ~6h de travail intensif
+**Agents :** @de (Data Engineer) + @rv (Code Reviewer) + @tech (Architecture)
+
+#### Modules Créés (2000+ lignes)
+1. **src/etl/load/** - Module Load complet
+   - `core/elections.py` : Chargement résultats électoraux (172 lignes)
+   - `core/indicateurs.py` : Chargement indicateurs (218 lignes)
+   - `core/territoire.py` : Chargement territoire (118 lignes)
+   - `core/type_indicateur.py` : Chargement types (111 lignes)
+   - `config/settings.py` : Configuration (110 lignes)
+   - `utils/validators.py` : Validations CSV (326 lignes)
+
+2. **src/etl/main.py** - Orchestrateur ETL (465 lignes)
+   - Validation prérequis (PostgreSQL, tables, dossiers)
+   - Exécution séquentielle Extract → Transform → Load
+   - Rapport détaillé avec métriques
+   - Validation finale données chargées
+
+#### Corrections Majeures
+1. **Encodage UTF-8**
+   - Problème : Fichier 2017 T1 corrompu (Benoï¿½t au lieu de Benoît)
+   - Solution : Re-téléchargement + détection auto UTF-8/latin-1
+   - Résultat : Tous les accents préservés (Benoît HAMON, François FILLON, Jean-Luc MÉLENCHON)
+
+2. **Transform Elections**
+   - Avant : Agrégation (4 lignes)
+   - Après : Parsing détaillé par candidat (27 lignes)
+   - Pattern : 7 colonnes répétitives × N candidats
+   - Calcul : Pourcentages corrects (voix / exprimés × 100)
+
+3. **Transform Sécurité**
+   - Avant : Filtrage simple (135 lignes brutes)
+   - Après : Mapping + agrégation (45 lignes : 5 catégories × 9 années)
+   - Catégories : CRIMINALITE_TOTALE, VOLS_SANS_VIOLENCE, VOLS_AVEC_VIOLENCE, ATTEINTES_AUX_BIENS, ATTEINTES_AUX_PERSONNES
+
+#### Base de Données
+1. **Migration Alembic** : Colonnes nullable (nombre_inscrits, nombre_votants, nombre_exprimes, taux_participation)
+2. **Données chargées :**
+   - 27 résultats électoraux (11 candidats 2017 T1 + 2 T2 + 12 candidats 2022 T1 + 2 T2)
+   - 45 indicateurs sécurité (5 catégories × 9 années 2016-2024)
+   - Gestion doublons : Check unicité avant insertion
+   - Batch loading : 1000 rows par batch
+
+#### Documentation & Qualité
+1. **Code Review Complète** (docs/03-code-review/)
+   - Revue détaillée : 2026-02-11-etl-pipeline-load.md
+   - Note globale : 7.5/10
+   - Architecture : 8/10, Robustesse : 6/10, Sécurité : 8/10
+   - 8 findings (3 critiques, 3 importants, 2 améliorations)
+
+2. **Recommandations Critiques Identifiées**
+   - Ajouter transaction globale dans Load
+   - Logger indicateurs non mappés
+   - Valider cohérence électorale (inscrits ≥ votants ≥ exprimés)
+
+#### Statistiques
+- **22 fichiers** modifiés/créés
+- **+3102 lignes** de code ajoutées
+- **-95 lignes** supprimées
+- **Complexité** : Moyenne-Élevée
+- **Tests** : 0% coverage ⚠️ (à améliorer Phase 6)
 
 ---
 
@@ -271,14 +348,22 @@ Phase 6 (Revue Qualité)
 |-------|--------|-------|----------|
 | **Phase 1** : Cadrage | ✅ TERMINÉE | 1h | 100% |
 | **Phase 2** : Architecture | ✅ TERMINÉE | 5h/5h | 100% |
-| **Phase 3** : Data Engineering | ✅ TERMINÉE | 8h/8h | 100% |
+| **Phase 3** : Data Engineering | ✅ TERMINÉE | 10h/8h | 125% ⚠️ |
 | **Phase 4** : Data Science | ⏸️ PAS COMMENCÉE | 0h/6h | 0% |
 | **Phase 5** : Visualisation | ⏸️ PAS COMMENCÉE | 0h/4h | 0% |
-| **Phase 6** : Revue Qualité | ⏸️ PAS COMMENCÉE | 0h/1h | 0% |
+| **Phase 6** : Revue Qualité | 🔄 PARTIELLE | 1h/1h | 50% |
 
-**Total consommé :** 14h / 25h (56%)
+**Total consommé :** 17h / 25h (68%)
+**Temps restant :** 8h (Phase 4: 6h + Phase 5: 4h - dépassement Phase 3: 2h)
+
+### ⚠️ Note sur le Dépassement Phase 3
+- **Prévu :** 8h
+- **Réalisé :** 10h (+2h)
+- **Raison :** Implémentation Load non prévue initialement + corrections encodage + code review
+- **Impact :** Budget global maintenu (Phase 6 partiellement réalisée en parallèle)
 
 ### Livrables Phase 1, 2 & 3 Complétés
+
 **Phase 1 & 2** (6 documents) :
 - ✅ ROADMAP.md (planning 25h, 6 phases)
 - ✅ MCD.md (5 entités, relations, volumétrie)
@@ -287,13 +372,24 @@ Phase 6 (Revue Qualité)
 - ✅ ARCHITECTURE.md (Pipeline ETL complet)
 - ✅ SOURCES_DONNEES.md (sources de données validées)
 
-**Phase 3 - ETL Complet** (18 modules Python, ~1500 lignes) :
+**Phase 3 - Pipeline ETL End-to-End** (35+ modules Python, ~3500 lignes) :
 - ✅ Module Extract refactorisé (9 fichiers, architecture Option 3)
-- ✅ Module Transform refactorisé (9 fichiers, architecture Option 3)
-- ✅ Utilitaires génériques (download_file, parse_french_number)
+- ✅ Module Transform refactorisé (9 fichiers, architecture Option 3, encodage UTF-8/latin-1)
+- ✅ **Module Load complet (9 fichiers, batch loading, validation) - 2026-02-11**
+- ✅ **Orchestrateur ETL main.py (465 lignes) - 2026-02-11**
+- ✅ Utilitaires génériques (download_file, parse_french_number, validators)
 - ✅ 5 fichiers de données téléchargés (128 MB)
-- ✅ 2 fichiers transformés (4 lignes élections + 135 lignes sécurité)
+- ✅ 2 fichiers transformés (27 lignes élections + 45 lignes indicateurs)
+- ✅ **72 lignes chargées en PostgreSQL (27 élections + 45 indicateurs) - 2026-02-11**
+- ✅ Migration Alembic (colonnes nullable)
 - ✅ Documentation complète ETL (src/etl/README.md)
+
+**Phase 6 - Code Review** (partiellement réalisée) :
+- ✅ **Structure documentation code review (docs/03-code-review/) - 2026-02-11**
+- ✅ **Revue détaillée pipeline ETL (Note: 7.5/10) - 2026-02-11**
+- ✅ **8 findings documentés (sécurité, performance, architecture, qualité) - 2026-02-11**
+- ⏳ Tests unitaires (à faire)
+- ⏳ Validation RGPD (à faire)
 
 ---
 
@@ -301,27 +397,43 @@ Phase 6 (Revue Qualité)
 
 **🎯 Phase 4 - Data Science & Machine Learning**
 
-### Étape 1 : Analyser les données transformées (1h)
+### ✅ Pré-requis Validés
+- ✅ PostgreSQL opérationnel
+- ✅ 27 résultats électoraux chargés (2017 + 2022, tours 1 & 2)
+- ✅ 45 indicateurs sécurité chargés (5 catégories × 9 années 2016-2024)
+- ✅ Pipeline ETL fonctionnel
+- ✅ Données accessibles via SQL et CSV
+
+### Étape 1 : Analyser les données chargées (1h)
 ```bash
-# Lancer l'exploration des données
+# Option 1 : Requêter PostgreSQL directement
+python -c "from src.database.config import get_session; ..."
+
+# Option 2 : Utiliser les CSV transformés
 python -m jupyter notebook notebooks/01_exploration.ipynb
 
 # Données disponibles :
-# - data/processed/elections/resultats_elections_bordeaux.csv (4 lignes)
-# - data/processed/indicateurs/delinquance_bordeaux.csv (135 lignes)
+# - PostgreSQL : tables election_result (27 rows), indicateur (45 rows)
+# - CSV : resultats_elections_bordeaux.csv, delinquance_bordeaux.csv
 ```
 
-### Étape 2 : Entraîner le modèle ML (3h)
+### Étape 2 : Feature Engineering & ML (3h)
 ```bash
 @ds Démarre la Phase 4 : Analyse exploratoire, feature engineering,
 entraînement Random Forest pour prédiction 2027
 ```
 
 **Objectifs Phase 4 :**
-1. Analyser corrélations entre criminalité et résultats électoraux
-2. Créer features temporelles (évolution 2017→2022)
-3. Entraîner Random Forest + Régression Linéaire baseline
-4. Valider le modèle (R² > 0.65)
-5. Générer prédictions 2027
+1. Extraire features depuis PostgreSQL (jointures territoire, indicateurs, élections)
+2. Analyser corrélations criminalité ↔ résultats électoraux
+3. Créer features temporelles (évolution 2017→2022, tendances 2016-2024)
+4. Entraîner Random Forest + Régression Linéaire baseline
+5. Valider le modèle (R² > 0.65)
+6. Générer prédictions 2027 par candidat
 
-**Note :** Le chargement en base PostgreSQL sera effectué si nécessaire pour la Phase 4.
+**Données Enrichies Disponibles :**
+- 27 résultats candidats (pourcentages voix, nombre voix)
+- 45 indicateurs sécurité sur 9 ans (tendances temporelles)
+- Possibilité d'ajouter features dérivées : taux croissance criminalité 2016→2024, évolution participation 2017→2022
+
+**Note :** Le pipeline ETL est maintenant complet et prêt pour l'entraînement ML.
