@@ -66,6 +66,28 @@ def run_migrations_offline() -> None:
         context.run_migrations()
 
 
+def include_object(object, name, type_, reflected, compare_to):
+    """
+    Exclure les tables PostGIS Tiger de l'autogenerate.
+    """
+    # Liste des tables PostGIS Tiger à ignorer
+    tiger_tables = {
+        'spatial_ref_sys', 'geocode_settings', 'geocode_settings_default',
+        'direction_lookup', 'secondary_unit_lookup', 'state_lookup',
+        'street_type_lookup', 'place_lookup', 'county_lookup',
+        'countysub_lookup', 'zip_lookup_base', 'zip_state', 'zip_lookup',
+        'zip_state_loc', 'zip_lookup_all', 'county', 'state', 'place',
+        'cousub', 'tract', 'tabblock', 'tabblock20', 'bg', 'zcta5',
+        'edges', 'faces', 'featnames', 'addr', 'addrfeat',
+        'loader_platform', 'loader_variables', 'loader_lookuptables',
+        'pagc_gaz', 'pagc_lex', 'pagc_rules', 'topology', 'layer'
+    }
+
+    if type_ == "table" and name in tiger_tables:
+        return False
+    return True
+
+
 def run_migrations_online() -> None:
     """
     Run migrations in 'online' mode.
@@ -89,6 +111,7 @@ def run_migrations_online() -> None:
             target_metadata=target_metadata,
             compare_type=True,  # Détecter changements de types
             compare_server_default=True,  # Détecter changements valeurs par défaut
+            include_object=include_object,  # Exclure tables Tiger PostGIS
         )
 
         with context.begin_transaction():

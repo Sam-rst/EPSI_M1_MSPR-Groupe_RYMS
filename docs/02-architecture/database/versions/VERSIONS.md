@@ -6,15 +6,16 @@ Ce document présente un tableau comparatif des différentes versions du schéma
 
 ## Vue d'Ensemble
 
-| Aspect | v1.0 (Initial) | v2.0 (Scalable) ⭐ ACTUELLE |
-|--------|----------------|---------------------------|
-| **Date de Release** | 2026-02-09 | 2026-02-10 |
-| **Statut** | 🗄️ Archivée | ✅ Production |
-| **Pattern Architectural** | Relationnel classique | EAV Hybride |
-| **Nombre de Tables** | 5 | 5 |
-| **Extensibilité** | ⚠️ Faible | ✅ Excellente |
-| **Maintenance** | ⚠️ Moyenne | ✅ Facile |
-| **Performance ML** | ⚠️ Multiples JOIN | ✅ Optimisée |
+| Aspect | v1.0 (Initial) | v2.0 (Scalable) | v3.0 (Hiérarchie) ⭐ ACTUELLE |
+|--------|----------------|-----------------|------------------------------|
+| **Date de Release** | 2026-02-09 | 2026-02-10 | 2026-02-12 |
+| **Statut** | 🗄️ Archivée | 🗄️ Archivée | ✅ Production |
+| **Pattern Architectural** | Relationnel classique | EAV Hybride | Hiérarchie + Polymorphe |
+| **Nombre de Tables** | 5 | 5 | 19 |
+| **Extensibilité** | ⚠️ Faible | ✅ Excellente | ✅ Excellente |
+| **Maintenance** | ⚠️ Moyenne | ✅ Facile | ✅ Facile |
+| **Performance ML** | ⚠️ Multiples JOIN | ✅ Optimisée | ✅ Très optimisée |
+| **Features ML** | ~10 | ~15 | ~35 |
 
 ---
 
@@ -48,9 +49,9 @@ graph TD
     T[territoire] -->|1:N| IS[indicateur_securite]
     T -->|1:N| IE[indicateur_emploi]
 
-    style T fill:#e1f5ff
-    style IS fill:#f3e5f5
-    style IE fill:#fff3e0
+    style T fill:#e1f5ff, color: #020202
+    style IS fill:#f3e5f5, color: #020202
+    style IE fill:#fff3e0, color: #020202
 ```
 
 **Schéma v1.0 :**
@@ -65,9 +66,9 @@ graph TD
     T[territoire] -->|1:N| I[indicateur]
     TI[type_indicateur<br/>Catalogue] -->|1:N| I
 
-    style T fill:#e1f5ff
-    style TI fill:#fce4ec
-    style I fill:#f3e5f5
+    style T fill:#e1f5ff, color: #020202
+    style TI fill:#fce4ec, color: #020202
+    style I fill:#f3e5f5, color: #020202
 ```
 
 **Schéma v2.0 :**
@@ -279,6 +280,55 @@ GROUP BY t.id_territoire, er.candidat, er.pourcentage_voix;
 
 ---
 
-**Dernière mise à jour :** 2026-02-10
-**Version actuelle :** v2.0 (Architecture Scalable)
+---
+
+## Nouveautés v3.0 (2026-02-12) ⭐
+
+### Changements Majeurs
+
+**Hiérarchie géographique explicite :**
+```
+v2.0: TERRITOIRE (table unique polymorphe)
+v3.0: Region → Departement → Canton/Commune → Arrondissement → BureauVote
+```
+
+**Entités candidats/partis :**
+- ✅ Table `candidat` avec profil complet
+- ✅ Table `parti` avec classification idéologique
+- ✅ Table `candidat_parti` (affiliations temporelles)
+
+**Séparation résultats électoraux :**
+```
+v2.0: ELECTION_RESULT (tout en 1)
+v3.0: RESULTAT_PARTICIPATION (stats globales) + RESULTAT_CANDIDAT (par candidat)
+```
+
+**Système polymorphe amélioré :**
+- `indicateur` : id_territoire + type_territoire (sans FK)
+- `prediction` : id_territoire + type_territoire (sans FK)
+- Flexibilité maximale multi-granularités
+
+**Suppression geometry :**
+- ❌ Colonne `geometry` PostGIS retirée (simplification)
+- ✅ Peut être rajoutée ultérieurement si besoin
+
+### Migration v2.0 → v3.0
+
+**Breaking changes :**
+- ❌ Tables `territoire` et `election_result` supprimées
+- ❌ Structure complètement différente
+
+**Procédure :**
+```bash
+# 1. Cleanup v2.0
+alembic upgrade 5c74986a8b20
+
+# 2. Déploiement v3.0
+alembic upgrade head  # revision 691a1578615b
+```
+
+---
+
+**Dernière mise à jour :** 2026-02-12
+**Version actuelle :** v3.0 (Hiérarchie Géographique + Système Polymorphe)
 **Mainteneur :** @tech

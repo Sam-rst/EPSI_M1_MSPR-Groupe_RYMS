@@ -1,121 +1,61 @@
-# Versions Archivées - Schéma Base de Données
+# Versions du Modèle Conceptuel de Données (MCD)
 
-Ce dossier archive les anciennes versions du schéma de base de données Electio-Analytics.
-
----
-
-## 📂 Structure
-
-```
-versions/
-├── README.md           # Ce fichier
-├── CHANGELOG.md        # Historique détaillé des changements
-├── VERSIONS.md         # Tableau comparatif versions
-└── v1.0/               # Archive version 1.0
-    ├── MCD.md          # Modèle Conceptuel v1.0 (5 tables séparées)
-│   └── MCD.md          # Modèle Conceptuel v1.0 (5 tables séparées)
-└── v2.0/               # Archive version 2.0
-    └── MCD.md          # Proposition architecture scalable (snapshot v2.0)
-```
+Ce dossier archive les versions historiques du MCD pour traçabilité.
 
 ---
 
-## 🗂️ Versions Disponibles
+## Historique des Versions
 
-### [v1.0] - 2026-02-09 - Schéma Initial (Archivée)
+### v3.0 (2026-02-12) - **Version Actuelle**
+**Fichier :** [v3.0/MCD.md](./v3.0/MCD.md)
 
-**Statut :** 🗄️ Archivée - Non maintenue
+**Changements majeurs :**
+- ✅ Hiérarchie géographique explicite (Region → Departement → Canton/Commune → Arrondissement → Bureau)
+- ✅ Entités Candidat, Parti, CandidatParti
+- ✅ Séparation ResultatParticipation / ResultatCandidat
+- ✅ Système polymorphe de territoire (id_territoire + type_territoire)
+- ✅ Suppression colonne geometry (simplification)
+- ✅ Table ElectionTerritoire pour tracker granularités
+- ❌ Suppression table TERRITOIRE (remplacée par hiérarchie)
+- ❌ Suppression table ELECTION_RESULT (remplacée par resultat_participation + resultat_candidat)
 
-**Caractéristiques :**
-- Architecture relationnelle classique (3FN)
-- 5 tables : `territoire`, `election_result`, `indicateur_securite`, `indicateur_emploi`, `prediction`
-- Tables séparées par type d'indicateur
-
-**Documentation :**
-- [MCD v1.0](v1.0/MCD.md)
-
-**Raison d'archivage :**
-- Remplacée par v2.0 (Architecture EAV Hybride)
-- Limitations de scalabilité identifiées
-- Maintenance complexe pour ajout de nouvelles sources
-
----
-
-### [v2.0] - 2026-02-10 - Architecture Scalable (ACTUELLE) ⭐
-
-**Statut :** ✅ Production - Activement maintenue
-
-**Caractéristiques :**
-- Architecture EAV Hybride
-- 5 tables : `territoire`, `type_indicateur`, `indicateur`, `election_result`, `prediction`
-- Table générique `indicateur` pour extensibilité maximale
-
-**Documentation :**
-- [README Principal](../README.md)
-- [MCD v2.0 (Documentation Structurée)](../01-mcd.md)
-- [MCD v2.0 (Snapshot Original)](v2.0/MCD.md)
-- [MLD v2.0](../02-mld.md)
-- [Dictionnaire de données](../03-dictionnaire-donnees.md)
+**Tables :** 19 (vs 5 en v2.0)
+**Volumétrie POC :** ~69 000 lignes
 
 ---
 
-## 📖 Documentation de Référence
+### v2.0 (2026-02-10) - Obsolète
+**Changements v1.0 → v2.0 :**
+- ✅ Pattern EAV pour indicateurs (TYPE_INDICATEUR + INDICATEUR)
+- ✅ Colonne geometry PostGIS
+- ✅ JSONB metadata
+- ✅ Table PREDICTION
 
-### Pour Consulter l'Historique
-📄 **[CHANGELOG.md](CHANGELOG.md)** - Historique détaillé des changements entre versions
-
-### Pour Comparer les Versions
-📊 **[VERSIONS.md](VERSIONS.md)** - Tableau comparatif v1.0 vs v2.0
-
-### Pour Utiliser la Version Actuelle
-📚 **[Documentation v2.0](../README.md)** - Documentation complète de la version en production
+**Tables :** 5 (TERRITOIRE, TYPE_INDICATEUR, INDICATEUR, ELECTION_RESULT, PREDICTION)
 
 ---
 
-## 🔄 Politique de Versioning
+### v1.0 (2026-02-08) - Obsolète
+**Version initiale :**
+- Tables basiques : TERRITOIRE, ELECTION_RESULT
+- Schéma simple sans normalisation
 
-### Numérotation Sémantique
-```
-MAJOR.MINOR.PATCH
+---
 
-MAJOR : Breaking change (incompatibilité)
-MINOR : Nouvelle fonctionnalité compatible
-PATCH : Correction bug ou optimisation
+## Migration Entre Versions
+
+**v2.0 → v3.0 :**
+```bash
+# Nettoyage tables obsolètes
+alembic upgrade 5c74986a8b20  # Migration cleanup
+
+# Création schéma v3.0
+alembic upgrade head  # Migration 691a1578615b
 ```
 
-### Rétention des Archives
-- **Versions MAJOR** : Archivées définitivement
-- **Versions MINOR** : Conservées 1 an
-- **Versions PATCH** : Non archivées (Git uniquement)
-
-### Migration entre Versions
-- **v1.0 → v2.0** : Migration manuelle requise (script fourni)
-- **v2.x → v2.y** : Migration automatique (compatible)
+**Migration données :** À prévoir si données v2.0 existantes (script ETL de migration)
 
 ---
 
-## 🚀 Accès Rapide
-
-| Besoin | Document |
-|--------|----------|
-| **Voir les changements récents** | [CHANGELOG.md](CHANGELOG.md) |
-| **Comparer deux versions** | [VERSIONS.md](VERSIONS.md) |
-| **Consulter schéma v1.0** | [v1.0/MCD.md](v1.0/MCD.md) |
-| **Utiliser version actuelle** | [Documentation v2.0](../README.md) |
-| **Migrer de v1.0 à v2.0** | [CHANGELOG.md - Section Migration](CHANGELOG.md#migration-v10--v20) |
-
----
-
-## ⚠️ Important
-
-> **Les versions archivées ne sont plus maintenues.**
->
-> Pour les nouveaux projets, utilisez toujours la **version actuelle (v2.0)**.
->
-> Les anciennes versions sont conservées uniquement à des fins de référence historique et pour faciliter les migrations.
-
----
-
-**Dernière mise à jour :** 2026-02-10
-**Version actuelle :** v2.0 (Architecture Scalable)
-**Mainteneur :** @tech
+**Version active :** v3.0
+**Dernière mise à jour :** 2026-02-12

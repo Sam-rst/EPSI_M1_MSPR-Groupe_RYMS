@@ -4,9 +4,8 @@ Modèle ORM : Prediction.
 Prédictions électorales 2027 générées par les modèles Machine Learning.
 """
 
-from sqlalchemy import Column, BigInteger, String, Integer, TIMESTAMP, CheckConstraint, Index, ForeignKey, UniqueConstraint, Numeric
+from sqlalchemy import Column, BigInteger, String, Integer, TIMESTAMP, CheckConstraint, Index, UniqueConstraint, Numeric
 from sqlalchemy.dialects.postgresql import JSONB
-from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
 from .base import Base
@@ -17,10 +16,12 @@ class Prediction(Base):
     Entité Prediction : Prédictions électorales ML.
 
     Output du pipeline Machine Learning avec traçabilité complète.
+    Utilise le système polymorphe de territoire (id_territoire + type_territoire).
 
     Attributes:
         id_prediction: Identifiant auto-incrémenté (PK)
-        id_territoire: Référence territoire (FK)
+        id_territoire: Identifiant polymorphe du territoire (ex: '33063', '3301', '33')
+        type_territoire: Type de territoire (COMMUNE, CANTON, DEPARTEMENT, REGION, NATIONAL)
         candidat: Nom candidat prédit
         parti: Parti politique
         annee_prediction: Année prédite (2025-2050)
@@ -34,15 +35,13 @@ class Prediction(Base):
         features_utilisees: Liste des features ML - JSONB
         date_generation: Date de génération de la prédiction
 
-    Relations:
-        - territoire: Territoire associé (N:1)
-
     Contrainte Unicité:
-        (id_territoire, candidat, tour, annee_prediction, version_modele) → Versioning prédictions
+        (id_territoire, type_territoire, candidat, tour, annee_prediction, version_modele) → Versioning prédictions
 
     Example:
         >>> prediction = Prediction(
-        ...     id_territoire='IRIS_330630101',
+        ...     id_territoire='33063',
+        ...     type_territoire='COMMUNE',
         ...     candidat='Emmanuel MACRON',
         ...     parti='RE',
         ...     annee_prediction=2027,
@@ -61,11 +60,11 @@ class Prediction(Base):
 
     # Colonnes
     id_prediction = Column(BigInteger, primary_key=True, autoincrement=True)
-    id_territoire = Column(
-        String(20),
-        ForeignKey('territoire.id_territoire', ondelete='CASCADE', onupdate='CASCADE'),
-        nullable=False
-    )
+
+    # Système polymorphe de territoire (comme resultat_participation/candidat/indicateur)
+    id_territoire = Column(String(15), nullable=False, comment="ID polymorphe du territoire")
+    type_territoire = Column(String(20), nullable=False, comment="Type de territoire")
+
     candidat = Column(String(100), nullable=False, comment="Nom candidat prédit")
     parti = Column(String(50), nullable=True, comment="Parti politique")
     annee_prediction = Column(Integer, default=2027, nullable=True, comment="Année prédite")
@@ -87,19 +86,21 @@ class Prediction(Base):
         CheckConstraint("pourcentage_predit BETWEEN 0 AND 100", name='ck_prediction_pct'),
         CheckConstraint("intervalle_confiance_inf BETWEEN 0 AND 100", name='ck_prediction_ic_inf'),
         CheckConstraint("intervalle_confiance_sup BETWEEN 0 AND 100", name='ck_prediction_ic_sup'),
-        # Contrainte unicité (versioning)
+        CheckConstraint(
+            "type_territoire IN ('BUREAU', 'CANTON', 'COMMUNE', 'ARRONDISSEMENT', 'DEPARTEMENT', 'REGION', 'NATIONAL')",
+            name='ck_prediction_type_territoire'
+        ),
+        # Contrainte unicité (versioning + type_territoire)
         UniqueConstraint(
-            'id_territoire', 'candidat', 'tour', 'annee_prediction', 'version_modele',
-            name='unique_prediction'
+            'id_territoire', 'type_territoire', 'candidat', 'tour', 'annee_prediction', 'version_modele',
+            name='unique_prediction_territoire_type'
         ),
         # Indexes
-        Index('idx_prediction_territoire', 'id_territoire'),
+        Index('idx_prediction_territoire', 'id_territoire', 'type_territoire'),
         Index('idx_prediction_annee', 'annee_prediction'),
         Index('idx_prediction_modele', 'modele_utilise'),
+        Index('idx_prediction_composite', 'id_territoire', 'type_territoire', 'annee_prediction'),
     )
 
-    # Relations ORM
-    territoire = relationship("Territoire", back_populates="predictions")
-
     def __repr__(self):
-        return f"<Prediction(territoire='{self.id_territoire}', candidat='{self.candidat}', tour={self.tour}, %={self.pourcentage_predit})>"
+        return f"<Prediction(territoire='{self.id_territoire}', type_terr='{self.type_territoire}', candidat='{self.candidat}', tour={self.tour}, %={self.pourcentage_predit})>"

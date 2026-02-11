@@ -1,18 +1,96 @@
-# Architecture ETL - Electio-Analytics
+# Architecture ETL & Database - Electio-Analytics
 
-**Version :** 2.0 (Architecture Modulaire Enterprise-Grade)
+**Version :** 3.0 (Schéma Enrichi Multi-Granularités + Architecture Modulaire)
 
-**Date :** 2026-02-10
+**Date :** 2026-02-11
 
 **Périmètre :** Bordeaux - Présidentielles 2017 & 2022 (1er et 2nd tours) → Prédiction 2027
 
-**Tech Lead :** @tech + @de
+**Tech Lead :** @tech + @de + @ds
 
-**Décision Architecturale :** ADR-003 (Architecture Option 3)
+**Décisions Architecturales :**
+- ADR-003 (Architecture ETL Modulaire Option 3)
+- ADR-004 (Enrichissement Schéma Base de Données v3.0)
+
+**Documents Associés :**
+- [MCD v3.0](./database/01-mcd.md) - Modèle Conceptuel de Données
+- [MLD v3.0](./database/02-mld.md) - Modèle Logique de Données
 
 ---
 
-## Vue d'Ensemble
+## 🗄️ Schéma Base de Données v3.0 (Nouveauté)
+
+### Vue d'Ensemble
+
+Le schéma de base de données a été **enrichi et normalisé** (3NF) pour supporter :
+- **Multi-granularités territoriales** (BUREAU, CANTON, COMMUNE, DEPARTEMENT, REGION)
+- **Référentiels candidats et partis** (tracking historique, profil idéologique)
+- **Séparation participation/résultats** (élimination redondances)
+- **Traçabilité granularités** (table `election_territoire`)
+
+**Gain ML estimé :** +15-25% R² score (×3.5 features exploitables)
+
+### Architecture
+
+```mermaid
+erDiagram
+    REGION ||--o{ DEPARTEMENT : "contient"
+    DEPARTEMENT ||--o{ CANTON : "contient"
+    DEPARTEMENT ||--o{ COMMUNE : "contient"
+    COMMUNE ||--o{ BUREAU_VOTE : "contient"
+
+    CANDIDAT ||--o{ CANDIDAT_PARTI : "affilie"
+    PARTI ||--o{ CANDIDAT_PARTI : "accueille"
+
+    TYPE_ELECTION ||--o{ ELECTION : "categorise"
+    ELECTION ||--o{ ELECTION_TERRITOIRE : "declare"
+    ELECTION_TERRITOIRE ||--o{ RESULTAT_PARTICIPATION : "valide"
+    ELECTION_TERRITOIRE ||--o{ RESULTAT_CANDIDAT : "valide"
+    CANDIDAT ||--o{ RESULTAT_CANDIDAT : "obtient"
+```
+
+### Tables Principales (14)
+
+| Domaine | Tables | Rôle |
+|---------|--------|------|
+| **Géographique** | region, departement, canton, commune, arrondissement, bureau_vote | Hiérarchie multi-niveaux |
+| **Candidats/Partis** | candidat, parti, candidat_parti | Référentiels normalisés |
+| **Élections** | type_election, election, election_territoire | Événements + référentiel granularités |
+| **Résultats** | resultat_participation, resultat_candidat | Séparation stats générales vs candidats |
+
+### Features ML Exploitables
+
+**Avant (schéma v2.0) :** ~10 features
+```
+['nombre_voix', 'pourcentage_voix', 'criminalite_totale', ...]
+```
+
+**Après (schéma v3.0) :** ~35 features
+```python
+# Candidat (7)
+['age', 'nb_elections_precedentes', 'score_moyen_historique',
+ 'evolution_momentum', 'profession', ...]
+
+# Parti (6)
+['position_economique', 'position_sociale', 'classification_ideologique',
+ 'distance_ideologique_gagnant', ...]
+
+# Participation (8)
+['taux_abstention', 'taux_blancs_nuls', 'evolution_vs_N-1',
+ 'ecart_vs_national', ...]
+
+# Géographique (5)
+['type_territoire', 'densite_population', 'taille_commune', ...]
+
+# Socio-économique (9)
+['criminalite_totale', 'criminalite_evolution', ...]
+```
+
+**Référence complète :** [MCD v3.0](./database/01-mcd.md)
+
+---
+
+## Vue d'Ensemble ETL
 
 Le pipeline ETL (Extract-Transform-Load) centralise les données électorales (1er et 2nd tours des présidentielles 2017 & 2022) et socio-économiques depuis 3 sources externes, en garantissant la **traçabilité**, la **qualité** et la **reproductibilité**.
 
