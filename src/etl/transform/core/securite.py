@@ -28,34 +28,25 @@ logger = logging.getLogger(__name__)
 
 def transform_securite() -> bool:
     """
-    Transforme le fichier de sécurité SSMSI en filtrant pour Bordeaux uniquement.
+    Transforme le fichier de sécurité SSMSI pour Bordeaux et agrège par catégories.
 
     Processus:
         1. Lit le fichier gzip complet (France entière)
         2. Filtre sur la colonne CODGEO_2025 pour Bordeaux (33063)
-        3. Sauvegarde le sous-ensemble filtré
+        3. Map les indicateurs granulaires vers les 5 catégories principales
+        4. Agrège les valeurs par (catégorie, année)
+        5. Format de sortie: id_territoire, code_type, annee, valeur_numerique
 
-    Fichier traité:
-        - Base statistique communale de la délinquance enregistrée
-        - Période: 2016-2024
-        - Source: SSMSI (Service Statistique Ministériel de la Sécurité Intérieure)
-
-    Format d'entrée:
-        CSV gzip avec délimiteur point-virgule (;)
-        Encoding UTF-8
-        ~34 MB compressé
-
-    Format de sortie:
-        CSV UTF-8 standard
-        Environ 135 lignes pour Bordeaux
+    Mapping des indicateurs:
+        - VOLS_SANS_VIOLENCE: Cambriolages, Vols dans/de véhicules
+        - VOLS_AVEC_VIOLENCE: Vols avec armes, Vols violents sans arme
+        - ATTEINTES_AUX_BIENS: Destructions et dégradations
+        - ATTEINTES_AUX_PERSONNES: Violences physiques et sexuelles
+        - CRIMINALITE_TOTALE: Somme de tous les indicateurs
 
     Returns:
-        True si le filtrage et la sauvegarde ont réussi
+        True si la transformation et la sauvegarde ont réussi
         False en cas d'erreur ou si aucune donnée Bordeaux trouvée
-
-    Note:
-        Le fichier d'entrée contient TOUTES les communes de France.
-        Seules les lignes avec CODGEO_2025 = "33063" sont conservées.
     """
     logger.info("\n" + "=" * 80)
     logger.info("TRANSFORMATION DONNÉES SÉCURITÉ")
@@ -79,31 +70,79 @@ def transform_securite() -> bool:
             low_memory=False
         )
         logger.info(f"  Lignes totales: {len(df):,}")
-        logger.info(f"  Colonnes: {list(df.columns[:5])}...")
 
         # Filtrer pour Bordeaux (colonne CODGEO_2025)
         if 'CODGEO_2025' not in df.columns:
             logger.error("  [ERREUR] Colonne CODGEO_2025 introuvable")
-            logger.error(f"  Colonnes disponibles: {list(df.columns)}")
             return False
 
-        # Filtrer pour Bordeaux (colonne CODGEO_2025)
         df_bordeaux: pd.DataFrame = df[
             df['CODGEO_2025'].astype(str).str.strip() == CODE_COMMUNE
         ].copy()
-        logger.info(f"  Lignes Bordeaux: {len(df_bordeaux)}")
+        logger.info(f"  Lignes brutes Bordeaux: {len(df_bordeaux)}")
 
         if df_bordeaux.empty:
             logger.warning("  Aucune donnée pour Bordeaux")
             return False
 
-        # Sauvegarder le fichier filtré
+        # Mapping des indicateurs granulaires vers les catégories
+        MAPPING_INDICATEURS = {
+            # Vols sans violence
+            'Cambriolages de logement': 'VOLS_SANS_VIOLENCE',
+            "Vols d'accessoires sur véhicules": 'VOLS_SANS_VIOLENCE',
+            'Vols dans les véhicules': 'VOLS_SANS_VIOLENCE',
+            'Vols de véhicule': 'VOLS_SANS_VIOLENCE',
+            'Vols sans violence contre des personnes': 'VOLS_SANS_VIOLENCE',
+            # Vols avec violence
+            'Vols avec armes': 'VOLS_AVEC_VIOLENCE',
+            'Vols violents sans arme': 'VOLS_AVEC_VIOLENCE',
+            # Atteintes aux biens
+            'Destructions et dégradations volontaires': 'ATTEINTES_AUX_BIENS',
+            # Atteintes aux personnes
+            'Violences physiques hors cadre familial': 'ATTEINTES_AUX_PERSONNES',
+            'Violences physiques intrafamiliales': 'ATTEINTES_AUX_PERSONNES',
+            'Violences sexuelles': 'ATTEINTES_AUX_PERSONNES',
+        }
+
+        # Mapper les indicateurs vers les catégories
+        df_bordeaux['code_type'] = df_bordeaux['indicateur'].map(MAPPING_INDICATEURS)
+
+        # Filtrer uniquement les indicateurs mappés (ignorer trafic de stupéfiants, etc.)
+        df_mapped = df_bordeaux[df_bordeaux['code_type'].notna()].copy()
+        logger.info(f"  Indicateurs mappés: {len(df_mapped)}")
+
+        # Agréger par (code_type, annee)
+        df_agg = df_mapped.groupby(['code_type', 'annee'], as_index=False).agg({
+            'nombre': 'sum'
+        })
+
+        # Calculer CRIMINALITE_TOTALE = somme de tous les crimes par année
+        df_total = df_agg.groupby('annee', as_index=False).agg({
+            'nombre': 'sum'
+        })
+        df_total['code_type'] = 'CRIMINALITE_TOTALE'
+
+        # Combiner avec les catégories détaillées
+        df_final = pd.concat([df_agg, df_total], ignore_index=True)
+
+        # Renommer et sélectionner colonnes finales
+        df_final = df_final.rename(columns={
+            'nombre': 'valeur_numerique'
+        })
+        df_final['id_territoire'] = CODE_COMMUNE
+
+        # Sélectionner et ordonner colonnes finales
+        df_output = df_final[['id_territoire', 'code_type', 'annee', 'valeur_numerique']].copy()
+        df_output = df_output.sort_values(['annee', 'code_type'])
+
+        # Sauvegarder le fichier transformé
         DATA_PROCESSED_INDICATEURS.mkdir(parents=True, exist_ok=True)
         output_file: Path = DATA_PROCESSED_INDICATEURS / "delinquance_bordeaux.csv"
-        df_bordeaux.to_csv(output_file, index=False, encoding='utf-8')
+        df_output.to_csv(output_file, index=False, encoding='utf-8')
 
         logger.info(f"\n[OK] Fichier sauvegardé: {output_file}")
-        logger.info(f"     {len(df_bordeaux)} lignes (période 2016-2024)")
+        logger.info(f"     {len(df_output)} lignes (5 catégories × {df_output['annee'].nunique()} années)")
+        logger.info(f"     Période: {df_output['annee'].min()}-{df_output['annee'].max()}")
         return True
 
     except Exception as e:

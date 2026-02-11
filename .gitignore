@@ -54,12 +54,13 @@ ipython_config.py
 .DS_Store
 
 # Data files (ne pas versionner les données brutes)
-data/raw/*.csv
-data/raw/*.xlsx
-data/raw/*.json
-data/processed/*.csv
-data/processed/*.db
-data/processed/*.sqlite
+data/raw/**/*.csv
+data/raw/**/*.xlsx
+data/raw/**/*.json
+data/raw/**/*.gz
+data/processed/**/*.csv
+data/processed/**/*.db
+data/processed/**/*.sqlite
 
 # Logs
 logs/*.log
