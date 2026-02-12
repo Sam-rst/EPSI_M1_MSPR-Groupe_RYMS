@@ -58,9 +58,11 @@ data/raw/**/*.csv
 data/raw/**/*.xlsx
 data/raw/**/*.json
 data/raw/**/*.gz
+data/raw/**/*.parquet
 data/processed/**/*.csv
 data/processed/**/*.db
 data/processed/**/*.sqlite
+data/processed/**/*.parquet
 
 # Logs
 logs/*.log

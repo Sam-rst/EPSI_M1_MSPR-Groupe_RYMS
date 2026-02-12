@@ -1,34 +1,34 @@
 # Architecture ETL & Database - Electio-Analytics
 
-**Version :** 3.0 (Schéma Enrichi Multi-Granularités + Architecture Modulaire)
+**Version :** 3.0 (Schema Enrichi Multi-Granularites + Architecture Modulaire)
 
-**Date :** 2026-02-11
+**Date :** 2026-02-12
 
-**Périmètre :** Bordeaux - Présidentielles 2017 & 2022 (1er et 2nd tours) → Prédiction 2027
+**Perimetre :** Bordeaux (Gironde) - Presidentielles 2017 & 2022 (1er et 2nd tours) -> Prediction 2027
 
 **Tech Lead :** @tech + @de + @ds
 
-**Décisions Architecturales :**
+**Decisions Architecturales :**
 - ADR-003 (Architecture ETL Modulaire Option 3)
-- ADR-004 (Enrichissement Schéma Base de Données v3.0)
+- ADR-004 (Enrichissement Schema Base de Donnees v3.0)
 
-**Documents Associés :**
-- [MCD v3.0](./database/01-mcd.md) - Modèle Conceptuel de Données
-- [MLD v3.0](./database/02-mld.md) - Modèle Logique de Données
+**Documents Associes :**
+- [MCD v3.0](./database/01-mcd.md) - Modele Conceptuel de Donnees
+- [MLD v3.0](./database/02-mld.md) - Modele Logique de Donnees
+- [Dictionnaire de Donnees v3.0](./database/03-dictionnaire-donnees.md) - Description exhaustive des colonnes
 
 ---
 
-## 🗄️ Schéma Base de Données v3.0 (Nouveauté)
+## Schema Base de Donnees v3.0
 
 ### Vue d'Ensemble
 
-Le schéma de base de données a été **enrichi et normalisé** (3NF) pour supporter :
-- **Multi-granularités territoriales** (BUREAU, CANTON, COMMUNE, DEPARTEMENT, REGION)
-- **Référentiels candidats et partis** (tracking historique, profil idéologique)
-- **Séparation participation/résultats** (élimination redondances)
-- **Traçabilité granularités** (table `election_territoire`)
-
-**Gain ML estimé :** +15-25% R² score (×3.5 features exploitables)
+Le schema de base de donnees a ete **enrichi et normalise** (3NF) pour supporter :
+- **Multi-granularites territoriales** (BUREAU, CANTON, COMMUNE, DEPARTEMENT, REGION)
+- **Referentiels candidats et partis** (tracking historique, profil ideologique)
+- **Separation participation/resultats** (elimination redondances)
+- **Tracabilite granularites** (table `election_territoire`)
+- **Systeme polymorphe** `(id_territoire, type_territoire)` pour indicateurs et resultats
 
 ### Architecture
 
@@ -37,6 +37,7 @@ erDiagram
     REGION ||--o{ DEPARTEMENT : "contient"
     DEPARTEMENT ||--o{ CANTON : "contient"
     DEPARTEMENT ||--o{ COMMUNE : "contient"
+    COMMUNE ||--o{ ARRONDISSEMENT : "contient"
     COMMUNE ||--o{ BUREAU_VOTE : "contient"
 
     CANDIDAT ||--o{ CANDIDAT_PARTI : "affilie"
@@ -47,142 +48,123 @@ erDiagram
     ELECTION_TERRITOIRE ||--o{ RESULTAT_PARTICIPATION : "valide"
     ELECTION_TERRITOIRE ||--o{ RESULTAT_CANDIDAT : "valide"
     CANDIDAT ||--o{ RESULTAT_CANDIDAT : "obtient"
+
+    TYPE_INDICATEUR ||--o{ INDICATEUR : "categorise"
 ```
 
-### Tables Principales (14)
+### Tables (17)
 
-| Domaine | Tables | Rôle |
+| Domaine | Tables | Role |
 |---------|--------|------|
-| **Géographique** | region, departement, canton, commune, arrondissement, bureau_vote | Hiérarchie multi-niveaux |
-| **Candidats/Partis** | candidat, parti, candidat_parti | Référentiels normalisés |
-| **Élections** | type_election, election, election_territoire | Événements + référentiel granularités |
-| **Résultats** | resultat_participation, resultat_candidat | Séparation stats générales vs candidats |
+| **Geographique** | region, departement, canton, commune, arrondissement, bureau_vote | Hierarchie multi-niveaux |
+| **Candidats/Partis** | candidat, parti, candidat_parti | Referentiels normalises |
+| **Elections** | type_election, election, election_territoire | Evenements + referentiel granularites |
+| **Resultats** | resultat_participation, resultat_candidat | Separation stats generales vs candidats |
+| **Indicateurs** | type_indicateur, indicateur | Pattern EAV polymorphe |
+| **ML** | prediction | Predictions generees |
 
 ### Features ML Exploitables
 
-**Avant (schéma v2.0) :** ~10 features
-```
-['nombre_voix', 'pourcentage_voix', 'criminalite_totale', ...]
-```
+**Avant (schema v2.0) :** ~10 features
+**Apres (schema v3.0) :** ~35 features exploitables
 
-**Après (schéma v3.0) :** ~35 features
-```python
-# Candidat (7)
-['age', 'nb_elections_precedentes', 'score_moyen_historique',
- 'evolution_momentum', 'profession', ...]
-
-# Parti (6)
-['position_economique', 'position_sociale', 'classification_ideologique',
- 'distance_ideologique_gagnant', ...]
-
-# Participation (8)
-['taux_abstention', 'taux_blancs_nuls', 'evolution_vs_N-1',
- 'ecart_vs_national', ...]
-
-# Géographique (5)
-['type_territoire', 'densite_population', 'taille_commune', ...]
-
-# Socio-économique (9)
-['criminalite_totale', 'criminalite_evolution', ...]
-```
-
-**Référence complète :** [MCD v3.0](./database/01-mcd.md)
+**Reference complete :** [MCD v3.0](./database/01-mcd.md)
 
 ---
 
 ## Vue d'Ensemble ETL
 
-Le pipeline ETL (Extract-Transform-Load) centralise les données électorales (1er et 2nd tours des présidentielles 2017 & 2022) et socio-économiques depuis 3 sources externes, en garantissant la **traçabilité**, la **qualité** et la **reproductibilité**.
+Le pipeline ETL (Extract-Transform-Load) centralise les donnees electorales et socio-economiques depuis 3 sources externes (geo.api.gouv.fr, data.gouv.fr API tabulaire, SSMSI).
 
-**Nouvelle architecture :** Le module ETL a été refactorisé selon l'**Architecture Option 3** (séparation par type de fonction) pour une scalabilité et maintenabilité maximales.
+```mermaid
+flowchart LR
+    A[Sources Externes] --> B[Extract]
+    B --> C[Transform]
+    C --> D[Load]
+    D --> E[(PostgreSQL)]
+
+    style A fill:#e1f5ff,stroke:#01579b, color: #020202
+    style B fill:#fff3e0,stroke:#e65100, color: #020202
+    style C fill:#f3e5f5,stroke:#4a148c, color: #020202
+    style D fill:#e8f5e9,stroke:#1b5e20, color: #020202
+    style E fill:#dcedc8,stroke:#33691e, color: #020202
+```
 
 ---
 
-## 🏗️ Architecture Modulaire (Version 2.0)
+## Architecture Modulaire (Option 3)
 
 ### Structure du Module ETL
 
 ```
 src/etl/
-├── extract/                    # Extraction des données brutes
-│   ├── config/                # Configuration centralisée
+├── extract/                    # Extraction des donnees brutes
+│   ├── config/                # Configuration centralisee
 │   │   ├── __init__.py
-│   │   └── settings.py        # URLs, chemins, constantes
-│   ├── core/                  # Logique métier par source
+│   │   └── settings.py        # URLs API, chemins, constantes
+│   ├── core/                  # Logique metier par source
 │   │   ├── __init__.py
-│   │   ├── elections.py       # Téléchargement élections
-│   │   └── securite.py        # Téléchargement sécurité
-│   ├── utils/                 # Utilitaires génériques
+│   │   ├── elections.py       # API tabulaire data.gouv.fr + Parquet
+│   │   ├── geographie.py      # geo.api.gouv.fr (regions, depts, communes)
+│   │   └── securite.py        # SSMSI CSV gzip
+│   ├── utils/                 # Utilitaires generiques
 │   │   ├── __init__.py
-│   │   └── download.py        # download_file()
+│   │   └── download.py        # download_file() avec barre de progression
 │   ├── __init__.py            # Exports publics
 │   └── main.py                # Orchestrateur extraction
 │
-├── transform/                  # Transformation des données
-│   ├── config/                # Configuration centralisée
+├── transform/                  # Transformation des donnees
+│   ├── config/                # Configuration centralisee
 │   │   ├── __init__.py
-│   │   └── settings.py        # Chemins, constantes
-│   ├── core/                  # Logique métier par source
+│   │   └── settings.py        # Chemins, constantes, mappings
+│   ├── core/                  # Logique metier par source
 │   │   ├── __init__.py
-│   │   ├── elections.py       # Transformation élections
-│   │   └── securite.py        # Transformation sécurité
+│   │   ├── elections.py       # JSON participation + Parquet candidats -> CSV
+│   │   ├── geographie.py      # JSON API -> CSV referentiels geo
+│   │   └── securite.py        # CSV SSMSI -> indicateurs Bordeaux
 │   ├── utils/                 # Utilitaires de parsing
 │   │   ├── __init__.py
 │   │   └── parsing.py         # parse_french_number()
 │   ├── __init__.py            # Exports publics
 │   └── main.py                # Orchestrateur transformation
 │
-└── README.md                   # Documentation complète
+├── load/                       # Chargement en base de donnees
+│   ├── config/                # Configuration centralisee
+│   │   ├── __init__.py
+│   │   └── settings.py        # Chemins CSV, configs batch
+│   ├── core/                  # Logique metier par domaine
+│   │   ├── __init__.py
+│   │   ├── geographie.py      # Region, Departement, Commune
+│   │   ├── candidats.py       # TypeElection, Election, Candidat, Parti, CandidatParti
+│   │   ├── elections.py       # ElectionTerritoire, ResultatParticipation, ResultatCandidat
+│   │   ├── indicateurs.py     # Indicateur (batch 1000 rows)
+│   │   └── type_indicateur.py # TypeIndicateur
+│   ├── utils/                 # Validations
+│   │   ├── __init__.py
+│   │   └── validators.py      # Validation CSV (colonnes, types, valeurs)
+│   ├── __init__.py            # Exports publics
+│   └── main.py                # Orchestrateur chargement
+│
+├── __init__.py
+├── main.py                     # Orchestrateur ETL global (E -> T -> L)
+└── README.md                   # Documentation complete
 ```
 
 ### Principes Architecturaux
 
-1. **Séparation des responsabilités (SRP)**
+1. **Separation des responsabilites (SRP)**
    - `config/` : Configuration uniquement (URLs, chemins, constantes)
-   - `core/` : Logique métier spécifique à chaque source de données
-   - `utils/` : Fonctions génériques réutilisables
-   - `main.py` : Orchestration pure sans logique métier
+   - `core/` : Logique metier specifique a chaque source de donnees
+   - `utils/` : Fonctions generiques reutilisables
+   - `main.py` : Orchestration pure sans logique metier
 
-2. **Scalabilité**
-   - Ajout d'une nouvelle source = 1 fichier dans `core/`
-   - Pas de modification des modules existants (Open/Closed Principle)
+2. **Scalabilite** : Ajout d'une nouvelle source = 1 fichier dans `core/`
 
-3. **Testabilité**
-   - Chaque module peut être testé indépendamment
-   - Imports isolés facilitent les mocks et stubs
+3. **Testabilite** : Chaque module peut etre teste independamment
 
-4. **Réutilisabilité**
-   - Utilitaires dans `utils/` réutilisables partout
-   - API publique claire via `__init__.py`
+4. **Reutilisabilite** : Utilitaires dans `utils/` reutilisables partout
 
-5. **Maintenabilité**
-   - Code organisé et documenté
-   - Type hints sur toutes les fonctions
-   - Docstrings au format Google
-
-### Avantages de l'Architecture Option 3
-
-| Aspect | Avant | Après |
-|--------|-------|-------|
-| **Fichiers racine** | 6 fichiers | 1 fichier (main.py) + 3 packages |
-| **Scalabilité** | Moyenne | Excellente |
-| **Testabilité** | Bonne | Parfaite |
-| **Patterns** | Simple | Enterprise-grade |
-| **Lignes de code** | 621 lignes | 1220 lignes (mieux organisées) |
-
-**Référence :** Voir `docs/02-architecture/adr/ADR-003-architecture-modulaire-etl.md`
-
-```mermaid
-flowchart LR
-    A[Sources Externes] --> B[Extraction]
-    B --> C[Transformation]
-    C --> D[Chargement]
-
-    style A fill:#e1f5ff,stroke:#01579b, color: #020202
-    style B fill:#fff3e0,stroke:#e65100, color: #020202
-    style C fill:#f3e5f5,stroke:#4a148c, color: #020202
-    style D fill:#e8f5e9,stroke:#1b5e20, color: #020202
-```
+**Reference :** Voir `docs/02-architecture/adr/ADR-003-architecture-modulaire-etl.md`
 
 ---
 
@@ -191,21 +173,21 @@ flowchart LR
 ```mermaid
 graph LR
     subgraph Sources Externes
-        A[data.gouv.fr<br/>Élections 2017/2022]
-        B[SSMSI<br/>Sécurité 2017-2024]
-        C[INSEE<br/>Emploi IRIS 2017-2024]
+        A[geo.api.gouv.fr<br/>Hierarchie geographique]
+        B[data.gouv.fr<br/>Elections 2017/2022<br/>API tabulaire + Parquet]
+        C[data.gouv.fr<br/>Securite SSMSI]
     end
 
     subgraph ETL Pipeline
-        D[Extract<br/>extract_*.py]
-        E[Transform<br/>transform.py]
-        F[Load<br/>load.py]
+        D[Extract<br/>extract/core/]
+        E[Transform<br/>transform/core/]
+        F[Load<br/>load/core/]
     end
 
     subgraph Stockage
-        G[(PostgreSQL<br/>electio_analytics)]
-        H[/data/raw/<br/>CSV bruts/]
-        I[/data/processed/<br/>CSV nettoyés/]
+        G[(PostgreSQL<br/>17 tables)]
+        H[/data/raw/<br/>JSON + Parquet + CSV/]
+        I[/data/processed/<br/>CSV normalises/]
     end
 
     A --> D
@@ -222,327 +204,123 @@ graph LR
 
 ## Phase 1 : EXTRACT (Extraction)
 
-### Objectif
-Télécharger les datasets bruts depuis les APIs/sites open data et les sauvegarder localement.
+### Sources de Donnees
 
-### Sources de Données
+#### Source 1 : Geographie (geo.api.gouv.fr)
 
-#### Source 1 : Élections Présidentielles (data.gouv.fr)
+**API :** `https://geo.api.gouv.fr`
 
-**Données collectées :** 1er et 2nd tours pour 2017 et 2022 (4 fichiers CSV)
+| Endpoint | Donnees | Fichier de sortie |
+|----------|---------|-------------------|
+| `GET /regions` | Regions de France | `data/raw/geographie/regions.json` |
+| `GET /departements/33` | Departement Gironde | `data/raw/geographie/departement_33.json` |
+| `GET /departements/33/communes` | ~535 communes | `data/raw/geographie/communes_33.json` |
 
-**URL :**
-- 2017 Tour 1 : `https://www.data.gouv.fr/datasets/elections-presidentielle-2017-resultats-bureaux-vote-tour-1`
-- 2017 Tour 2 : `https://www.data.gouv.fr/datasets/5cddfde49ce2e76d93bdb18b`
-- 2022 Tour 1 : `https://www.data.gouv.fr/datasets/election-presidentielle-des-10-et-24-avril-2022-resultats-du-1er-tour`
-- 2022 Tour 2 : `https://www.data.gouv.fr/datasets/election-presidentielle-des-10-et-24-avril-2022-resultats-du-second-tour`
-
-**Format :** CSV
-**Granularité :** Bureau de vote
-**Champs clés :**
-- `Code du département`, `Code de la commune`, `Code du bureau de vote`
-- `Nom`, `Prénom` (candidat)
-- `Voix`, `% Voix/Exp`, `Inscrits`, `Votants`, `Exprimés`
-
-**Filtrage :** Département 33 (Gironde), Commune 33063 (Bordeaux)
-
-**Script :** `src/etl/extract_elections.py`
-
-```python
-def extract_elections(year: int, tour: int, output_path: str) -> pd.DataFrame:
-    """
-    Télécharge les résultats présidentielles depuis data.gouv.fr.
-
-    Args:
-        year: Année élection (2017, 2022)
-        tour: Tour de l'élection (1 ou 2)
-        output_path: Chemin sauvegarde CSV brut
-
-    Returns:
-        DataFrame avec résultats bruts
-
-    Notes:
-        Télécharge les 4 fichiers requis :
-        - 2017 Tour 1, 2017 Tour 2
-        - 2022 Tour 1, 2022 Tour 2
-    """
-    # Télécharger CSV depuis data.gouv.fr
-    # Filtrer département=33, commune=33063
-    # Sauvegarder dans /data/raw/elections_{year}_tour{tour}.csv
-    pass
-```
+**Implementation :** `src/etl/extract/core/geographie.py`
 
 ---
 
-#### Source 2 : Sécurité / Criminalité (SSMSI)
+#### Source 2 : Elections Presidentielles (data.gouv.fr)
 
-**URL :** `https://www.data.gouv.fr/fr/datasets/bases-statistiques-communale-departementale-et-regionale-de-la-delinquance-enregistree-par-la-police-et-la-gendarmerie-nationales/`
+**Donnees collectees :** 1er et 2nd tours pour 2017 et 2022
 
-**Format :** CSV
-**Granularité :** Commune (pas de détail IRIS public)
-**Période :** 2017-2024
-**Champs clés :**
-- `Code.département`, `Code.commune`, `Année`, `Mois` (optionnel)
-- 13 indicateurs : `Cambriolages de logement`, `Vols de véhicules`, `Coups et blessures volontaires`, etc.
+| Type | API / Format | Fichiers |
+|------|-------------|----------|
+| Participation | API tabulaire JSON pagine | `participation_{election_id}.json` x 4 |
+| Candidats | Parquet (~151 MB) | `candidats_agrege.parquet` |
+| Nuances | CSV | `nuances_politiques.csv` |
 
-**Limitation :** Données communales uniquement (agrégation nécessaire pour IRIS)
+**IDs Elections :** `2017_pres_t1`, `2017_pres_t2`, `2022_pres_t1`, `2022_pres_t2`
 
-**Script :** `src/etl/extract_securite.py`
+**Filtrage :** Departement 33 (Gironde) via parametres API `code_departement__exact=33`
 
-```python
-def extract_securite(start_year: int, end_year: int, output_path: str) -> pd.DataFrame:
-    """
-    Télécharge les statistiques SSMSI pour Bordeaux.
-
-    Args:
-        start_year: Année début (2017)
-        end_year: Année fin (2024)
-        output_path: Chemin sauvegarde CSV brut
-
-    Returns:
-        DataFrame avec faits de délinquance
-    """
-    # Télécharger CSV SSMSI
-    # Filtrer commune=33063
-    # Sauvegarder dans /data/raw/securite_2017_2024.csv
-    pass
-```
+**Implementation :** `src/etl/extract/core/elections.py`
 
 ---
 
-#### Source 3 : Emploi / Chômage (INSEE)
+#### Source 3 : Securite / Criminalite (SSMSI)
 
-**URL :**
-- Données IRIS : `https://www.insee.fr/fr/statistiques/zones/2011101` (Dossier complet commune)
-- Demandeurs emploi IRIS : `https://www.insee.fr/fr/statistiques/7654804`
+**URL :** data.gouv.fr (dataset SSMSI bases communales de delinquance)
+**Format :** CSV gzip (~34 MB)
+**Periode :** 2016-2024
+**Filtrage :** Commune 33063 (Bordeaux)
 
-**Format :** CSV, Excel
-**Granularité :** IRIS (Ilots Regroupés pour l'Information Statistique)
-**Champs clés :**
-- `CODE_IRIS`, `NOM_IRIS`, `Année`, `Trimestre`
-- `Taux de chômage`, `Population active`, `Revenus médian`, `Nombre emplois`
-
-**Script :** `src/etl/extract_emploi.py`
-
-```python
-def extract_emploi_iris(commune_code: str, output_path: str) -> pd.DataFrame:
-    """
-    Télécharge les données emploi INSEE au niveau IRIS.
-
-    Args:
-        commune_code: Code commune INSEE (33063)
-        output_path: Chemin sauvegarde CSV brut
-
-    Returns:
-        DataFrame avec indicateurs emploi par IRIS
-    """
-    # Scraper ou utiliser API INSEE
-    # Extraire données IRIS pour Bordeaux
-    # Sauvegarder dans /data/raw/emploi_iris_bordeaux.csv
-    pass
-```
+**Implementation :** `src/etl/extract/core/securite.py`
 
 ---
 
 ### Arborescence de Sortie (Extract)
 
 ```
-/data/raw/elections/
-    ├── presidentielles_2017_tour1_bureaux_vote.csv  (1er tour 2017)
-    ├── presidentielles_2017_tour2_bureaux_vote.csv  (2nd tour 2017)
-    ├── presidentielles_2022_tour1_bureaux_vote.csv  (1er tour 2022)
-    ├── presidentielles_2022_tour2_bureaux_vote.csv  (2nd tour 2022)
-
-/data/raw/securite/
-    └── delinquance_bordeaux_2017_2024.csv
-
-/data/raw/emploi/
-    └── emploi_iris_bordeaux_2017_2024.csv
+data/raw/
+├── geographie/
+│   ├── regions.json                     (~2 KB)
+│   ├── departement_33.json              (~1 KB)
+│   └── communes_33.json                 (~200 KB)
+├── elections/
+│   ├── participation_2017_pres_t1.json  (~paginee)
+│   ├── participation_2017_pres_t2.json
+│   ├── participation_2022_pres_t1.json
+│   ├── participation_2022_pres_t2.json
+│   ├── candidats_agrege.parquet         (~151 MB)
+│   └── nuances_politiques.csv
+└── securite/
+    └── delinquance_france_2016_2024.csv (~34 MB gzip)
 ```
 
 ---
 
 ## Phase 2 : TRANSFORM (Transformation)
 
-### Objectif
-Nettoyer, harmoniser et enrichir les données brutes pour les rendre exploitables.
+### Transformations par Source
 
-### Transformations Clés
+#### T1 : Geographie
 
-#### T1 : Harmonisation Géographique
+- Filtrer region Nouvelle-Aquitaine (code=75)
+- Extraire departement 33 et ses communes
+- Generer CSV normalises pour le chargement
 
-**Problème :** 3 granularités différentes
-- Élections : **Bureau de vote** (Code BV)
-- Sécurité : **Commune** (33063)
-- Emploi : **IRIS** (Code IRIS)
+**Sortie :** `data/processed/geographie/{regions,departements,communes}.csv`
 
-**Solution :** Créer une table de mapping `bureau_vote → IRIS`
+#### T2 : Elections
 
-**Approche :**
-1. Utiliser le fichier de correspondance INSEE : [Table passage Bureau de vote → IRIS](https://www.insee.fr/fr/information/2008354)
-2. Géocoder les adresses de bureaux de vote (lat/long)
-3. Spatial join avec polygones IRIS via PostGIS
+- **Participation :** Lire JSON par election, agreger par commune (sommer bureaux de vote)
+- **Candidats :** Lire Parquet, filtrer dept=33 + presidentielles, agreger par commune
+  - Detection auto ratio vs pourcentage (valeurs <= 1.0 multipliees par 100)
+  - Gestion Arrow/pd.NA (`fillna("")` avant `astype(str)`)
+- **Referentiels :** Extraire candidats uniques et nuances politiques
 
-**Script :** `src/etl/transform_geo_mapping.py`
-
-```python
-def map_bureau_to_iris(elections_df: pd.DataFrame,
-                        mapping_table: pd.DataFrame) -> pd.DataFrame:
-    """
-    Associe chaque bureau de vote à un IRIS.
-
-    Args:
-        elections_df: Résultats électoraux par bureau
-        mapping_table: Table Bureau → IRIS (INSEE)
-
-    Returns:
-        DataFrame avec colonne `id_iris` ajoutée
-    """
-    # Jointure elections_df <> mapping_table sur code_bureau
-    # Ajouter colonne `id_iris`
-    pass
+**Sortie :**
+```
+data/processed/elections/
+├── participation_gironde.csv       (~2 140 lignes)
+├── candidats_gironde.csv           (~14 484 lignes)
+├── referentiel_candidats.csv       (~25 lignes)
+├── referentiel_partis.csv          (~15 lignes)
+└── nuances_politiques.csv
 ```
 
----
+#### T3 : Securite
 
-#### T2 : Normalisation des Données Électorales
+- Filtrer commune 33063 (Bordeaux) depuis fichier SSMSI
+- Mapper categories : CRIMINALITE_TOTALE, VOLS_SANS_VIOLENCE, VOLS_AVEC_VIOLENCE, ATTEINTES_AUX_BIENS, ATTEINTES_AUX_PERSONNES
+- Agreger par annee (2016-2024)
 
-**Transformations :**
-- Uniformiser noms candidats : `"MACRON Emmanuel"` → `"Emmanuel MACRON"`
-- Calculer `taux_participation = (Votants / Inscrits) * 100`
-- Calculer `pourcentage_voix = (Voix / Exprimés) * 100`
-- Gérer valeurs manquantes (bureaux fermés, données incomplètes)
-- Dédoublonner (si CSV mal formatés)
-
-**Script :** `src/etl/transform_elections.py`
-
-```python
-def normalize_elections(raw_df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Nettoie et normalise les résultats électoraux.
-
-    Returns:
-        DataFrame conforme au schéma Election_Result (MCD)
-    """
-    # Renommer colonnes selon MCD
-    # Calculer métriques dérivées (%, taux)
-    # Typer les colonnes (int, float, str)
-    pass
-```
-
----
-
-#### T3 : Normalisation Sécurité
-
-**Transformations :**
-- Pivot des 13 indicateurs (colonnes → lignes) : `type_fait`, `nombre_faits`
-- Calculer `taux_pour_1000_hab = (nombre_faits / population) * 1000`
-- Gérer valeurs nulles (certains types de faits absents)
-- Harmoniser types de faits (uniformiser libellés)
-
-**Script :** `src/etl/transform_securite.py`
-
-```python
-def normalize_securite(raw_df: pd.DataFrame,
-                        population_df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Transforme les données SSMSI au format long (pivot).
-
-    Returns:
-        DataFrame conforme au schéma Indicateur_Securite (MCD)
-    """
-    # Pivot : 13 colonnes indicateurs → 13 lignes par année
-    # Calculer taux pour 1000 habitants
-    pass
-```
-
----
-
-#### T4 : Normalisation Emploi
-
-**Transformations :**
-- Gérer données trimestrielles vs annuelles (agréger ou interpoler)
-- Calculer `taux_chomage = (Chomeurs / Population_active) * 100`
-- Gérer valeurs aberrantes (taux > 100%, négatifs)
-- Harmoniser codes IRIS (supprimer préfixes/suffixes)
-
-**Script :** `src/etl/transform_emploi.py`
-
-```python
-def normalize_emploi(raw_df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Nettoie les indicateurs emploi INSEE.
-
-    Returns:
-        DataFrame conforme au schéma Indicateur_Emploi (MCD)
-    """
-    # Harmoniser codes IRIS
-    # Calculer taux de chômage
-    # Gérer valeurs manquantes (imputation médiane ou suppression)
-    pass
-```
-
----
-
-#### T5 : Enrichissement Temporel
-
-**Objectif :** Créer features pour le ML
-
-**Features dérivées :**
-- `evolution_chomage_1an = taux_chomage(N) - taux_chomage(N-1)`
-- `evolution_criminalite_3ans = AVG(faits_2020-2022) - AVG(faits_2017-2019)`
-- `tendance_participation = participation(2022) - participation(2017)`
-
-**Script :** `src/etl/transform_features.py`
-
-```python
-def create_temporal_features(emploi_df: pd.DataFrame,
-                               securite_df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Crée des features d'évolution temporelle.
-
-    Returns:
-        DataFrame avec colonnes delta_* et tendance_*
-    """
-    # Calculer variations année N vs N-1
-    # Moyennes mobiles sur 3 ans
-    pass
-```
-
----
-
-### Arborescence de Sortie (Transform)
-
-```
-/data/processed/
-    ├── territoire.csv                 (référentiel IRIS + Bureaux)
-    ├── elections_normalized.csv       (résultats harmonisés)
-    ├── securite_normalized.csv        (indicateurs pivotés)
-    ├── emploi_normalized.csv          (taux chômage nettoyés)
-    └── features_ml.csv                (features enrichies pour ML)
-```
+**Sortie :** `data/processed/indicateurs/delinquance_bordeaux.csv` (~45 lignes)
 
 ---
 
 ## Phase 3 : LOAD (Chargement)
 
-### Objectif
-Insérer les données transformées dans PostgreSQL en garantissant l'intégrité référentielle.
-
 ### Ordre de Chargement (Respect des FK)
 
 ```mermaid
 flowchart TD
-    A[1. Territoire<br/>table parent, pas de FK]
-    B[2. Election_Result<br/>FK → Territoire]
-    C[3. Indicateur_Securite<br/>FK → Territoire]
-    D[4. Indicateur_Emploi<br/>FK → Territoire]
-    E[5. Prediction<br/>FK → Territoire, chargé en Phase 4]
-
-    A --> B
-    B --> C
-    C --> D
-    D --> E
+    A[1. Geographie<br/>Region -> Departement -> Commune] --> B
+    B[2. TypeIndicateur<br/>5 categories securite] --> C
+    C[3. Candidats & Partis<br/>TypeElection, Election, Candidat, Parti, CandidatParti] --> D
+    D[4. Resultats Electoraux<br/>ElectionTerritoire, ResultatParticipation, ResultatCandidat] --> E
+    E[5. Indicateurs<br/>Securite Bordeaux 2016-2024]
 
     style A fill:#e1f5ff,stroke:#01579b, color: #020202
     style B fill:#fff3e0,stroke:#e65100, color: #020202
@@ -551,160 +329,55 @@ flowchart TD
     style E fill:#e8f5e9,stroke:#1b5e20, color: #020202
 ```
 
-### Scripts de Chargement
+### Patterns de Chargement
 
-**Script principal :** `src/etl/load.py`
-
-```python
-import pandas as pd
-import sqlalchemy as sa
-
-def load_to_postgres(df: pd.DataFrame,
-                      table_name: str,
-                      engine: sa.Engine,
-                      if_exists: str = 'append') -> int:
-    """
-    Charge un DataFrame dans PostgreSQL.
-
-    Args:
-        df: DataFrame à charger
-        table_name: Nom de la table cible
-        engine: SQLAlchemy engine
-        if_exists: 'append', 'replace', 'fail'
-
-    Returns:
-        Nombre de lignes insérées
-    """
-    df.to_sql(table_name, engine, if_exists=if_exists, index=False)
-    return len(df)
-
-def run_etl_pipeline():
-    """Exécute le pipeline ETL complet."""
-
-    # 1. Connexion PostgreSQL
-    engine = sa.create_engine('postgresql://admin:password@localhost:5432/electio_analytics')
-
-    # 2. Chargement Territoire
-    territoire_df = pd.read_csv('/data/processed/territoire.csv')
-    load_to_postgres(territoire_df, 'territoire', engine, if_exists='replace')
-
-    # 3. Chargement Election_Result
-    elections_df = pd.read_csv('/data/processed/elections_normalized.csv')
-    load_to_postgres(elections_df, 'election_result', engine)
-
-    # 4. Chargement Indicateur_Securite
-    securite_df = pd.read_csv('/data/processed/securite_normalized.csv')
-    load_to_postgres(securite_df, 'indicateur_securite', engine)
-
-    # 5. Chargement Indicateur_Emploi
-    emploi_df = pd.read_csv('/data/processed/emploi_normalized.csv')
-    load_to_postgres(emploi_df, 'indicateur_emploi', engine)
-
-    print("✅ ETL Pipeline terminé avec succès")
-```
+| Pattern | Description | Utilise dans |
+|---------|-------------|--------------|
+| **Check-before-insert** | Verifie existence avant creation | Tous les loaders |
+| **Batch loading** | Insert par lots de 1000 lignes | `indicateurs.py`, `elections.py` |
+| **Cache pre-load** | Charge les references en memoire avant la boucle | `candidats.py`, `elections.py` |
+| **Transaction safety** | `try/except IntegrityError` avec `session.rollback()` | Tous les loaders |
+| **Validation CSV** | Verifie colonnes, types et valeurs avant insert | `validators.py` |
 
 ---
 
-### Validation Post-Chargement
+## Execution du Pipeline
 
-**Script :** `src/etl/validate_data.py`
+### Commande Unique (Recommande)
 
-```python
-def validate_referential_integrity(engine: sa.Engine) -> bool:
-    """
-    Vérifie que toutes les FK sont valides.
-
-    Returns:
-        True si intégrité OK, False sinon
-    """
-    # Test 1 : Tous les id_territoire de Election_Result existent dans Territoire
-    query = """
-        SELECT COUNT(*)
-        FROM election_result er
-        LEFT JOIN territoire t ON er.id_territoire = t.id_territoire
-        WHERE t.id_territoire IS NULL
-    """
-    result = pd.read_sql(query, engine)
-    orphans = result.iloc[0, 0]
-
-    if orphans > 0:
-        print(f"❌ {orphans} résultats électoraux sans territoire associé")
-        return False
-
-    # Test 2 : Pas de doublons
-    # Test 3 : Pas de valeurs nulles sur colonnes NOT NULL
-    # ...
-
-    print("✅ Intégrité référentielle validée")
-    return True
+```bash
+# Pipeline complet : Extract -> Transform -> Load
+python -m src.etl.main
 ```
 
----
+### Etapes Individuelles
 
-## Gestion des Erreurs & Traçabilité
+```bash
+# Extraction seule
+python -m src.etl.extract.main
 
-### Logs ETL
+# Transformation seule
+python -m src.etl.transform.main
 
-**Structure :** Chaque étape du pipeline génère un log JSON
-
-```json
-{
-  "timestamp": "2026-02-09T14:32:10Z",
-  "step": "extract_elections",
-  "status": "success",
-  "rows_extracted": 12450,
-  "source_url": "https://data.gouv.fr/...",
-  "output_file": "/data/raw/elections_2022_tour2.csv",
-  "execution_time_seconds": 3.2
-}
+# Chargement seul (necessite PostgreSQL + donnees transformees)
+python -m src.etl.load.main
 ```
 
-**Script :** `src/etl/logger.py`
+### Pre-requis
 
-```python
-import json
-from datetime import datetime
+```bash
+# 1. PostgreSQL operationnel via Docker
+docker compose up -d
 
-def log_etl_step(step: str, status: str, metadata: dict):
-    """Enregistre les métadonnées d'une étape ETL."""
-    log_entry = {
-        "timestamp": datetime.utcnow().isoformat() + "Z",
-        "step": step,
-        "status": status,
-        **metadata
-    }
+# 2. Variables d'environnement (.env)
+POSTGRES_HOST=localhost
+POSTGRES_PORT=5432
+POSTGRES_DB=electio_analytics
+POSTGRES_USER=admin
+POSTGRES_PASSWORD=secure_password
 
-    with open('/logs/etl_pipeline.jsonl', 'a') as f:
-        f.write(json.dumps(log_entry) + '\n')
-```
-
----
-
-### Gestion des Erreurs
-
-**Stratégie :** Rollback transactionnel en cas d'échec
-
-```python
-def run_etl_with_rollback():
-    engine = sa.create_engine('postgresql://...')
-
-    with engine.begin() as conn:  # Transaction automatique
-        try:
-            # Étape 1 : Extract
-            extract_elections(2017, '/data/raw/elections_2017.csv')
-
-            # Étape 2 : Transform
-            transform_elections('/data/raw/elections_2017.csv')
-
-            # Étape 3 : Load
-            load_to_postgres(elections_df, 'election_result', conn)
-
-            # Si tout réussit → COMMIT automatique
-
-        except Exception as e:
-            # Si erreur → ROLLBACK automatique
-            log_etl_step('run_etl', 'failed', {'error': str(e)})
-            raise
+# 3. Installer les dependances
+pip install -e .
 ```
 
 ---
@@ -714,205 +387,125 @@ def run_etl_with_rollback():
 ```mermaid
 sequenceDiagram
     participant User
-    participant Extract as Extract Scripts
-    participant Raw as /data/raw/
-    participant Transform as Transform Scripts
-    participant Processed as /data/processed/
-    participant Load as Load Script
-    participant DB as PostgreSQL
+    participant ETL as src/etl/main.py
+    participant Extract as extract/
+    participant Raw as data/raw/
+    participant Transform as transform/
+    participant Processed as data/processed/
+    participant Load as load/
+    participant DB as PostgreSQL (17 tables)
 
-    User->>Extract: python src/etl/extract_all.py
-    Extract->>Raw: Télécharge CSVs (Élections, Sécurité, Emploi)
-    Raw-->>Transform: Lit CSVs bruts
-    Transform->>Transform: Nettoyage + Harmonisation
-    Transform->>Processed: Sauvegarde CSVs normalisés
-    Processed-->>Load: Lit CSVs processés
-    Load->>DB: INSERT INTO territoire, election_result, ...
-    DB-->>Load: Validation intégrité FK
-    Load-->>User: ✅ ETL terminé (26k lignes chargées)
+    User->>ETL: python -m src.etl.main
+    ETL->>Extract: run_extract()
+    Extract->>Raw: geo.api.gouv.fr -> JSON
+    Extract->>Raw: data.gouv.fr -> JSON + Parquet
+    Extract->>Raw: SSMSI -> CSV gzip
+    ETL->>Transform: run_transform()
+    Transform->>Processed: Geographie CSV
+    Transform->>Processed: Elections CSV (participation + candidats)
+    Transform->>Processed: Indicateurs CSV
+    ETL->>Load: run_load()
+    Load->>DB: 1. Region, Departement, Commune
+    Load->>DB: 2. TypeIndicateur
+    Load->>DB: 3. Candidat, Parti, Election
+    Load->>DB: 4. ElectionTerritoire, Resultats
+    Load->>DB: 5. Indicateurs
+    ETL->>ETL: validate_results()
+    ETL-->>User: 17,262 lignes chargees
 ```
 
 ---
 
-## Architecture Modulaire
+## Gestion des Erreurs
 
-### Structure des Modules
+### Securite
 
+- **SQL injection** : Requetes parametrees avec `text()` + validation whitelist
+- **Mot de passe** : Variable d'environnement `POSTGRES_PASSWORD`
+- **Singleton engine** : Pattern `_engine` / `_SessionFactory` pour eviter les fuites de connexion
+
+### Transactions
+
+```python
+try:
+    session.add(entity)
+    session.commit()
+except IntegrityError:
+    session.rollback()
+    raise
 ```
-src/etl/
-    ├── __init__.py
-    ├── extract/
-    │   ├── extract_elections.py      (Télécharge résultats électoraux)
-    │   ├── extract_securite.py       (Télécharge données SSMSI)
-    │   ├── extract_emploi.py         (Télécharge données INSEE)
-    │   └── extract_all.py            (Orchestrateur : lance tous les extracts)
-    │
-    ├── transform/
-    │   ├── transform_elections.py    (Normalise élections)
-    │   ├── transform_securite.py     (Normalise sécurité)
-    │   ├── transform_emploi.py       (Normalise emploi)
-    │   ├── transform_geo_mapping.py  (Mapping Bureau → IRIS)
-    │   ├── transform_features.py     (Features ML)
-    │   └── transform_all.py          (Orchestrateur transforms)
-    │
-    ├── load/
-    │   ├── load.py                   (Chargement PostgreSQL)
-    │   └── validate_data.py          (Tests intégrité post-load)
-    │
-    ├── utils/
-    │   ├── logger.py                 (Logs ETL)
-    │   ├── db_connection.py          (SQLAlchemy engine)
-    │   └── config.py                 (Variables d'environnement)
-    │
-    └── main.py                       (Point d'entrée : lance pipeline complet)
-```
+
+### Codes de Sortie
+
+| Code | Signification |
+|------|---------------|
+| 0 | Succes complet |
+| 1 | Echec partiel ou total |
+| 130 | Interruption utilisateur (Ctrl+C) |
 
 ---
 
-## Configuration (Variables d'Environnement)
+## Metriques & Volumetrie
 
-**Fichier :** `.env` (non versionné)
+### Resultats Pipeline (POC Bordeaux)
 
-```bash
-# PostgreSQL
-POSTGRES_HOST=localhost
-POSTGRES_PORT=5432
-POSTGRES_DB=electio_analytics
-POSTGRES_USER=admin
-POSTGRES_PASSWORD=secure_password
+| Table | Lignes |
+|-------|--------|
+| region | 1 |
+| departement | 1 |
+| commune | ~535 |
+| type_election | 1 |
+| election | 2 |
+| candidat | ~25 |
+| parti | ~15 |
+| candidat_parti | ~25 |
+| election_territoire | ~2 140 |
+| resultat_participation | ~2 140 |
+| resultat_candidat | ~14 484 |
+| type_indicateur | 5 |
+| indicateur | ~45 |
+| **TOTAL** | **~17 262** |
 
-# Chemins
-DATA_RAW_PATH=/data/raw
-DATA_PROCESSED_PATH=/data/processed
-LOGS_PATH=/logs
+### Performance
 
-# URLs Data.gouv.fr
-ELECTIONS_2017_URL=https://www.data.gouv.fr/fr/datasets/r/...
-ELECTIONS_2022_URL=https://www.data.gouv.fr/fr/datasets/r/...
-SECURITE_URL=https://www.data.gouv.fr/fr/datasets/r/...
-EMPLOI_INSEE_URL=https://www.insee.fr/...
-
-# Filtres
-DEPARTEMENT_CODE=33
-COMMUNE_CODE=33063
-COMMUNE_NAME=Bordeaux
-```
-
----
-
-## Exécution du Pipeline
-
-### Commande Unique (Orchestration)
-
-```bash
-# Lancer le pipeline complet (Extract → Transform → Load)
-python src/etl/main.py --full
-
-# Lancer uniquement Extract
-python src/etl/main.py --extract
-
-# Lancer uniquement Transform
-python src/etl/main.py --transform
-
-# Lancer uniquement Load
-python src/etl/main.py --load
-```
-
-### Docker Compose (Environnement complet)
-
-**Fichier :** `docker-compose.yml`
-
-```yaml
-version: '3.8'
-
-services:
-  postgres:
-    image: postgis/postgis:15-3.3
-    environment:
-      POSTGRES_DB: electio_analytics
-      POSTGRES_USER: admin
-      POSTGRES_PASSWORD: secure_password
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ./docs/MCD.sql:/docker-entrypoint-initdb.d/01_schema.sql
-
-  etl:
-    build: .
-    depends_on:
-      - postgres
-    environment:
-      POSTGRES_HOST: postgres
-    volumes:
-      - ./data:/data
-      - ./logs:/logs
-    command: python src/etl/main.py --full
-
-volumes:
-  postgres_data:
-```
-
-**Lancement :**
-```bash
-docker-compose up -d postgres    # Démarre PostgreSQL
-docker-compose up etl            # Lance le pipeline ETL
-```
+| Etape | Volumetrie |
+|-------|------------|
+| Extract Geographie | 3 fichiers JSON (~200 KB) |
+| Extract Elections | 4 JSON + 1 Parquet (~151 MB) |
+| Extract Securite | 1 CSV gzip (~34 MB) |
+| Transform | 8 CSV produits |
+| Load | 17,262 lignes inserees |
 
 ---
 
-## Métriques & Monitoring
+## Evolutions Futures (Hors POC)
 
-### Métriques de Performance
-
-| Étape | Temps cible | Volumétrie |
-|-------|-------------|------------|
-| **Extract Elections** | <10s | 12k lignes (4 fichiers CSV) |
-| **Extract Sécurité** | <5s | 1k lignes |
-| **Extract Emploi** | <15s | 400 lignes (50 IRIS × 8 ans) |
-| **Transform All** | <20s | Normalisation + Mapping géo |
-| **Load All** | <30s | 26k insertions PostgreSQL |
-| **Total Pipeline** | **<80s** | |
-
-### Dashboard Monitoring (Optionnel - Phase future)
-
-- Grafana + Prometheus pour tracer les exécutions ETL
-- Alertes si échecs (Slack/Email)
-
----
-
-## Évolutions Futures (Hors POC)
-
-1. **Automatisation :** Scheduler (Airflow, Prefect) pour refresh automatique données
-2. **Incrémental ETL :** Ne recharger que les nouvelles données (delta)
+1. **Automatisation :** Scheduler (Airflow, Prefect) pour refresh automatique donnees
+2. **Incremental ETL :** Ne recharger que les nouvelles donnees (delta)
 3. **Data Quality Tests :** Great Expectations pour validation automatique
-4. **Streaming :** Kafka pour ingestion temps réel (sondages)
-5. **Data Lineage :** Apache Atlas pour tracer l'origine de chaque donnée
+4. **Nouvelles sources :** Emploi INSEE, demographie, revenus
+5. **Granularite bureau de vote :** Chargement des resultats par bureau (actuellement agrege par commune)
 
 ---
 
 ## Checklist de Validation
 
-- [ ] Toutes les tables PostgreSQL créées (5 tables)
-- [ ] Intégrité référentielle validée (aucune FK orpheline)
-- [ ] Volumétrie conforme (~26k lignes)
-- [ ] Logs ETL générés (1 fichier JSONL)
-- [ ] Pas de valeurs nulles sur colonnes NOT NULL
-- [ ] Pas de doublons (contraintes UNIQUE respectées)
-- [ ] Codes géographiques cohérents (INSEE, IRIS, Bureaux)
-- [ ] Pipeline reproductible (exécution depuis zéro réussie)
+- [x] 17 tables PostgreSQL creees (schema v3.0)
+- [x] Integrite referentielle validee (FK respectees)
+- [x] Volumetrie : ~17,262 lignes chargees
+- [x] Pas de valeurs nulles sur colonnes NOT NULL
+- [x] Contraintes UNIQUE respectees (pas de doublons)
+- [x] Pipeline reproductible (execution depuis zero)
+- [x] Securite : requetes parametrees, pas de SQL injection
+- [x] Transactions : rollback sur IntegrityError
+- [ ] Tests unitaires (Phase 6)
 
 ---
 
-## Références Techniques
+## References Techniques
 
 - [Pandas Documentation](https://pandas.pydata.org/docs/)
 - [SQLAlchemy ORM](https://docs.sqlalchemy.org/)
 - [Data.gouv.fr API](https://doc.data.gouv.fr/)
-- [INSEE Web Services](https://api.insee.fr/)
-- [PostGIS Spatial Queries](https://postgis.net/docs/)
-
----
-
-**Statut :** ✅ Documentation complétée
-**Prochaine étape :** Phase 3 - `@de` implémente les scripts ETL (`extract_*.py`, `transform_*.py`, `load.py`)
+- [Geo API Gouv](https://geo.api.gouv.fr/)
+- [API Tabulaire data.gouv.fr](https://tabular-api.data.gouv.fr/)

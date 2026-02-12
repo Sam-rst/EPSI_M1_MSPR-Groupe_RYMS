@@ -1,11 +1,10 @@
 # ROADMAP - Electio-Analytics POC
 
-## Périmètre Validé
+## Perimetre Valide
 
-**Zone géographique :** Bordeaux - Arrondissement Centre
-**Type d'élection :** Présidentielles 2017 & 2022 (1er et 2nd tours) → Prédiction 2027
-**Électeurs :** ~60-80k
-**Indicateurs socio-éco :** Sécurité (SSMSI) + Emploi (INSEE/IRIS)
+**Zone geographique :** Bordeaux - Gironde (33)
+**Type d'election :** Presidentielles 2017 & 2022 (1er et 2nd tours) -> Prediction 2027
+**Indicateurs socio-eco :** Securite (SSMSI)
 
 ---
 
@@ -13,427 +12,241 @@
 
 | Contrainte | Valeur |
 |------------|--------|
-| **Durée totale** | 25h |
-| **Périmètre géographique** | 1 zone unique (Arrondissement) |
-| **Stack technique** | Python, Pandas, Scikit-Learn, SQL/NoSQL, Matplotlib/PowerBI |
-| **Conformité** | RGPD strict |
-| **Livrabilité** | Code documenté + Rapport + ADRs |
+| **Duree totale** | 25h |
+| **Perimetre geographique** | Gironde (535 communes) |
+| **Stack technique** | Python, Pandas, Scikit-Learn, SQL, Matplotlib/PowerBI |
+| **Conformite** | RGPD strict |
+| **Livrabilite** | Code documente + Rapport + ADRs |
 
 ---
 
-## Phase 1 : Cadrage & Stratégie ✅ TERMINÉE
+## Phase 1 : Cadrage & Strategie - TERMINEE
 
-**Durée :** 1h
+**Duree :** 1h
 **Agent :** `@pm`
 
 ### Livrables
-- ✅ Choix du périmètre géographique (Bordeaux Arrondissement Centre)
-- ✅ Validation sources de données (SSMSI, INSEE, Ministère Intérieur)
-- ✅ ROADMAP.md
+- Choix du perimetre geographique (Bordeaux / Gironde)
+- Validation sources de donnees (SSMSI, Ministere Interieur)
+- ROADMAP.md
 
 ---
 
-## Phase 2 : Architecture & Modélisation ✅ TERMINÉE (5h/5h complétées - 100%)
+## Phase 2 : Architecture & Modelisation - TERMINEE (5h/5h - 100%)
 
 **Agent :** `@tech`
 
-### Objectifs
-- Définir l'architecture technique du POC
-- Concevoir le Modèle Conceptuel de Données (MCD)
-- Documenter les choix techniques (ADRs)
+### Livrables
 
-### Livrables Principaux
-| Livrable | Fichier | Statut | Description |
-|----------|---------|--------|-------------|
-| **MCD** | `docs/MCD.md` | ✅ FAIT | Schéma entités-relations (5 entités: Territoire, Election_Result, Indicateur_Securite, Indicateur_Emploi, Prediction) |
-| **ADR-001** | `docs/adr/ADR-001-choix-bdd.md` | ✅ FAIT | Choix SQL (PostgreSQL) vs NoSQL justifié |
-| **Architecture ETL** | `docs/ARCHITECTURE.md` | ✅ FAIT | Pipeline ETL complet (Extract → Transform → Load), diagrammes Mermaid, modules |
-| **ADR-002** | `docs/adr/ADR-002-choix-algo-ml.md` | ✅ FAIT | Random Forest retenu (vs Régression Linéaire baseline, XGBoost fallback) |
-
-### Livrables Complémentaires Créés
-| Livrable | Fichier | Statut | Description |
-|----------|---------|--------|-------------|
-| **Sources de données** | `docs/SOURCES_DONNEES.md` | ✅ FAIT | URLs et métadonnées des 4 fichiers élections (2017/2022 T1/T2) + Sécurité + Emploi |
-| **Script téléchargement** | `src/etl/extract/download_elections.py` | ✅ FAIT | Script Python automatisé pour télécharger les 4 CSV électoraux via API data.gouv.fr |
-| **README Extract** | `src/etl/extract/README.md` | ✅ FAIT | Documentation d'usage des scripts d'extraction |
-| **Requirements** | `requirements.txt` | ✅ FAIT | Dépendances Python (Pandas, SQLAlchemy, Scikit-Learn, Random Forest, XGBoost) |
-| **Docs corrigées** | CLAUDE.md, ROADMAP.md, MCD.md, ARCHITECTURE.md | ✅ FAIT | Précision "1er et 2nd tours" intégrée partout |
-
-**Total Phase 2 :** 8 livrables (4 principaux + 5 complémentaires)
-
-### Tâches
-1. ✅ Identifier les entités principales (Bureaux de vote, IRIS, Indicateurs, Résultats)
-2. ✅ Définir les relations et cardinalités
-3. ✅ Choisir le SGBD (PostgreSQL retenu avec PostGIS)
-4. ✅ Documenter l'architecture ETL (Sources → Staging → Warehouse → ML)
-5. ✅ Créer les scripts de téléchargement automatisé
-6. ✅ Documenter les sources de données (4 fichiers élections obligatoires)
-7. ✅ Choisir l'algorithme ML (Random Forest + Régression Linéaire baseline)
+| Livrable | Fichier | Statut |
+|----------|---------|--------|
+| **MCD v3.0** | `docs/02-architecture/database/01-mcd.md` | FAIT |
+| **MLD v3.0** | `docs/02-architecture/database/02-mld.md` | FAIT |
+| **Dictionnaire de Donnees v3.0** | `docs/02-architecture/database/03-dictionnaire-donnees.md` | FAIT |
+| **ADR-001** | `docs/02-architecture/adr/ADR-001-choix-bdd.md` | FAIT |
+| **ADR-002** | `docs/02-architecture/adr/ADR-002-choix-algo-ml.md` | FAIT |
+| **ADR-003** | `docs/02-architecture/adr/ADR-003-architecture-modulaire-etl.md` | FAIT |
+| **ADR-004** | `docs/02-architecture/adr/ADR-004-enrichissement-schema-v3.md` | FAIT |
+| **Architecture ETL** | `docs/02-architecture/ARCHITECTURE.md` | FAIT |
+| **Sources de donnees** | `docs/SOURCES_DONNEES.md` | FAIT |
 
 ---
 
-## Phase 3 : Data Engineering ✅ TERMINÉE (10h/8h) - 125% complété
+## Phase 3 : Data Engineering - TERMINEE (12h/8h - 150%)
 
 **Agent :** `@de` + `@rv` (Code Review)
-**Durée réelle :** 10h (incluant implémentation Load + corrections encodage + review)
+**Duree reelle :** 12h (incluant ETL v3.0 complet + corrections review + documentation)
 
-### Objectifs
-- ✅ Collecter les données brutes via API data.gouv.fr (élections + sécurité)
-- ✅ Nettoyer et transformer les données
-- ✅ Refactoriser en architecture modulaire enterprise-grade
-- ✅ **Charger dans la base de données PostgreSQL** (complété 2026-02-11)
-- ✅ **Corriger problèmes d'encodage UTF-8** (complété 2026-02-11)
-- ✅ **Code review complète et documentation** (complété 2026-02-11)
+### Objectifs atteints
+- Collecte donnees via APIs (geo.api.gouv.fr + data.gouv.fr tabulaire + Parquet + SSMSI)
+- Nettoyage et transformation des donnees
+- Architecture modulaire enterprise-grade (Extract/Transform/Load)
+- Chargement dans PostgreSQL schema v3.0 (17 tables)
+- Code review complete avec corrections
 
-### 🏗️ Architecture Option 3 Implémentée
-**Décision @tech + @de :** Refactorisation complète du module ETL en architecture modulaire pour scalabilité maximale.
+### Architecture ETL v3.0 Implementee
 
-**Structure finale :**
 ```
 src/etl/
-├── extract/                 # Extraction (128 MB données brutes)
-│   ├── config/             # Configuration centralisée
-│   ├── core/               # Logique métier (elections, securite)
-│   ├── utils/              # Utilitaires génériques (download_file)
-│   └── main.py             # Orchestrateur
-├── transform/               # Transformation (4 lignes + 135 lignes)
-│   ├── config/             # Configuration centralisée
-│   ├── core/               # Logique métier (elections, securite)
-│   ├── utils/              # Utilitaires parsing (parse_french_number)
-│   └── main.py             # Orchestrateur
-└── README.md                # Documentation complète
+├── extract/                 # 3 sources (geographie, elections, securite)
+│   ├── config/             # URLs API, chemins
+│   ├── core/               # geographie.py, elections.py, securite.py
+│   ├── utils/              # download_file()
+│   └── main.py
+├── transform/               # JSON/Parquet/CSV -> CSV normalises
+│   ├── config/             # Chemins, mappings
+│   ├── core/               # geographie.py, elections.py, securite.py
+│   ├── utils/              # parse_french_number()
+│   └── main.py
+├── load/                    # CSV -> PostgreSQL (17 tables)
+│   ├── config/             # Configs batch
+│   ├── core/               # geographie.py, candidats.py, elections.py, indicateurs.py, type_indicateur.py
+│   ├── utils/              # validators.py
+│   └── main.py
+└── main.py                  # Orchestrateur global
 ```
 
 ### Livrables
-| Livrable | Fichier | Statut | Description |
-|----------|---------|--------|-------------|
-| **Module Extract** | `src/etl/extract/` | ✅ FAIT | Architecture Option 3 (config/, core/, utils/, main.py) |
-| **Module Transform** | `src/etl/transform/` | ✅ FAIT (MAJ 2026-02-11) | Architecture Option 3 + encodage UTF-8/latin-1 + parsing candidats détaillé |
-| **Module Load** | `src/etl/load/` | ✅ FAIT (2026-02-11) | Architecture modulaire complète (9 fichiers, batch loading, validation) |
-| **Orchestrateur ETL** | `src/etl/main.py` | ✅ FAIT (2026-02-11) | Pipeline complet Extract → Transform → Load avec validation |
-| **Extract Elections** | `src/etl/extract/core/elections.py` | ✅ FAIT | Téléchargement 4 fichiers (94 MB) |
-| **Extract Sécurité** | `src/etl/extract/core/securite.py` | ✅ FAIT | Téléchargement SSMSI (34 MB gzip) |
-| **Transform Elections** | `src/etl/transform/core/elections.py` | ✅ FAIT (MAJ 2026-02-11) | Parsing détaillé candidats (27 lignes), encodage auto-détecté |
-| **Transform Sécurité** | `src/etl/transform/core/securite.py` | ✅ FAIT (MAJ 2026-02-11) | Mapping catégories + agrégation (45 lignes : 5 catégories × 9 ans) |
-| **Load Elections** | `src/etl/load/core/elections.py` | ✅ FAIT (2026-02-11) | Chargement 27 résultats électoraux avec gestion doublons |
-| **Load Indicateurs** | `src/etl/load/core/indicateurs.py` | ✅ FAIT (2026-02-11) | Chargement 45 indicateurs sécurité (batch 1000 rows) |
-| **Migration Alembic** | `src/database/migrations/.../nullable_election_columns.py` | ✅ FAIT (2026-02-11) | Colonnes nullable pour flexibilité données |
-| **Documentation ETL** | `src/etl/README.md` | ✅ FAIT | Guide complet (usage, API, exemples) |
-| **Code Review** | `docs/03-code-review/reviews/2026-02-11-etl-pipeline-load.md` | ✅ FAIT (2026-02-11) | Revue détaillée (Note: 7.5/10), recommandations critiques |
 
-### ⚠️ CHANGEMENT VALIDÉ : Sources de données finales
-**Décision @pm :** Utiliser uniquement les sources disponibles via API (approche pragmatique POC)
+| Livrable | Fichier | Statut |
+|----------|---------|--------|
+| **Module Extract** | `src/etl/extract/` | FAIT |
+| **Module Transform** | `src/etl/transform/` | FAIT |
+| **Module Load** | `src/etl/load/` | FAIT |
+| **Orchestrateur ETL** | `src/etl/main.py` | FAIT |
+| **Modeles SQLAlchemy** | `src/database/models/` | FAIT (17 modeles) |
+| **Docker + Migrations** | `docker-compose.yml` + Alembic | FAIT |
+| **Documentation ETL** | `src/etl/README.md` | FAIT |
 
-| Source | Statut | Justification |
-|--------|--------|---------------|
-| **Élections 2017 & 2022** | ✅ Téléchargé (4 fichiers, 69 MB) | Source principale, données officielles MI |
-| **Sécurité SSMSI** | ✅ Téléchargé (135 lignes Bordeaux) | Indicateur criminalité/sécurité |
-| **Emploi INSEE** | ❌ Abandonné | API indisponible, remplacé par indicateurs dérivés |
+### Sources de Donnees Finales
 
-**Indicateurs socio-économiques retenus :**
-1. **Criminalité** : Taux de délinquance par habitant (SSMSI)
-2. **Démographie** : Population inscrite électorale (proxy population active)
-3. **Engagement civique** : Taux de participation électorale
-4. **Évolution démographique** : Comparaison 2017 → 2022
+| Source | Statut | Volume |
+|--------|--------|--------|
+| **Geographie** (geo.api.gouv.fr) | Telecharge | 3 JSON (~200 KB) |
+| **Elections 2017 & 2022** (data.gouv.fr) | Telecharge | 4 JSON + 1 Parquet (~151 MB) |
+| **Securite SSMSI** (data.gouv.fr) | Telecharge | 1 CSV gzip (~34 MB) |
+| **Emploi INSEE** | Abandonne | API indisponible |
 
-### Tâches
-1. ✅ Télécharger datasets via API (élections + sécurité) - 128 MB
-2. ✅ Filtrer données pour Bordeaux uniquement (33063)
-3. ✅ Harmoniser les granularités géographiques (bureau → commune)
-4. ✅ Calculer indicateurs dérivés (taux participation: 71-78%)
-5. ✅ Refactoriser en architecture modulaire (config/, core/, utils/)
-6. ✅ Documenter le module ETL complet (README.md)
-7. ✅ **Implémenter module Load complet (2026-02-11)**
-8. ✅ **Corriger encodage UTF-8 et re-télécharger fichiers corrompus (2026-02-11)**
-9. ✅ **Refactoriser Transform pour parsing détaillé candidats (2026-02-11)**
-10. ✅ **Créer orchestrateur ETL end-to-end (2026-02-11)**
-11. ✅ **Charger 72 lignes en PostgreSQL (27 élections + 45 indicateurs) (2026-02-11)**
-12. ✅ **Code review et documentation qualité (2026-02-11)**
+### Donnees Chargees en PostgreSQL
 
-### 🎯 Réalisations du 2026-02-11 (Session complète)
+| Table | Lignes |
+|-------|--------|
+| region | 1 |
+| departement | 1 |
+| commune | ~535 |
+| type_election | 1 |
+| election | 2 |
+| candidat | ~25 |
+| parti | ~15 |
+| candidat_parti | ~25 |
+| election_territoire | ~2 140 |
+| resultat_participation | ~2 140 |
+| resultat_candidat | ~14 484 |
+| type_indicateur | 5 |
+| indicateur | ~45 |
+| **TOTAL** | **~17 262** |
 
-**Durée :** ~6h de travail intensif
-**Agents :** @de (Data Engineer) + @rv (Code Reviewer) + @tech (Architecture)
+### Code Review (2026-02-12)
 
-#### Modules Créés (2000+ lignes)
-1. **src/etl/load/** - Module Load complet
-   - `core/elections.py` : Chargement résultats électoraux (172 lignes)
-   - `core/indicateurs.py` : Chargement indicateurs (218 lignes)
-   - `core/territoire.py` : Chargement territoire (118 lignes)
-   - `core/type_indicateur.py` : Chargement types (111 lignes)
-   - `config/settings.py` : Configuration (110 lignes)
-   - `utils/validators.py` : Validations CSV (326 lignes)
+**Review 1** (@rv) : Score 6.5/10 - 15 CRITICAL, 35 MAJOR identifies
+**Corrections** (@de) : 100% des issues CRITICAL/MAJOR resolus
+- Corrections SQL injection (requetes parametrees + whitelist)
+- Singleton engine pattern
+- Transaction safety (IntegrityError + rollback)
+- Vectorisation transform (remplacement iterrows)
+- Fix Arrow/pd.NA pour Parquet
+- Cache pre-load (elimination N+1 queries)
 
-2. **src/etl/main.py** - Orchestrateur ETL (465 lignes)
-   - Validation prérequis (PostgreSQL, tables, dossiers)
-   - Exécution séquentielle Extract → Transform → Load
-   - Rapport détaillé avec métriques
-   - Validation finale données chargées
+**Review 2** (@rv) : Score 7/10 (+0.5) - Toutes corrections validees
+**Pipeline re-execute** : 17,262 lignes chargees avec succes
 
-#### Corrections Majeures
-1. **Encodage UTF-8**
-   - Problème : Fichier 2017 T1 corrompu (Benoï¿½t au lieu de Benoît)
-   - Solution : Re-téléchargement + détection auto UTF-8/latin-1
-   - Résultat : Tous les accents préservés (Benoît HAMON, François FILLON, Jean-Luc MÉLENCHON)
-
-2. **Transform Elections**
-   - Avant : Agrégation (4 lignes)
-   - Après : Parsing détaillé par candidat (27 lignes)
-   - Pattern : 7 colonnes répétitives × N candidats
-   - Calcul : Pourcentages corrects (voix / exprimés × 100)
-
-3. **Transform Sécurité**
-   - Avant : Filtrage simple (135 lignes brutes)
-   - Après : Mapping + agrégation (45 lignes : 5 catégories × 9 années)
-   - Catégories : CRIMINALITE_TOTALE, VOLS_SANS_VIOLENCE, VOLS_AVEC_VIOLENCE, ATTEINTES_AUX_BIENS, ATTEINTES_AUX_PERSONNES
-
-#### Base de Données
-1. **Migration Alembic** : Colonnes nullable (nombre_inscrits, nombre_votants, nombre_exprimes, taux_participation)
-2. **Données chargées :**
-   - 27 résultats électoraux (11 candidats 2017 T1 + 2 T2 + 12 candidats 2022 T1 + 2 T2)
-   - 45 indicateurs sécurité (5 catégories × 9 années 2016-2024)
-   - Gestion doublons : Check unicité avant insertion
-   - Batch loading : 1000 rows par batch
-
-#### Documentation & Qualité
-1. **Code Review Complète** (docs/03-code-review/)
-   - Revue détaillée : 2026-02-11-etl-pipeline-load.md
-   - Note globale : 7.5/10
-   - Architecture : 8/10, Robustesse : 6/10, Sécurité : 8/10
-   - 8 findings (3 critiques, 3 importants, 2 améliorations)
-
-2. **Recommandations Critiques Identifiées**
-   - Ajouter transaction globale dans Load
-   - Logger indicateurs non mappés
-   - Valider cohérence électorale (inscrits ≥ votants ≥ exprimés)
-
-#### Statistiques
-- **22 fichiers** modifiés/créés
-- **+3102 lignes** de code ajoutées
-- **-95 lignes** supprimées
-- **Complexité** : Moyenne-Élevée
-- **Tests** : 0% coverage ⚠️ (à améliorer Phase 6)
+### Commits
+- `55cd4d4` : `feat(etl): Pipeline ETL v3.0 complet`
+- `ed00419` : `fix(etl): Corrections review @rv - securite, transactions, performance`
 
 ---
 
 ## Phase 4 : Data Science & ML (6h)
 
 **Agent :** `@ds`
+**Statut :** PAS COMMENCEE
 
 ### Objectifs
-- Analyser les corrélations entre indicateurs socio-éco et résultats électoraux
-- Entraîner un modèle prédictif pour 2027
-- Évaluer la performance du modèle
+- Analyser les correlations entre indicateurs socio-eco et resultats electoraux
+- Entrainer un modele predictif pour 2027
+- Evaluer la performance du modele
 
 ### Livrables
+
 | Livrable | Fichier | Description |
 |----------|---------|-------------|
-| **Notebook EDA** | `notebooks/01_exploration.ipynb` | Analyses exploratoires, corrélations |
-| **Notebook Feature Eng.** | `notebooks/02_feature_engineering.ipynb` | Création variables (évolution chômage, taux criminalité, etc.) |
-| **Script Modèle ML** | `src/models/train_model.py` | Entraînement (Régression Linéaire, Random Forest, XGBoost) |
-| **Script Prédiction** | `src/models/predict_2027.py` | Génération prédictions 2027 |
-| **Métriques** | `docs/METRIQUES.md` | MAE, RMSE, R² sur set de validation |
+| **Notebook EDA** | `notebooks/01_exploration.ipynb` | Analyses exploratoires, correlations |
+| **Notebook Feature Eng.** | `notebooks/02_feature_engineering.ipynb` | Creation variables |
+| **Script Modele ML** | `src/models/train_model.py` | Random Forest + Regression Lineaire baseline |
+| **Script Prediction** | `src/models/predict_2027.py` | Generation predictions 2027 |
+| **Metriques** | `docs/METRIQUES.md` | MAE, RMSE, R2 |
 
-### Tâches
-1. Analyser corrélations (Pearson, Spearman) : Chômage ↔ Vote, Criminalité ↔ Vote
-2. Sélectionner features pertinentes (RFE, VIF)
-3. Entraîner plusieurs modèles et comparer performances
-4. Optimiser hyperparamètres (GridSearch)
-5. Valider sur données 2022 (prédire 2022 depuis 2017, comparer réel)
-6. Générer prédictions 2027
+### Pre-requis valides
+- PostgreSQL operationnel avec 17,262 lignes
+- 14,484 resultats candidats (2017 + 2022, tours 1 & 2, ~535 communes)
+- 45 indicateurs securite (5 categories x 9 annees 2016-2024)
+- Pipeline ETL fonctionnel et reproductible
+
+### Donnees Disponibles pour ML
+- **Resultats candidats** : Voix, pourcentages par commune/election/tour
+- **Participation** : Inscrits, votants, abstentions, blancs/nuls par commune
+- **Securite** : 5 indicateurs x 9 ans (tendances temporelles)
+- **Geographie** : Population, superficie communes
+- **Features derivees possibles** : Evolution participation 2017->2022, tendance criminalite, densite
 
 ---
 
 ## Phase 5 : Visualisation & Rapport (4h)
 
-**Agent :** `@analyst`
-
-### Objectifs
-- Créer des visualisations exploitables
-- Rédiger un rapport de synthèse
-- Préparer une présentation exécutive
+**Agent :** `@da`
+**Statut :** PAS COMMENCEE
 
 ### Livrables
+
 | Livrable | Fichier | Description |
 |----------|---------|-------------|
-| **Graphiques** | `notebooks/03_visualisation.ipynb` | Cartes choroplèthes, courbes d'évolution, scatter plots |
-| **Rapport synthèse** | `docs/RAPPORT_SYNTHESE.md` | Méthodologie, résultats, limites, recommandations |
-| **Slides exécutives** | `docs/PRESENTATION.pdf` | 10 slides max (contexte, méthode, résultats, ROI) |
-
-### Tâches
-1. Cartographier les prédictions 2027 par IRIS (heatmap)
-2. Visualiser l'évolution temporelle des indicateurs (2017-2027)
-3. Créer des graphiques de corrélation (emploi/sécurité vs votes)
-4. Rédiger le rapport final (5 pages max)
-5. Préparer la présentation pour le client
+| **Graphiques** | `notebooks/03_visualisation.ipynb` | Cartes choropletres, courbes d'evolution |
+| **Rapport synthese** | `docs/RAPPORT_SYNTHESE.md` | Methodologie, resultats, limites |
+| **Slides executives** | `docs/PRESENTATION.pdf` | 10 slides max |
 
 ---
 
-## Phase 6 : Revue & Qualité (1h)
+## Phase 6 : Revue & Qualite (1h)
 
-**Agent :** `@review`
+**Agent :** `@rv`
+**Statut :** PARTIELLE
 
-### Objectifs
-- Valider la qualité du code
-- Vérifier la conformité RGPD
-- Documenter les limitations
+### Realise
+- Structure documentation code review (`docs/03-code-review/`)
+- 2 revues ETL completes (6.5/10 -> 7/10)
+- Mise a jour documentation v3.0
 
-### Livrables
-| Livrable | Fichier | Description |
-|----------|---------|-------------|
-| **Checklist Qualité** | `docs/CHECKLIST_QUALITE.md` | Validation code, tests, sécurité |
-| **Documentation RGPD** | `docs/RGPD_COMPLIANCE.md` | Traçabilité des données, anonymisation |
-
-### Tâches
-1. Code review (PEP8, docstrings, reproductibilité)
-2. Vérifier l'anonymisation des données personnelles
-3. Tester la reproductibilité (exécution end-to-end)
-4. Documenter les limites du POC
+### Restant
+- Tests unitaires
+- Validation RGPD
 
 ---
 
-## Timeline Prévisionnelle
+## Etat d'Avancement Global
 
-```
-Jour 1-2  : Phase 2 (Architecture)       → 5h
-Jour 3-5  : Phase 3 (Data Engineering)   → 8h
-Jour 6-8  : Phase 4 (Data Science)       → 6h
-Jour 9-10 : Phase 5 (Visualisation)      → 4h
-Jour 11   : Phase 6 (Revue Qualité)      → 1h
-```
-
-**Total :** 25h
-
----
-
-## Dépendances Critiques
-
-```
-Phase 1 (Cadrage)
-    ↓
-Phase 2 (Architecture)
-    ↓
-Phase 3 (Data Engineering)
-    ↓
-Phase 4 (Data Science)
-    ↓
-Phase 5 (Visualisation)
-    ↓
-Phase 6 (Revue Qualité)
-```
-
-**Bloquants identifiés & Solutions :**
-- ✅ Accès aux APIs data.gouv.fr → Script automatisé créé (`download_elections.py`)
-- ⚠️ Qualité des données SSMSI au niveau arrondissement (granularité communale uniquement, nécessite agrégation)
-- ⚠️ Mapping géographique Bureaux de vote ↔ IRIS (nécessite table de correspondance INSEE ou géocodage PostGIS)
-
----
-
-## Critères de Succès
-
-| Critère | Cible |
-|---------|-------|
-| **Périmètre** | 1 arrondissement unique ✓ |
-| **Données ingérées** | 3 sources (Élections, Sécurité, Emploi) |
-| **Modèle ML** | R² > 0.65 sur validation |
-| **Prédictions 2027** | Générées par IRIS |
-| **Documentation** | MCD + 2 ADRs + Rapport |
-| **Code qualité** | PEP8 + Docstrings + Reproductible |
-
----
-
-## État d'Avancement Global
-
-| Phase | Statut | Durée | Complété |
+| Phase | Statut | Duree | Complete |
 |-------|--------|-------|----------|
-| **Phase 1** : Cadrage | ✅ TERMINÉE | 1h | 100% |
-| **Phase 2** : Architecture | ✅ TERMINÉE | 5h/5h | 100% |
-| **Phase 3** : Data Engineering | ✅ TERMINÉE | 10h/8h | 125% ⚠️ |
-| **Phase 4** : Data Science | ⏸️ PAS COMMENCÉE | 0h/6h | 0% |
-| **Phase 5** : Visualisation | ⏸️ PAS COMMENCÉE | 0h/4h | 0% |
-| **Phase 6** : Revue Qualité | 🔄 PARTIELLE | 1h/1h | 50% |
+| **Phase 1** : Cadrage | TERMINEE | 1h | 100% |
+| **Phase 2** : Architecture | TERMINEE | 5h/5h | 100% |
+| **Phase 3** : Data Engineering | TERMINEE | 12h/8h | 150% |
+| **Phase 4** : Data Science | PAS COMMENCEE | 0h/6h | 0% |
+| **Phase 5** : Visualisation | PAS COMMENCEE | 0h/4h | 0% |
+| **Phase 6** : Revue Qualite | PARTIELLE | 2h/1h | 60% |
 
-**Total consommé :** 17h / 25h (68%)
-**Temps restant :** 8h (Phase 4: 6h + Phase 5: 4h - dépassement Phase 3: 2h)
-
-### ⚠️ Note sur le Dépassement Phase 3
-- **Prévu :** 8h
-- **Réalisé :** 10h (+2h)
-- **Raison :** Implémentation Load non prévue initialement + corrections encodage + code review
-- **Impact :** Budget global maintenu (Phase 6 partiellement réalisée en parallèle)
-
-### Livrables Phase 1, 2 & 3 Complétés
-
-**Phase 1 & 2** (6 documents) :
-- ✅ ROADMAP.md (planning 25h, 6 phases)
-- ✅ MCD.md (5 entités, relations, volumétrie)
-- ✅ ADR-001 (PostgreSQL vs NoSQL)
-- ✅ ADR-002 (Random Forest vs autres algos ML)
-- ✅ ARCHITECTURE.md (Pipeline ETL complet)
-- ✅ SOURCES_DONNEES.md (sources de données validées)
-
-**Phase 3 - Pipeline ETL End-to-End** (35+ modules Python, ~3500 lignes) :
-- ✅ Module Extract refactorisé (9 fichiers, architecture Option 3)
-- ✅ Module Transform refactorisé (9 fichiers, architecture Option 3, encodage UTF-8/latin-1)
-- ✅ **Module Load complet (9 fichiers, batch loading, validation) - 2026-02-11**
-- ✅ **Orchestrateur ETL main.py (465 lignes) - 2026-02-11**
-- ✅ Utilitaires génériques (download_file, parse_french_number, validators)
-- ✅ 5 fichiers de données téléchargés (128 MB)
-- ✅ 2 fichiers transformés (27 lignes élections + 45 lignes indicateurs)
-- ✅ **72 lignes chargées en PostgreSQL (27 élections + 45 indicateurs) - 2026-02-11**
-- ✅ Migration Alembic (colonnes nullable)
-- ✅ Documentation complète ETL (src/etl/README.md)
-
-**Phase 6 - Code Review** (partiellement réalisée) :
-- ✅ **Structure documentation code review (docs/03-code-review/) - 2026-02-11**
-- ✅ **Revue détaillée pipeline ETL (Note: 7.5/10) - 2026-02-11**
-- ✅ **8 findings documentés (sécurité, performance, architecture, qualité) - 2026-02-11**
-- ⏳ Tests unitaires (à faire)
-- ⏳ Validation RGPD (à faire)
+**Total consomme :** 20h / 25h (80%)
+**Temps restant :** 5h (Phase 4: 6h + Phase 5: 4h - depassement: 5h)
 
 ---
 
-## Prochaine Étape
+## Criteres de Succes
 
-**🎯 Phase 4 - Data Science & Machine Learning**
+| Critere | Cible | Statut |
+|---------|-------|--------|
+| **Perimetre** | Gironde (535 communes) | Valide |
+| **Donnees ingerees** | 2 sources (Elections + Securite) | 17,262 lignes |
+| **Schema BDD** | 17 tables normalisees (3NF) | Deploye |
+| **Modele ML** | R2 > 0.65 sur validation | A faire |
+| **Predictions 2027** | Generees par commune | A faire |
+| **Documentation** | MCD + MLD + ADRs + Rapport | 80% fait |
+| **Code qualite** | PEP8 + Docstrings + Reproductible | Review 7/10 |
 
-### ✅ Pré-requis Validés
-- ✅ PostgreSQL opérationnel
-- ✅ 27 résultats électoraux chargés (2017 + 2022, tours 1 & 2)
-- ✅ 45 indicateurs sécurité chargés (5 catégories × 9 années 2016-2024)
-- ✅ Pipeline ETL fonctionnel
-- ✅ Données accessibles via SQL et CSV
+---
 
-### Étape 1 : Analyser les données chargées (1h)
+## Prochaine Etape
+
+**Phase 4 - Data Science & Machine Learning**
+
 ```bash
-# Option 1 : Requêter PostgreSQL directement
-python -c "from src.database.config import get_session; ..."
-
-# Option 2 : Utiliser les CSV transformés
-python -m jupyter notebook notebooks/01_exploration.ipynb
-
-# Données disponibles :
-# - PostgreSQL : tables election_result (27 rows), indicateur (45 rows)
-# - CSV : resultats_elections_bordeaux.csv, delinquance_bordeaux.csv
+@ds Demarre la Phase 4 : Analyse exploratoire, feature engineering,
+entrainement Random Forest pour prediction 2027
 ```
-
-### Étape 2 : Feature Engineering & ML (3h)
-```bash
-@ds Démarre la Phase 4 : Analyse exploratoire, feature engineering,
-entraînement Random Forest pour prédiction 2027
-```
-
-**Objectifs Phase 4 :**
-1. Extraire features depuis PostgreSQL (jointures territoire, indicateurs, élections)
-2. Analyser corrélations criminalité ↔ résultats électoraux
-3. Créer features temporelles (évolution 2017→2022, tendances 2016-2024)
-4. Entraîner Random Forest + Régression Linéaire baseline
-5. Valider le modèle (R² > 0.65)
-6. Générer prédictions 2027 par candidat
-
-**Données Enrichies Disponibles :**
-- 27 résultats candidats (pourcentages voix, nombre voix)
-- 45 indicateurs sécurité sur 9 ans (tendances temporelles)
-- Possibilité d'ajouter features dérivées : taux croissance criminalité 2016→2024, évolution participation 2017→2022
-
-**Note :** Le pipeline ETL est maintenant complet et prêt pour l'entraînement ML.

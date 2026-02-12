@@ -1,9 +1,12 @@
-# Évolutions Futures
+# Evolutions Futures
 
-**Version :** 2.0 → 3.0
+> **OBSOLETE** : Le schema v3.0 a ete deploye. Les evolutions decrites ici ont ete implementees.
+> Voir [MCD v3.0](01-mcd.md) pour le schema actuel.
+
+**Version :** 2.0 -> 3.0 (REALISE)
 **Date :** 2026-02-10
 **Auteur :** @tech
-**Statut :** Roadmap
+**Statut :** Archive - v3.0 deploye le 2026-02-12
 
 ---
 

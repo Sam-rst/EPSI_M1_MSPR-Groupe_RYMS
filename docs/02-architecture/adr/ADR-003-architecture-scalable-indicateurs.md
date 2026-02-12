@@ -1,9 +1,12 @@
-# ADR-003 : Architecture Scalable pour Indicateurs Socio-Économiques
+# ADR-003bis : Architecture Scalable pour Indicateurs Socio-Economiques
+
+> **REMPLACE** par [ADR-004](ADR-004-enrichissement-schema-bd.md) (schema v3.0).
+> Le numero ADR-003 est desormais attribue a l'[Architecture Modulaire ETL](ADR-003-architecture-modulaire-etl.md).
 
 **Date :** 2026-02-09
-**Statut :** ✅ ACCEPTÉ
-**Décideurs :** @tech, @pm
-**Impact :** Architecture de base de données
+**Statut :** REMPLACE (par ADR-004, 2026-02-12)
+**Decideurs :** @tech, @pm
+**Impact :** Architecture de base de donnees
 
 ---
 

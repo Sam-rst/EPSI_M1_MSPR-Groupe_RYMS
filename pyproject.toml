@@ -76,8 +76,7 @@ all = [
 
 [project.scripts]
 # Scripts CLI pour le projet
-electio-download = "src.etl.extract.download_elections:main"
-electio-train = "src.models.train_model:main"
+electio-etl = "src.etl.main:main"
 
 [build-system]
 requires = ["hatchling"]

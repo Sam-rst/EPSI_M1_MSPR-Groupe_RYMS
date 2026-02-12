@@ -1,433 +1,305 @@
 # Module ETL - Electio-Analytics
 
-## 📋 Vue d'ensemble
+## Vue d'ensemble
 
 Module d'extraction, transformation et chargement (ETL) pour le projet Electio-Analytics.
-Architecture modulaire enterprise-grade pour le traitement des données électorales et socio-économiques.
+Architecture modulaire pour le traitement des donnees electorales et socio-economiques.
 
 **Auteur** : @de (Data Engineer)
-**Version** : 1.0.0
-**Date** : 2026-02-10
+**Version** : 3.0.0
+**Date** : 2026-02-12
 
 ---
 
-## 🏗️ Architecture
+## Architecture
 
-Le module ETL suit une **architecture Option 3** (séparation par type de fonction) pour une scalabilité et maintenabilité maximales.
+Le module ETL suit une **architecture Option 3** (separation par type de fonction).
 
 ```
 src/etl/
-├── extract/                    # Extraction des données brutes
-│   ├── config/                # Configuration (URLs, chemins)
+├── extract/                    # Extraction des donnees brutes
+│   ├── config/                # Configuration (URLs API, chemins)
 │   │   ├── __init__.py
 │   │   └── settings.py
-│   ├── core/                  # Logique métier par source
+│   ├── core/                  # Logique metier par source
 │   │   ├── __init__.py
-│   │   ├── elections.py      # Téléchargement élections
-│   │   └── securite.py       # Téléchargement sécurité
-│   ├── utils/                 # Utilitaires génériques
+│   │   ├── elections.py      # API tabulaire data.gouv.fr + Parquet
+│   │   ├── geographie.py     # geo.api.gouv.fr
+│   │   └── securite.py       # SSMSI CSV gzip
+│   ├── utils/                 # Utilitaires generiques
 │   │   ├── __init__.py
-│   │   └── download.py       # Fonction download_file()
+│   │   └── download.py       # download_file() avec progression
 │   ├── __init__.py
 │   └── main.py               # Orchestrateur extraction
 │
-├── transform/                  # Transformation des données
+├── transform/                  # Transformation des donnees
 │   ├── config/                # Configuration (chemins, constantes)
 │   │   ├── __init__.py
 │   │   └── settings.py
-│   ├── core/                  # Logique métier par source
+│   ├── core/                  # Logique metier par source
 │   │   ├── __init__.py
-│   │   ├── elections.py      # Transformation élections
-│   │   └── securite.py       # Transformation sécurité
+│   │   ├── elections.py      # JSON + Parquet -> CSV normalises
+│   │   ├── geographie.py     # JSON API -> CSV referentiels
+│   │   └── securite.py       # CSV SSMSI -> indicateurs Bordeaux
 │   ├── utils/                 # Utilitaires de parsing
 │   │   ├── __init__.py
 │   │   └── parsing.py        # parse_french_number()
 │   ├── __init__.py
 │   └── main.py               # Orchestrateur transformation
 │
+├── load/                       # Chargement en base de donnees
+│   ├── config/                # Configuration (chemins CSV, batch)
+│   │   ├── __init__.py
+│   │   └── settings.py
+│   ├── core/                  # Logique metier par domaine
+│   │   ├── __init__.py
+│   │   ├── geographie.py     # Region, Departement, Commune
+│   │   ├── candidats.py      # TypeElection, Election, Candidat, Parti
+│   │   ├── elections.py      # ElectionTerritoire, ResultatParticipation, ResultatCandidat
+│   │   ├── indicateurs.py    # Indicateur (batch 1000 rows)
+│   │   └── type_indicateur.py # TypeIndicateur
+│   ├── utils/                 # Validations
+│   │   ├── __init__.py
+│   │   └── validators.py     # Validation CSV
+│   ├── __init__.py
+│   └── main.py               # Orchestrateur chargement
+│
+├── __init__.py
+├── main.py                     # Orchestrateur ETL global (E -> T -> L)
 └── README.md                   # Cette documentation
 ```
 
-### Principes architecturaux
+---
 
-1. **Séparation des responsabilités** : Chaque package a un rôle unique (config, core, utils)
-2. **Scalabilité** : Ajout facile de nouvelles sources de données
-3. **Testabilité** : Chaque module peut être testé indépendamment
-4. **Réutilisabilité** : Utilitaires génériques dans `utils/`
-5. **Maintenabilité** : Code organisé et documenté
+## Utilisation
+
+### Pipeline complet (recommande)
+
+```bash
+# Extract -> Transform -> Load en une seule commande
+python -m src.etl.main
+```
+
+### Etapes individuelles
+
+```bash
+# Extraction seule (telecharge depuis les APIs)
+python -m src.etl.extract.main
+
+# Transformation seule (nettoie et normalise)
+python -m src.etl.transform.main
+
+# Chargement seul (insere dans PostgreSQL)
+python -m src.etl.load.main
+```
+
+### Pre-requis
+
+```bash
+# 1. PostgreSQL operationnel
+docker compose up -d
+
+# 2. Installer les dependances
+pip install -e .
+
+# 3. Variables d'environnement (.env)
+POSTGRES_HOST=localhost
+POSTGRES_PORT=5432
+POSTGRES_DB=electio_analytics
+POSTGRES_USER=admin
+POSTGRES_PASSWORD=secure_password
+```
 
 ---
 
-## 🚀 Utilisation
+## Donnees traitees
 
-### Pipeline complet (Extract + Transform)
+### Sources de donnees
 
-```bash
-# 1. Extraire les données brutes
-python -m src.etl.extract.main
-
-# 2. Transformer les données
-python -m src.etl.transform.main
-
-# OU en une seule commande
-python -m src.etl.extract.main && python -m src.etl.transform.main
-```
-
-### Extraction seule
-
-```bash
-python -m src.etl.extract.main
-```
-
-**Données téléchargées** :
-- Élections présidentielles 2017 & 2022 (4 fichiers CSV, ~94 MB)
-- Données SSMSI délinquance France (1 fichier gzip, ~34 MB)
-
-**Destination** : `data/raw/{elections,securite}/`
-
-### Transformation seule
-
-```bash
-python -m src.etl.transform.main
-```
-
-**Données transformées** :
-- Élections : 4 fichiers → 1 fichier consolidé Bordeaux (4 lignes)
-- Sécurité : France → Bordeaux uniquement (~135 lignes)
-
-**Destination** : `data/processed/{elections,indicateurs}/`
-
----
-
-## 📦 Données traitées
-
-### Sources de données
-
-| Source | Type | Période | Granularité | Format |
-|--------|------|---------|-------------|--------|
-| Élections présidentielles | Résultats de votes | 2017, 2022 (T1 & T2) | Bureau de vote | CSV |
-| Sécurité (SSMSI) | Délinquance enregistrée | 2016-2024 | Communale | CSV gzip |
+| Source | API | Format | Periode |
+|--------|-----|--------|---------|
+| Geographie | geo.api.gouv.fr | JSON | Actuel |
+| Elections presidentielles | data.gouv.fr API tabulaire + Parquet | JSON + Parquet | 2017, 2022 |
+| Securite (SSMSI) | data.gouv.fr | CSV gzip | 2016-2024 |
 
 ### Territoire
 
-**Zone** : Bordeaux (Gironde - 33)
-**Code INSEE** : 33063
+**Zone** : Gironde (departement 33) - ~535 communes
+**Filtrage securite** : Bordeaux (33063)
 
 ### Fichiers produits
 
 **Extraction** (`data/raw/`) :
 ```
+geographie/
+├── regions.json                         (~2 KB)
+├── departement_33.json                  (~1 KB)
+└── communes_33.json                     (~200 KB)
+
 elections/
-├── presidentielles_2017_tour1_bureaux_vote.csv   (~23 MB)
-├── presidentielles_2017_tour2_bureaux_vote.csv   (~23 MB)
-├── presidentielles_2022_tour1_bureaux_vote.csv   (~24 MB)
-└── presidentielles_2022_tour2_bureaux_vote.csv   (~24 MB)
+├── participation_2017_pres_t1.json      (JSON pagine)
+├── participation_2017_pres_t2.json
+├── participation_2022_pres_t1.json
+├── participation_2022_pres_t2.json
+├── candidats_agrege.parquet             (~151 MB)
+└── nuances_politiques.csv
 
 securite/
-└── delinquance_france_2016_2024.csv              (~34 MB gzip)
+└── delinquance_france_2016_2024.csv     (~34 MB gzip)
 ```
 
 **Transformation** (`data/processed/`) :
 ```
+geographie/
+├── regions.csv                          (1 ligne)
+├── departements.csv                     (1 ligne)
+└── communes.csv                         (~535 lignes)
+
 elections/
-└── resultats_elections_bordeaux.csv              (4 lignes)
+├── participation_gironde.csv            (~2 140 lignes)
+├── candidats_gironde.csv                (~14 484 lignes)
+├── referentiel_candidats.csv            (~25 lignes)
+├── referentiel_partis.csv               (~15 lignes)
+└── nuances_politiques.csv
 
 indicateurs/
-└── delinquance_bordeaux.csv                      (~135 lignes)
+└── delinquance_bordeaux.csv             (~45 lignes)
+```
+
+**Chargement** (PostgreSQL - 17 tables) :
+```
+Total : ~17 262 lignes
+├── Geographie : 537 lignes (region + departement + communes)
+├── Elections : ~16 675 lignes (candidats, partis, resultats)
+├── Indicateurs : 50 lignes (types + valeurs)
+└── Predictions : 0 (en attente Phase 4)
 ```
 
 ---
 
-## 🔌 API programmatique
+## API programmatique
 
 ### Import des fonctions
 
 ```python
+# Pipeline complet
+from src.etl.main import main as etl_main
+
 # Extraction
-from src.etl.extract import main as extract_main
-from src.etl.extract import download_elections, download_securite
+from src.etl.extract import download_geographie, download_elections, download_securite
 from src.etl.extract.utils import download_file
 
 # Transformation
-from src.etl.transform import main as transform_main
-from src.etl.transform import transform_elections, transform_securite
+from src.etl.transform import transform_geographie, transform_elections, transform_securite
 from src.etl.transform.utils import parse_french_number
+
+# Chargement
+from src.etl.load import main as load_main
 ```
 
-### Exemples d'utilisation
+### Exemples
 
-**Pipeline complet** :
+**Pipeline complet :**
 ```python
-from src.etl.extract import main as extract_main
-from src.etl.transform import main as transform_main
-
-# Extraire puis transformer
-if extract_main():
-    transform_main()
+from src.etl.main import main as etl_main
+etl_main()
 ```
 
-**Téléchargement spécifique** :
+**Extraction specifique :**
 ```python
 from src.etl.extract.core import download_elections
-
-# Télécharger uniquement les élections
 success = download_elections()
 ```
 
-**Transformation spécifique** :
+**Transformation specifique :**
 ```python
 from src.etl.transform.core import transform_securite
-
-# Transformer uniquement la sécurité
 success = transform_securite()
-```
-
-**Utilitaire de parsing** :
-```python
-from src.etl.transform.utils import parse_french_number
-
-# Convertir nombre français
-valeur = parse_french_number("1234,56")  # → 1234
-```
-
-**Téléchargement générique** :
-```python
-from pathlib import Path
-from src.etl.extract.utils import download_file
-
-# Télécharger n'importe quel fichier
-url = "https://example.com/data.csv"
-path = Path("data/custom/file.csv")
-success = download_file(url, path, "Description")
 ```
 
 ---
 
-## ➕ Ajouter une nouvelle source de données
+## Ajouter une nouvelle source de donnees
 
-### Exemple : Ajouter les données d'emploi
+### 1. Extraction (`src/etl/extract/`)
 
-#### 1. Extraction (`src/etl/extract/`)
-
-**Créer `core/emploi.py`** :
+Creer `core/nouvelle_source.py` :
 ```python
-"""Module de téléchargement des données d'emploi."""
-
+"""Module de telechargement de la nouvelle source."""
 import logging
-from pathlib import Path
-
-from ..config import DATA_RAW_EMPLOI, EMPLOI_URL
+from ..config import DATA_RAW_NOUVELLE_SOURCE, NOUVELLE_SOURCE_URL
 from ..utils import download_file
 
 logger = logging.getLogger(__name__)
 
-def download_emploi() -> bool:
-    """Télécharge les données d'emploi INSEE."""
-    logger.info("=" * 80)
-    logger.info("TÉLÉCHARGEMENT DONNÉES EMPLOI")
-    logger.info("=" * 80)
-
-    output_path = DATA_RAW_EMPLOI / "emploi_bordeaux.csv"
-    return download_file(EMPLOI_URL, output_path, "Emploi Bordeaux")
+def download_nouvelle_source() -> bool:
+    """Telecharge les donnees de la nouvelle source."""
+    output_path = DATA_RAW_NOUVELLE_SOURCE / "fichier.csv"
+    return download_file(NOUVELLE_SOURCE_URL, output_path, "Nouvelle source")
 ```
 
-**Mettre à jour `config/settings.py`** :
-```python
-# Ajouter
-DATA_RAW_EMPLOI: Path = DATA_RAW / "emploi"
-EMPLOI_URL: str = "https://..."
-```
+Mettre a jour : `config/settings.py`, `core/__init__.py`, `main.py`
 
-**Mettre à jour `core/__init__.py`** :
-```python
-from .emploi import download_emploi
+### 2. Transformation (`src/etl/transform/`)
 
-__all__ = ["download_elections", "download_securite", "download_emploi"]
-```
+Creer `core/nouvelle_source.py` avec la logique de nettoyage.
+Mettre a jour : `config/settings.py`, `core/__init__.py`, `main.py`
 
-**Mettre à jour `main.py`** :
-```python
-from .core import download_elections, download_securite, download_emploi
+### 3. Chargement (`src/etl/load/`)
 
-# Dans main()
-emploi_ok = download_emploi()
-```
-
-#### 2. Transformation (`src/etl/transform/`)
-
-**Créer `core/emploi.py`** :
-```python
-"""Module de transformation des données d'emploi."""
-
-import logging
-import pandas as pd
-from ..config import DATA_RAW_EMPLOI, DATA_PROCESSED_EMPLOI
-
-logger = logging.getLogger(__name__)
-
-def transform_emploi() -> bool:
-    """Transforme les données d'emploi pour Bordeaux."""
-    logger.info("TRANSFORMATION DONNÉES EMPLOI")
-
-    # Logique de transformation
-    df = pd.read_csv(DATA_RAW_EMPLOI / "emploi_bordeaux.csv")
-    # ... filtrage, nettoyage ...
-    df.to_csv(DATA_PROCESSED_EMPLOI / "emploi_clean.csv", index=False)
-
-    return True
-```
-
-**Suivre les mêmes étapes** que pour l'extraction (config, __init__, main).
+Creer `core/nouvelle_source.py` avec la logique d'insertion.
+Respecter : check-before-insert, batch loading, IntegrityError + rollback.
 
 ---
 
-## 🧪 Tests
+## Gestion des erreurs
 
-### Tests manuels
+### Comportement
 
-```bash
-# Tester extraction
-python -m src.etl.extract.main
-
-# Tester transformation
-python -m src.etl.transform.main
-
-# Tester imports
-python -c "from src.etl.extract import main; from src.etl.transform import main as tm"
-```
-
-### Tests unitaires (à implémenter)
-
-```python
-# tests/test_extract_elections.py
-from src.etl.extract.core.elections import download_elections
-
-def test_download_elections():
-    assert download_elections() == True
-
-# tests/test_transform_parsing.py
-from src.etl.transform.utils.parsing import parse_french_number
-
-def test_parse_french_number():
-    assert parse_french_number("1234,56") == 1234
-    assert parse_french_number("0,26") == 0
-```
-
----
-
-## 🔧 Configuration
-
-### Variables d'environnement (optionnel)
-
-Actuellement, toutes les configurations sont dans `config/settings.py`.
-Pour externaliser :
-
-```python
-# Exemple dans config/settings.py
-import os
-
-TIMEOUT_SECONDS = int(os.getenv("ETL_TIMEOUT", "300"))
-```
-
-### Chemins personnalisés
-
-Modifier `config/settings.py` :
-```python
-# Utiliser un dossier de données personnalisé
-DATA_RAW = Path("/custom/path/data/raw")
-```
-
----
-
-## 📊 Logging
-
-Le module utilise le module `logging` standard de Python.
-
-**Configuration actuelle** :
-```python
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - [%(levelname)s] - %(message)s",
-)
-```
-
-**Personnaliser** :
-```python
-# Pour plus de détails
-logging.basicConfig(level=logging.DEBUG)
-
-# Pour sauvegarder dans un fichier
-logging.basicConfig(
-    filename='etl.log',
-    level=logging.INFO,
-    format="%(asctime)s - [%(levelname)s] - %(message)s",
-)
-```
-
----
-
-## ⚠️ Gestion des erreurs
-
-### Comportement par défaut
-
-- **Fichiers existants** : Détectés et non retéléchargés
-- **Erreurs réseau** : Loggées, téléchargement échoue gracieusement
-- **Données manquantes** : Warning logué, continue avec les autres fichiers
+- **Fichiers existants** : Detectes et non retelecharges
+- **Erreurs reseau** : Loggees, fichier partiel nettoye
+- **Donnees manquantes** : Warning logue, continue avec les autres fichiers
+- **IntegrityError** : Rollback de la transaction, re-raise
 - **Interruption (Ctrl+C)** : Exit code 130
 
 ### Codes de sortie
 
 | Code | Signification |
 |------|---------------|
-| 0 | Succès complet |
-| 1 | Échec partiel ou total |
-| 130 | Interruption utilisateur (Ctrl+C) |
+| 0 | Succes complet |
+| 1 | Echec partiel ou total |
+| 130 | Interruption utilisateur |
 
 ---
 
-## 🚦 Bonnes pratiques
+## Securite
 
-1. **Toujours lire la config** avant de modifier les URLs
-2. **Utiliser les utilitaires** plutôt que dupliquer du code
-3. **Logger les opérations** pour le débogage
-4. **Gérer les erreurs** gracieusement
-5. **Documenter** les nouvelles sources de données
-
----
-
-## 📚 Ressources
-
-- **Sources de données** : [data.gouv.fr](https://www.data.gouv.fr)
-- **Architecture** : Voir `docs/architecture/ARCHITECTURE.md`
-- **Décisions** : Voir `docs/architecture/adr/ADR-003-architecture-modulaire.md`
-- **Roadmap** : Voir `docs/gestion-projet/ROADMAP.md`
+- **SQL injection** : Requetes parametrees avec `sqlalchemy.text()` + whitelist de tables
+- **Mot de passe BDD** : Variable d'environnement `POSTGRES_PASSWORD`
+- **Singleton engine** : Evite les fuites de connexion
+- **Transaction safety** : `IntegrityError` + `session.rollback()` sur tous les loaders
 
 ---
 
-## 🤝 Contribution
+## Changelog
 
-Pour contribuer au module ETL :
+### Version 3.0.0 (2026-02-12)
+- Module Load complet (5 loaders, batch loading, validation CSV)
+- Schema v3.0 : 17 tables, systeme polymorphe
+- Sources : geo.api.gouv.fr, API tabulaire data.gouv.fr, Parquet candidats
+- Corrections review : SQL injection, singleton, transactions, vectorisation
+- 17,262 lignes chargees en PostgreSQL
 
-1. **Respecter l'architecture** Option 3 (config/, core/, utils/, main.py)
-2. **Ajouter des type hints** sur toutes les fonctions
-3. **Documenter** avec des docstrings Google style
-4. **Tester** les modifications avant commit
-5. **Mettre à jour cette documentation** si nécessaire
-
----
-
-## 📝 Changelog
+### Version 2.0.0 (2026-02-11)
+- Architecture Option 3 complete (extract + transform)
+- Module Load initial + encodage UTF-8
 
 ### Version 1.0.0 (2026-02-10)
-- ✅ Refactorisation complète en architecture Option 3
-- ✅ Séparation extract/ et transform/ en packages modulaires
-- ✅ Extraction de utils génériques (download, parsing)
-- ✅ Documentation complète
-- ✅ Type hints sur toutes les fonctions
-- ✅ Gestion robuste des erreurs
+- Refactorisation en architecture Option 3
+- Separation extract/ et transform/ en packages modulaires
+- Documentation complete
 
 ---
 
-**Auteur** : @de (Data Engineer)
 **Projet** : Electio-Analytics POC
-**Contact** : Voir CLAUDE.md
+**Architecture** : Voir `docs/02-architecture/ARCHITECTURE.md`

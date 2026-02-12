@@ -1,164 +1,179 @@
-# Electio-Analytics - POC Prédictions Électorales
+# Electio-Analytics - POC Predictions Electorales
 
 **Projet MSPR - M1 EPSI**
 **Groupe RYMS**
 
 ---
 
-## 📋 Contexte
+## Contexte
 
-Preuve de Concept (POC) pour la startup "Electio-Analytics" : outil de prédiction des tendances électorales à moyen terme (1-3 ans) en croisant des données historiques avec des indicateurs socio-économiques.
+Preuve de Concept (POC) pour la startup "Electio-Analytics" : outil de prediction des tendances electorales a moyen terme (1-3 ans) en croisant des donnees historiques avec des indicateurs socio-economiques.
 
-**Périmètre :**
+**Perimetre :**
 - **Zone :** Bordeaux (Gironde - 33)
-- **Élections :** Présidentielles 2017 & 2022 (1er et 2nd tours)
-- **Prédiction :** Présidentielles 2027
-- **Indicateurs :** Chômage (INSEE) + Criminalité (SSMSI)
+- **Elections :** Presidentielles 2017 & 2022 (1er et 2nd tours)
+- **Prediction :** Presidentielles 2027
+- **Indicateurs :** Criminalite (SSMSI)
 
 ---
 
-## 🚀 Quick Start
+## Quick Start
 
-### Installation avec UV (Recommandé)
+### Prerequis
+
+- **Docker Desktop** installe et demarre
+- **UV** (gestionnaire de paquets Python) : `pip install uv`
+
+### Installation
 
 ```bash
-# 1. Installer UV
-pip install uv
+# 1. Cloner le repository
+git clone <repository-url>
+cd EPSI_M1_MSPR-Groupe_RYMS
 
-# 2. Synchroniser les dépendances
+# 2. Installer les dependances
 uv sync --all-extras
 
-# 3. Activer l'environnement
-.venv\Scripts\Activate.ps1   # Windows PowerShell
-source .venv/bin/activate    # macOS/Linux
-
-# 4. Configurer .env
+# 3. Configurer l'environnement
 cp .env.example .env
+# Editer .env avec votre mot de passe PostgreSQL
+
+# 4. Demarrer PostgreSQL
+docker compose up -d
+
+# 5. Creer le schema (17 tables v3.0)
+uv run alembic -c src/database/alembic.ini upgrade head
+
+# 6. Lancer le pipeline ETL complet
+uv run python -m src.etl.main
 ```
 
-**Documentation complète :** [docs/04-setup-installation/SETUP_UV.md](docs/04-setup-installation/SETUP_UV.md)
+**Resultat : 17 262 lignes chargees (~130s)**
+
+**Documentation detaillee :**
+- [Setup UV](docs/04-setup-installation/SETUP_UV.md)
+- [Setup Base de donnees](docs/04-setup-installation/SETUP_DATABASE.md)
 
 ---
 
-## 📁 Structure du Projet
+## Structure du Projet
 
 ```
 EPSI_M1_MSPR-Groupe_RYMS/
 ├── data/
-│   ├── raw/                          # Données brutes (128 MB)
-│   │   ├── elections/               # 4 fichiers présidentielles
-│   │   └── securite/                # Délinquance SSMSI
-│   └── processed/                   # Données nettoyées
-│       ├── elections/               # Résultats Bordeaux (4 lignes)
-│       └── indicateurs/             # Sécurité Bordeaux (135 lignes)
+│   ├── raw/                          # Donnees brutes (~300 MB)
+│   │   ├── geographie/              # JSON geo.api.gouv.fr
+│   │   ├── elections/               # JSON + Parquet data.gouv.fr
+│   │   └── securite/                # CSV SSMSI
+│   └── processed/                   # Donnees transformees
+│       ├── geographie/              # 1 region, 1 dept, 534 communes
+│       ├── elections/               # 2 146 participations, 14 484 candidats
+│       └── indicateurs/             # 45 indicateurs securite
 │
-├── docs/                            # Documentation complète
+├── docs/                            # Documentation complete
 │   ├── 01-project-management/      # ROADMAP, planning
-│   ├── 02-architecture/            # MCD, ARCHITECTURE, ADRs
-│   ├── 03-data-sources/            # Sources de données
+│   ├── 02-architecture/            # MCD, MLD, ARCHITECTURE, ADRs
+│   ├── 03-data-sources/            # Sources de donnees
 │   ├── 04-setup-installation/      # Guides d'installation
 │   └── 05-reports/                 # Rapports et analyses
 │
 ├── src/
-│   ├── etl/                         # Module ETL (Architecture Option 3)
-│   │   ├── extract/                # Extraction (config/, core/, utils/, main.py)
-│   │   ├── transform/              # Transformation (config/, core/, utils/, main.py)
-│   │   └── README.md               # Documentation ETL complète
-│   └── models/                      # Modèles ML
+│   ├── etl/                         # Pipeline ETL v3.0
+│   │   ├── extract/                # Extraction (API → raw)
+│   │   ├── transform/              # Transformation (raw → CSV)
+│   │   ├── load/                   # Chargement (CSV → PostgreSQL)
+│   │   └── main.py                 # Orchestrateur
+│   └── database/                    # Schema v3.0
+│       ├── models/                  # 17 modeles ORM SQLAlchemy
+│       ├── migrations/              # Alembic (4 migrations)
+│       └── config.py               # Connexion PostgreSQL
 │
 ├── notebooks/                       # Jupyter notebooks
-├── pyproject.toml                   # Configuration UV + dépendances
+├── docker-compose.yml               # PostgreSQL 15 + PostGIS
+├── pyproject.toml                   # Configuration UV + dependances
 └── README.md                        # CE FICHIER
 ```
 
 ---
 
-## 🛠️ Stack Technique
+## Stack Technique
 
 - **Python :** 3.11+
-- **Gestionnaire :** UV (10-100x plus rapide que pip)
-- **Data :** Pandas, NumPy
-- **Database :** PostgreSQL + PostGIS
-- **ML :** Scikit-Learn (Random Forest), XGBoost
+- **Gestionnaire :** UV
+- **Data :** Pandas, NumPy, PyArrow
+- **Database :** PostgreSQL 15 + PostGIS (Docker)
+- **ORM :** SQLAlchemy 2.0 + Alembic
+- **ML :** Scikit-Learn, XGBoost
 - **Viz :** Matplotlib, Seaborn, Plotly, Folium
 
 ---
 
-## 📊 Avancement (14h/25h - 56%)
+## Pipeline ETL v3.0
 
-| Phase | Statut | Durée |
+### Commande unique
+
+```bash
+uv run python -m src.etl.main
+```
+
+### Etapes individuelles
+
+```bash
+# 1. Extraction (API → data/raw/)
+uv run python -m src.etl.extract.main
+
+# 2. Transformation (data/raw/ → data/processed/)
+uv run python -m src.etl.transform.main
+
+# 3. Chargement (data/processed/ → PostgreSQL)
+uv run python -m src.etl.load.main
+```
+
+### Sources de donnees
+
+| Source | API | Donnees |
+|--------|-----|---------|
+| **Geographie** | geo.api.gouv.fr | Regions, departements, communes |
+| **Elections** | tabular-api.data.gouv.fr + Parquet | Participation + candidats par bureau |
+| **Securite** | data.gouv.fr (SSMSI) | Delinquance Bordeaux 2016-2024 |
+
+**Documentation ETL :** [src/etl/README.md](src/etl/README.md)
+
+---
+
+## Avancement (14h/25h - 56%)
+
+| Phase | Statut | Duree |
 |-------|--------|-------|
-| Phase 1 : Cadrage | ✅ TERMINÉE | 1h |
-| Phase 2 : Architecture | ✅ TERMINÉE | 5h |
-| Phase 3 : Data Engineering | ✅ TERMINÉE | 8h |
-| Phase 4 : Data Science | 🎯 PROCHAINE | 6h |
-| Phase 5 : Visualisation | ⏸️ EN ATTENTE | 4h |
-| Phase 6 : Revue Qualité | ⏸️ EN ATTENTE | 1h |
-
-### ✨ Nouveauté Phase 3
-- ✅ **Architecture modulaire** refactorisée (ADR-003)
-- ✅ **18 modules Python** (~1500 lignes)
-- ✅ **128 MB de données** téléchargées et transformées
-- ✅ **Documentation complète** (src/etl/README.md)
+| Phase 1 : Cadrage | TERMINEE | 1h |
+| Phase 2 : Architecture | TERMINEE | 5h |
+| Phase 3 : Data Engineering | TERMINEE | 8h |
+| Phase 4 : Data Science | PROCHAINE | 6h |
+| Phase 5 : Visualisation | EN ATTENTE | 4h |
+| Phase 6 : Revue Qualite | EN ATTENTE | 1h |
 
 ---
 
-## 🔄 Pipeline ETL (Architecture Modulaire)
-
-### Extraction des données
-
-```bash
-# Télécharger toutes les données (élections + sécurité)
-python -m src.etl.extract.main
-
-# Résultat : 128 MB dans data/raw/
-# - 4 fichiers élections (94 MB)
-# - 1 fichier sécurité (34 MB gzip)
-```
-
-### Transformation des données
-
-```bash
-# Nettoyer et filtrer pour Bordeaux
-python -m src.etl.transform.main
-
-# Résultat : 2 fichiers dans data/processed/
-# - elections/resultats_elections_bordeaux.csv (4 lignes)
-# - indicateurs/delinquance_bordeaux.csv (135 lignes)
-```
-
-### Pipeline complet
-
-```bash
-# Extraction + Transformation en une commande
-python -m src.etl.extract.main && python -m src.etl.transform.main
-```
-
-**Documentation détaillée :** [src/etl/README.md](src/etl/README.md)
-
----
-
-## 📚 Documentation
+## Documentation
 
 **Index complet :** [docs/README.md](docs/README.md)
 
 **Documents principaux :**
-- [ROADMAP.md](docs/01-project-management/ROADMAP.md) - Planning 25h (Phase 3 terminée)
-- [ARCHITECTURE.md](docs/02-architecture/ARCHITECTURE.md) - Pipeline ETL (v2.0)
-- [MCD.md](docs/02-architecture/MCD.md) - Modèle de données
-- [SOURCES_DONNEES.md](docs/03-data-sources/SOURCES_DONNEES.md) - URLs data.gouv.fr
-- [SETUP_UV.md](docs/04-setup-installation/SETUP_UV.md) - Installation UV
+- [ROADMAP](docs/01-project-management/ROADMAP.md) - Planning 25h
+- [ARCHITECTURE](docs/02-architecture/ARCHITECTURE.md) - Pipeline ETL v3.0
+- [MCD](docs/02-architecture/database/01-mcd.md) - Modele conceptuel (17 entites)
+- [MLD](docs/02-architecture/database/02-mld.md) - Schema relationnel + SQL
+- [Dictionnaire de donnees](docs/02-architecture/database/03-dictionnaire-donnees.md)
+- [Sources de donnees](docs/03-data-sources/SOURCES_DONNEES.md)
 
-**Architecture Decision Records (ADRs) :**
-- [ADR-001](docs/02-architecture/adr/ADR-001-choix-bdd.md) - Choix PostgreSQL vs NoSQL
+**ADRs :**
+- [ADR-001](docs/02-architecture/adr/ADR-001-choix-bdd.md) - Choix PostgreSQL
 - [ADR-002](docs/02-architecture/adr/ADR-002-choix-algo-ml.md) - Choix Random Forest
-- [ADR-003](docs/02-architecture/adr/ADR-003-architecture-modulaire-etl.md) - Architecture Option 3 ⭐ NOUVEAU
-
-**Documentation technique :**
-- [src/etl/README.md](src/etl/README.md) - Guide complet module ETL ⭐ NOUVEAU
+- [ADR-003](docs/02-architecture/adr/ADR-003-architecture-modulaire-etl.md) - Architecture ETL modulaire
+- [ADR-004](docs/02-architecture/adr/ADR-004-enrichissement-schema-bd.md) - Schema v3.0
 
 ---
 
-## 📞 Support
+## Support
 
-Consulter l'[index de la documentation](docs/README.md) ou contacter l'équipe projet.
+Consulter l'[index de la documentation](docs/README.md) ou contacter l'equipe projet.

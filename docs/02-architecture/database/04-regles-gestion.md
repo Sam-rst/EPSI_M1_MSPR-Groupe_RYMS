@@ -1,9 +1,12 @@
-# Règles de Gestion
+# Regles de Gestion
 
-**Version :** 2.0
+> **OBSOLETE** : Ce document decrit le schema v2.0 (5 tables). Le schema actuel est v3.0 (17 tables).
+> Voir [MLD v3.0](02-mld.md) et [Dictionnaire de Donnees v3.0](03-dictionnaire-donnees.md) pour la version a jour.
+
+**Version :** 2.0 (OBSOLETE - schema v3.0 deploye)
 **Date :** 2026-02-10
 **Auteur :** @tech
-**Statut :** Production-Ready
+**Statut :** Archive
 
 ---
 

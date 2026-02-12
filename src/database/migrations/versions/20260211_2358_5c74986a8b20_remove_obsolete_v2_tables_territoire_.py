@@ -19,12 +19,16 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
-    """Upgrade schema - Remove obsolete v2.0 tables."""
+    """Upgrade schema - Remove ALL obsolete v2.0 tables before v3.0 recreation."""
     # 1. Drop FK constraints pointing to territoire table (IF EXISTS)
     op.execute('ALTER TABLE IF EXISTS indicateur DROP CONSTRAINT IF EXISTS indicateur_id_territoire_fkey')
     op.execute('ALTER TABLE IF EXISTS prediction DROP CONSTRAINT IF EXISTS prediction_id_territoire_fkey')
 
-    # 2. Drop obsolete tables (IF EXISTS)
+    # 2. Drop ALL v2.0 tables (order: children first, then parents)
+    # indicateur depends on type_indicateur via FK
+    op.execute('DROP TABLE IF EXISTS indicateur CASCADE')
+    op.execute('DROP TABLE IF EXISTS prediction CASCADE')
+    op.execute('DROP TABLE IF EXISTS type_indicateur CASCADE')
     op.execute('DROP TABLE IF EXISTS election_result CASCADE')
     op.execute('DROP TABLE IF EXISTS territoire CASCADE')
 

@@ -1,181 +1,119 @@
-# Documentation Base de Données - Electio-Analytics
+# Documentation Base de Donnees - Electio-Analytics
 
-**Version :** 2.0
-**Date :** 2026-02-10
+**Version :** 3.0
+**Date :** 2026-02-12
 **Auteur :** @tech
-**Statut :** ✅ Production-Ready
-**SGBD :** PostgreSQL 15+ avec PostGIS
+**Statut :** Production-Ready
+**SGBD :** PostgreSQL 15+
 
 ---
 
-## 📚 Structure de la Documentation
+## Structure de la Documentation
 
-Cette documentation est organisée en modules thématiques pour faciliter la navigation et la maintenance.
+### Documents v3.0 (a jour)
 
-### 1. [Modèle Conceptuel de Données (MCD)](01-mcd.md)
-- Vue d'ensemble architecture
-- Diagramme Entité-Association (Crow's Foot)
-- Description des entités et relations
-- Cardinalités
+#### 1. [Modele Conceptuel de Donnees (MCD)](01-mcd.md)
+- Vue d'ensemble architecture v3.0
+- Diagramme Entite-Association
+- 17 entites, hierarchie geographique, systeme polymorphe
 
-### 2. [Modèle Logique de Données (MLD)](02-mld.md)
-- Schéma relationnel normalisé (3FN)
-- Clés primaires et étrangères
-- Tables détaillées en notation formelle
+#### 2. [Modele Logique de Donnees (MLD)](02-mld.md)
+- Schema relationnel normalise (3FN)
+- 17 tables avec definitions SQL completes
+- Cles primaires, etrangeres, contraintes CHECK
+- Diagramme Mermaid
 
-### 3. [Dictionnaire de Données](03-dictionnaire-donnees.md)
-- Description exhaustive de chaque colonne
-- Types de données et contraintes
+#### 3. [Dictionnaire de Donnees](03-dictionnaire-donnees.md)
+- Description exhaustive de chaque colonne (17 tables)
+- Types de donnees et contraintes
 - Exemples de valeurs
-- 5 tables documentées
+- Volumetrie reelle (~17 262 lignes)
 
-### 4. [Règles de Gestion](04-regles-gestion.md)
-- RG-01 à RG-07 : Règles métier
-- Implémentation technique
-- Justifications business
+### Documents v2.0 (archives - obsoletes)
 
-### 5. [Contraintes d'Intégrité](05-contraintes-integrite.md)
-- Contraintes de domaine (CHECK)
-- Contraintes référentielles (FK)
-- Contraintes d'unicité (UNIQUE)
+> Les documents suivants decrivent le schema v2.0 (5 tables) qui n'est plus en production.
+> Ils sont conserves pour reference historique uniquement.
 
-### 6. [Index et Optimisation](06-index-optimisation.md)
-- 18 indexes créés
-- Stratégies d'optimisation
-- Index composites, GIN, GiST
-
-### 7. [Volumétrie et Performance](07-volumetrie-performance.md)
-- Estimations volumétriques
-- Benchmarks PostgreSQL
-- Recommandations production
-
-### 8. [Évolutions Futures](08-evolutions-futures.md)
-- Roadmap schéma v3.0
-- Fonctionnalités planifiées
-- Priorités et complexité
+#### 4. [Regles de Gestion](04-regles-gestion.md) - OBSOLETE
+#### 5. [Contraintes d'Integrite](05-contraintes-integrite.md) - OBSOLETE
+#### 6. [Index et Optimisation](06-index-optimisation.md) - OBSOLETE
+#### 7. [Volumetrie et Performance](07-volumetrie-performance.md) - OBSOLETE
+#### 8. [Evolutions Futures](08-evolutions-futures.md) - OBSOLETE (v3.0 deploye)
 
 ---
 
-## 🎯 Accès Rapide
+## Acces Rapide
 
 | Besoin | Document |
 |--------|----------|
-| **Comprendre l'architecture globale** | [MCD](01-mcd.md) |
-| **Écrire une requête SQL** | [MLD](02-mld.md) |
-| **Connaître le type d'une colonne** | [Dictionnaire de données](03-dictionnaire-donnees.md) |
-| **Valider une règle métier** | [Règles de gestion](04-regles-gestion.md) |
-| **Optimiser une requête lente** | [Index et optimisation](06-index-optimisation.md) |
-| **Planifier la scalabilité** | [Volumétrie](07-volumetrie-performance.md) |
+| **Comprendre l'architecture** | [MCD](01-mcd.md) |
+| **Ecrire une requete SQL** | [MLD](02-mld.md) |
+| **Connaitre le type d'une colonne** | [Dictionnaire de donnees](03-dictionnaire-donnees.md) |
+| **Voir l'architecture ETL** | [ARCHITECTURE.md](../ARCHITECTURE.md) |
 
 ---
 
-## 📐 Principes de Design
-
-| Principe | Description |
-|----------|-------------|
-| **Normalisation** | 3FN (Troisième Forme Normale) |
-| **Extensibilité** | Pattern EAV hybride pour nouveaux indicateurs |
-| **Performance** | Indexation optimisée pour requêtes ML |
-| **Flexibilité** | Colonnes JSONB pour métadonnées variables |
-| **Intégrité** | Contraintes référentielles strictes (CASCADE) |
-
----
-
-## 🏗️ Architecture v2.0 - Aperçu
+## Architecture v3.0
 
 ```mermaid
 graph TD
-    TERRITOIRE["🏛️ TERRITOIRE<br/>(Référentiel Géographique)"]
+    subgraph Geographie
+        R[REGION] --> D[DEPARTEMENT]
+        D --> CA[CANTON]
+        D --> CO[COMMUNE]
+        CO --> AR[ARRONDISSEMENT]
+        CO --> BV[BUREAU_VOTE]
+    end
 
-    ELECTION["📊 ELECTION_RESULT<br/>(Spécialisée)"]
-    INDICATEUR["📈 INDICATEUR<br/>(Générique)"]
-    PREDICTION["🔮 PREDICTION<br/>(ML Output)"]
-    TYPE["📚 TYPE_INDICATEUR<br/>(Catalogue)"]
+    subgraph Elections
+        TE[TYPE_ELECTION] --> EL[ELECTION]
+        EL --> ET[ELECTION_TERRITOIRE]
+        ET --> RP[RESULTAT_PARTICIPATION]
+        ET --> RC[RESULTAT_CANDIDAT]
+    end
 
-    TERRITOIRE -->|1:N| ELECTION
-    TERRITOIRE -->|1:N| INDICATEUR
-    TERRITOIRE -->|1:N| PREDICTION
-    TYPE -->|1:N| INDICATEUR
+    subgraph Referentiels
+        C[CANDIDAT] --> CP[CANDIDAT_PARTI]
+        P[PARTI] --> CP
+        C --> RC
+    end
 
-    style TERRITOIRE fill:#e1f5ff,stroke:#0288d1,stroke-width:3px, color: #020202
-    style ELECTION fill:#fff3e0,stroke:#f57c00,stroke-width:2px, color: #020202
-    style INDICATEUR fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px, color: #020202
-    style PREDICTION fill:#e8f5e9,stroke:#388e3c,stroke-width:2px, color: #020202
-    style TYPE fill:#fce4ec,stroke:#c2185b,stroke-width:2px, color: #020202
+    subgraph Indicateurs
+        TI[TYPE_INDICATEUR] --> I[INDICATEUR]
+    end
+
+    PRED[PREDICTION]
 ```
 
-**5 tables principales :**
-- `territoire` : Référentiel géographique (IRIS, Bureaux, Communes)
-- `type_indicateur` : Catalogue des types d'indicateurs
-- `indicateur` : Table générique (Sécurité, Emploi, Démographie)
-- `election_result` : Résultats électoraux 2017 & 2022
-- `prediction` : Prédictions ML 2027
+**17 tables** reparties en 6 domaines :
+- **Geographique** (6) : region, departement, commune, canton, arrondissement, bureau_vote
+- **References electorales** (2) : type_election, election
+- **References politiques** (3) : candidat, parti, candidat_parti
+- **Resultats** (3) : election_territoire, resultat_participation, resultat_candidat
+- **Indicateurs** (2) : type_indicateur, indicateur
+- **ML** (1) : prediction
 
 ---
 
-## 🚀 Démarrage Rapide
+## Statistiques Schema v3.0
 
-### Installation PostgreSQL
-```bash
-# Voir src/database/README.md pour instructions complètes
-sudo apt install postgresql postgis
-createdb electio_analytics
-```
-
-### Exécuter la Migration
-```bash
-psql -U admin -d electio_analytics -f src/database/migrations/001_initial_schema.sql
-```
-
-### Valider l'Installation
-```sql
-SELECT * FROM validate_database_integrity();
-```
-
----
-
-## 📊 Statistiques Schéma
-
-| Métrique | Valeur |
+| Metrique | Valeur |
 |----------|--------|
-| **Tables** | 5 |
-| **Contraintes FK** | 4 |
-| **Indexes** | 18 |
-| **Vues** | 2 |
-| **Types d'indicateurs** | 20 (pré-chargés) |
-| **Volumétrie estimée** | ~24 300 lignes (~4 MB) |
+| **Tables** | 17 |
+| **Contraintes FK** | 15 |
+| **Indexes** | 30+ |
+| **Donnees chargees** | ~17 262 lignes |
 
 ---
 
-## 🔗 Liens Utiles
+## Historique des Versions
 
-- [Script de migration](../../../src/database/migrations/001_initial_schema.sql)
-- [Configuration Python](../../../src/database/config.py)
-- [Module Database README](../../../src/database/README.md)
-- [Archive versions précédentes](versions/)
+| Version | Date | Statut | Description |
+|---------|------|--------|-------------|
+| **3.0** | 2026-02-12 | **ACTUELLE** | Hierarchie geographique, systeme polymorphe, 17 tables |
+| **2.0** | 2026-02-10 | Archive | Architecture EAV hybride, 5 tables |
+| **1.0** | 2026-02-09 | Archive | Schema initial, 5 tables separees |
 
----
-
-## 📝 Historique des Versions
-
-| Version | Date | Statut | Description | Documentation |
-|---------|------|--------|-------------|---------------|
-| **2.0** | 2026-02-10 | ✅ **ACTUELLE** | Architecture scalable (EAV hybride) | [MCD](01-mcd.md) · [MLD](02-mld.md) |
-| **1.0** | 2026-02-09 | 🗄️ Archivée | Schéma initial (5 tables séparées) | [Archive v1.0](versions/v1.0/) |
-
-### 📂 Gestion des Versions
-
-- **[CHANGELOG](versions/CHANGELOG.md)** - Historique détaillé des changements
-- **[VERSIONS](versions/VERSIONS.md)** - Tableau comparatif v1.0 vs v2.0
-- **[Archives](versions/)** - Versions précédentes du schéma
-
-### 🔄 Politique de Versioning
-
-Ce projet utilise le **versioning sémantique** :
-- **MAJOR** (v2.0) : Breaking changes (incompatibilité avec versions précédentes)
-- **MINOR** (v2.1) : Nouvelles fonctionnalités rétrocompatibles
-- **PATCH** (v2.0.1) : Corrections de bugs et optimisations
-
----
-
-**Prochaine étape :** Consulter le [MCD](01-mcd.md) pour comprendre l'architecture conceptuelle.
+- **[CHANGELOG](versions/CHANGELOG.md)** - Historique detaille
+- **[VERSIONS](versions/VERSIONS.md)** - Tableau comparatif
+- **[Archives](versions/)** - Versions precedentes

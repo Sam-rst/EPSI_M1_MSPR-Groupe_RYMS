@@ -127,46 +127,41 @@ python -c "import pandas; print(pandas.__version__)"
 
 ---
 
-## Structure du Projet après Setup
+## Structure du Projet apres Setup
 
 ```
 EPSI_M1_MSPR-Groupe_RYMS/
-├── .venv/                     ← Environnement virtuel créé par UV
-├── .python-version            ← Version Python (3.11)
-├── pyproject.toml             ← Configuration projet + dépendances
-├── uv.lock                    ← Lockfile (versions exactes des packages)
-├── .env.example               ← Template variables d'environnement
-├── .gitignore                 ← Fichiers à ignorer (venv, data, logs)
+├── .venv/                     <- Environnement virtuel (UV)
+├── .python-version            <- Version Python (3.11)
+├── pyproject.toml             <- Configuration + dependances
+├── uv.lock                    <- Lockfile deterministe
+├── .env.example               <- Template variables d'environnement
+├── docker-compose.yml         <- PostgreSQL 15 + PostGIS
 │
 ├── data/
-│   ├── raw/                   ← Données brutes (CSV téléchargés)
-│   └── processed/             ← Données nettoyées
+│   ├── raw/                   <- Donnees brutes (API)
+│   └── processed/             <- Donnees transformees (CSV)
 │
 ├── docs/
-│   ├── ROADMAP.md
-│   ├── MCD.md
-│   ├── ARCHITECTURE.md
-│   ├── SOURCES_DONNEES.md
-│   ├── SETUP_UV.md            ← CE FICHIER
-│   └── adr/
-│       ├── ADR-001-choix-bdd.md
-│       └── ADR-002-choix-algo-ml.md
+│   ├── 01-project-management/ <- ROADMAP, planning
+│   ├── 02-architecture/       <- MCD, MLD, ADRs, ARCHITECTURE
+│   ├── 03-data-sources/       <- Sources de donnees
+│   └── 04-setup-installation/ <- Guides setup (CE FICHIER)
 │
 ├── src/
-│   ├── __init__.py
-│   ├── etl/
-│   │   ├── extract/
-│   │   │   ├── download_elections.py
-│   │   │   └── README.md
-│   │   ├── transform/
-│   │   └── load/
-│   └── models/
-│       ├── train_model.py
-│       └── ...
+│   ├── etl/                   <- Pipeline ETL v3.0
+│   │   ├── extract/           <- Extraction API
+│   │   ├── transform/         <- Transformation
+│   │   ├── load/              <- Chargement PostgreSQL
+│   │   └── main.py            <- Orchestrateur
+│   └── database/              <- Schema v3.0 (17 tables)
+│       ├── models/            <- Modeles ORM SQLAlchemy
+│       ├── migrations/        <- Alembic
+│       └── config.py          <- Connexion DB
 │
-├── notebooks/                 ← Jupyter notebooks (analyses)
-├── logs/                      ← Logs ETL et ML
-└── tests/                     ← Tests unitaires (pytest)
+├── notebooks/                 <- Jupyter notebooks
+├── logs/                      <- Logs ETL
+└── tests/                     <- Tests unitaires (pytest)
 ```
 
 ---
@@ -192,16 +187,18 @@ uv remove pandas
 uv sync --upgrade
 ```
 
-### Exécuter des Scripts
+### Executer des Scripts
 
 ```bash
-# Exécuter un script Python avec l'environnement UV
-uv run python src/etl/extract/download_elections.py
+# Pipeline ETL complet
+uv run python -m src.etl.main
 
-# Exécuter un script CLI défini dans pyproject.toml
-uv run electio-download
+# Etapes individuelles
+uv run python -m src.etl.extract.main
+uv run python -m src.etl.transform.main
+uv run python -m src.etl.load.main
 
-# Lancer Jupyter (si notebooks installés)
+# Lancer Jupyter (si notebooks installes)
 uv run jupyter lab
 ```
 
@@ -280,22 +277,20 @@ print('✅ Toutes les librairies sont installées correctement')
 "
 ```
 
-### Test 2 : Exécuter le Script de Téléchargement
+### Test 2 : Executer le Pipeline ETL
 
 ```bash
-# Télécharger les données électorales
-uv run python src/etl/extract/download_elections.py
+# Lancer le pipeline complet (Extract + Transform + Load)
+uv run python -m src.etl.main
 ```
 
 **Sortie attendue :**
 ```
-======================================================================
-🗳️  TÉLÉCHARGEMENT DES DONNÉES ÉLECTORALES
-======================================================================
-📥 Traitement : 2017_tour1
-⬇️  Téléchargement : https://www.data.gouv.fr/...
-✅ Téléchargé : data/raw/elections/presidentielles_2017_tour1_bureaux_vote.csv
-...
+PIPELINE ETL v3.0 - ELECTIO-ANALYTICS - GIRONDE
+[OK] Extract terminee
+[OK] Transform terminee
+[OK] Load termine: 17262 lignes inserees
+[OK] PIPELINE ETL v3.0 TERMINE AVEC SUCCES
 ```
 
 ### Test 3 : Lancer Jupyter (Optionnel)
@@ -324,8 +319,8 @@ uv sync
 ### 2. Travailler sur le Code
 
 ```bash
-# Lancer un script
-uv run python src/etl/extract/download_elections.py
+# Lancer le pipeline ETL
+uv run python -m src.etl.main
 
 # Lancer les tests
 uv run pytest
@@ -446,19 +441,17 @@ uv cache clean
 
 ---
 
-## Prochaines Étapes
+## Prochaines Etapes
 
-Une fois l'environnement configuré :
+Une fois l'environnement configure :
 
-1. ✅ Vérifier que toutes les dépendances sont installées (`uv sync --all-extras`)
-2. ✅ Configurer `.env` avec les variables d'environnement
-3. ✅ Tester le script de téléchargement (`uv run python src/etl/extract/download_elections.py`)
-4. 🚀 Lancer Phase 3 - Data Engineering
+1. Verifier les dependances : `uv sync --all-extras`
+2. Configurer `.env` avec les variables d'environnement
+3. Demarrer PostgreSQL : `docker compose up -d`
+4. Creer le schema : `uv run alembic -c src/database/alembic.ini upgrade head`
+5. Lancer le pipeline ETL : `uv run python -m src.etl.main`
 
-```bash
-# Phase 3 : Télécharger les données
-uv run python src/etl/extract/download_elections.py
-```
+Voir [SETUP_DATABASE.md](SETUP_DATABASE.md) pour le detail de l'installation DB.
 
 ---
 

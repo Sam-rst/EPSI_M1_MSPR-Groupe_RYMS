@@ -1,7 +1,7 @@
-# Dictionnaire de Données
+# Dictionnaire de Donnees
 
-**Version :** 2.0
-**Date :** 2026-02-10
+**Version :** 3.0
+**Date :** 2026-02-12
 **Auteur :** @tech
 **Statut :** Production-Ready
 
@@ -9,295 +9,467 @@
 
 ## Vue d'Ensemble
 
-Le dictionnaire de données documente exhaustivement chaque colonne des 5 tables du schéma v2.0 :
-- Types de données PostgreSQL
-- Contraintes et valeurs par défaut
-- Description fonctionnelle
-- Exemples de valeurs
+Le dictionnaire de donnees documente exhaustivement les **17 tables** du schema v3.0, organise en 6 domaines :
+
+| Domaine | Tables | Description |
+|---------|--------|-------------|
+| Hierarchie geographique | 6 | region, departement, commune, canton, arrondissement, bureau_vote |
+| References electorales | 2 | type_election, election |
+| References politiques | 3 | parti, candidat, candidat_parti |
+| Resultats electoraux | 3 | election_territoire, resultat_participation, resultat_candidat |
+| Indicateurs socio-economiques | 2 | type_indicateur, indicateur |
+| Predictions ML | 1 | prediction |
+
+**Systeme polymorphe** : Les tables resultat_participation, resultat_candidat, indicateur et prediction utilisent un couple `(id_territoire, type_territoire)` permettant de lier les donnees a n'importe quel niveau geographique.
 
 ---
 
-## Table 1 : `territoire`
+## 1. Hierarchie Geographique
 
-**Description :** Référentiel géographique centralisant les divisions territoriales (IRIS, Bureaux de vote, Communes, Arrondissements).
+### Table `region`
+
+**Description :** Regions administratives (niveau le plus haut de la hierarchie geographique).
 
 | # | Colonne | Type | Null | Contrainte | Description | Exemple |
 |---|---------|------|------|------------|-------------|---------|
-| 1 | `id_territoire` | VARCHAR(20) | ✗ | PK | Identifiant unique territoire (code INSEE ou composite) | `'33063'`, `'IRIS_330630101'`, `'BV_33063_001'` |
-| 2 | `code_insee` | VARCHAR(5) | ✗ | | Code INSEE de la commune de rattachement | `'33063'` (Bordeaux) |
-| 3 | `type_territoire` | VARCHAR(20) | ✗ | CHECK IN | Type géographique (`COMMUNE`, `IRIS`, `BUREAU_VOTE`, `ARRONDISSEMENT`) | `'COMMUNE'`, `'IRIS'` |
-| 4 | `nom_territoire` | VARCHAR(100) | ✗ | | Nom lisible pour affichage | `'Bordeaux'`, `'Bordeaux Centre IRIS 0101'` |
-| 5 | `geometry` | GEOMETRY(POLYGON, 4326) | ✓ | | Polygone géométrique WGS84 (PostGIS) | `POLYGON((...))`  |
-| 6 | `population` | INTEGER | ✓ | ≥ 0 | Population totale (dernière donnée INSEE) | `252040`, `5000`, `800` |
-| 7 | `metadata` | JSONB | ✓ | | Métadonnées flexibles (superficie, densité, etc.) | `{"superficie_km2": 49.36, "densite": 5103}` |
-| 8 | `created_at` | TIMESTAMP | ✓ | DEFAULT NOW() | Date de création de l'enregistrement | `'2026-02-10 10:30:00'` |
-| 9 | `updated_at` | TIMESTAMP | ✓ | DEFAULT NOW() | Date de dernière modification | `'2026-02-10 14:20:00'` |
-
-### Notes
-- **`id_territoire`** : Format libre permettant codes INSEE (`33063`) ou composites (`IRIS_330630101`)
-- **`geometry`** : Utilise système de coordonnées WGS84 (SRID 4326) - standard GPS
-- **`metadata`** : Champs flexibles selon type (ex: `arrondissement_parent` pour IRIS)
+| 1 | `id_region` | VARCHAR(2) | Non | PK | Code region INSEE | `'75'` |
+| 2 | `code_insee` | VARCHAR(2) | Non | | Code INSEE region | `'75'` |
+| 3 | `nom_region` | VARCHAR(100) | Non | | Nom de la region | `'Nouvelle-Aquitaine'` |
+| 4 | `population` | INTEGER | Oui | | Population totale | `6010289` |
+| 5 | `created_at` | TIMESTAMP | Non | DEFAULT NOW() | Date de creation | `'2026-02-12 10:00:00'` |
 
 ---
 
-## Table 2 : `type_indicateur`
+### Table `departement`
 
-**Description :** Catalogue référençant tous les types d'indicateurs socio-économiques disponibles (Sécurité, Emploi, Démographie).
+**Description :** Departements, rattaches a une region via FK.
 
 | # | Colonne | Type | Null | Contrainte | Description | Exemple |
 |---|---------|------|------|------------|-------------|---------|
-| 1 | `id_type` | SERIAL | ✗ | PK | Identifiant auto-incrémenté | `1`, `2`, `3` |
-| 2 | `code_type` | VARCHAR(50) | ✗ | UNIQUE | Code identifiant unique du type | `'SECURITE_CAMBRIOLAGES'`, `'EMPLOI_TAUX_CHOMAGE'` |
-| 3 | `categorie` | VARCHAR(50) | ✗ | | Catégorie macro regroupant les types | `'SECURITE'`, `'EMPLOI'`, `'DEMOGRAPHIE'` |
-| 4 | `nom_affichage` | VARCHAR(100) | ✗ | | Libellé interface utilisateur | `'Cambriolages de logement'`, `'Taux de chômage'` |
-| 5 | `description` | TEXT | ✓ | | Description détaillée de l'indicateur | `'Nombre de cambriolages de résidences principales signalés aux forces de sécurité'` |
-| 6 | `unite_mesure` | VARCHAR(50) | ✓ | | Unité de la valeur (`nombre`, `pourcentage`, `euros`, etc.) | `'nombre'`, `'pourcentage'`, `'taux_pour_1000_hab'` |
-| 7 | `source_officielle` | VARCHAR(100) | ✓ | | Organisme source officiel | `'SSMSI'` (sécurité), `'INSEE'` (emploi/démo) |
-| 8 | `frequence` | VARCHAR(20) | ✓ | | Périodicité de mise à jour | `'ANNUEL'`, `'TRIMESTRIEL'`, `'MENSUEL'` |
-| 9 | `date_debut_disponibilite` | DATE | ✓ | | Première année où les données sont disponibles | `'2017-01-01'`, `'2015-01-01'` |
-| 10 | `actif` | BOOLEAN | ✓ | DEFAULT TRUE | Indicateur activé (permet soft delete) | `TRUE`, `FALSE` |
-| 11 | `schema_metadata` | JSONB | ✓ | | Schéma JSON de validation pour `indicateur.metadata` | `{"type": "object", "properties": {...}}` |
-| 12 | `created_at` | TIMESTAMP | ✓ | DEFAULT NOW() | Date de création du type | `'2026-02-10 09:00:00'` |
-
-### Notes
-- **`code_type`** : Convention de nommage `CATEGORIE_NOM_SPECIFIQUE` (ex: `SECURITE_VOLS_VEHICULES`)
-- **`actif`** : Permet de désactiver un type sans le supprimer (règle métier RG-07)
-- **`schema_metadata`** : Schéma JSON Schema pour valider les métadonnées dans table `indicateur`
-
-### Exemples de types pré-chargés
-
-| id_type | code_type | categorie | nom_affichage | unite_mesure |
-|---------|-----------|-----------|---------------|--------------|
-| 1 | `SECURITE_CAMBRIOLAGES` | SECURITE | Cambriolages de logement | nombre |
-| 2 | `SECURITE_VOLS_VEHICULES` | SECURITE | Vols de véhicules | nombre |
-| 3 | `EMPLOI_TAUX_CHOMAGE` | EMPLOI | Taux de chômage | pourcentage |
-| 4 | `DEMO_POPULATION` | DEMOGRAPHIE | Population totale | nombre |
+| 1 | `id_departement` | VARCHAR(3) | Non | PK | Code departement | `'33'` |
+| 2 | `id_region` | VARCHAR(2) | Non | FK -> region, CASCADE | Region parente | `'75'` |
+| 3 | `code_insee` | VARCHAR(3) | Non | | Code INSEE departement | `'33'` |
+| 4 | `nom_departement` | VARCHAR(100) | Non | | Nom du departement | `'Gironde'` |
+| 5 | `population` | INTEGER | Oui | | Population totale | `1623749` |
+| 6 | `chef_lieu` | VARCHAR(5) | Oui | | Code INSEE du chef-lieu | `'33063'` |
+| 7 | `created_at` | TIMESTAMP | Non | DEFAULT NOW() | Date de creation | `'2026-02-12 10:00:00'` |
 
 ---
 
-## Table 3 : `indicateur`
+### Table `commune`
 
-**Description :** Table générique stockant TOUS les indicateurs socio-économiques (Pattern EAV). Permet l'ajout de nouvelles sources sans modification de schéma.
+**Description :** Communes, rattachees a un departement via FK.
 
 | # | Colonne | Type | Null | Contrainte | Description | Exemple |
 |---|---------|------|------|------------|-------------|---------|
-| 1 | `id_indicateur` | BIGSERIAL | ✗ | PK | Identifiant auto-incrémenté | `1`, `2`, `3` |
-| 2 | `id_territoire` | VARCHAR(20) | ✗ | FK → territoire | Référence au territoire concerné | `'33063'`, `'IRIS_330630101'` |
-| 3 | `id_type` | INTEGER | ✗ | FK → type_indicateur | Référence au type d'indicateur | `1` (cambriolages), `2` (vols) |
-| 4 | `annee` | INTEGER | ✗ | [2000,2100] | Année de référence de l'indicateur | `2017`, `2022` |
-| 5 | `periode` | VARCHAR(20) | ✓ | | Période infra-annuelle si applicable (`T1`, `M03`, etc.) | `'T1'`, `'M03'`, `NULL` (annuel) |
-| 6 | `valeur_numerique` | DECIMAL(15,4) | ✓ | | Valeur principale (nombre, pourcentage, montant) | `504.0`, `8.5`, `252040.0` |
-| 7 | `valeur_texte` | TEXT | ✓ | | Valeur qualitative si applicable | `'Élevé'`, `'Stable'`, `NULL` |
-| 8 | `metadata` | JSONB | ✓ | | Métadonnées spécifiques au type (validées par `type_indicateur.schema_metadata`) | `{"taux_pour_1000_hab": 2.0, "evolution_n_1": -5.2}` |
-| 9 | `source_detail` | VARCHAR(200) | ✓ | | Source précise (version dataset, URL, etc.) | `'SSMSI_2024_GEOGRAPHIE2025'`, `'INSEE_RP2021'` |
-| 10 | `fiabilite` | VARCHAR(20) | ✓ | DEFAULT 'CONFIRME' | Niveau de fiabilité (`CONFIRME`, `ESTIME`, `PROVISOIRE`, `REVISION`) | `'CONFIRME'`, `'ESTIME'` |
-| 11 | `created_at` | TIMESTAMP | ✓ | DEFAULT NOW() | Date d'insertion de l'enregistrement | `'2026-02-10 11:00:00'` |
-
-### Contrainte d'unicité
-**UK :** `(id_territoire, id_type, annee, periode)`
-- Évite les doublons : 1 seule valeur par territoire/type/année/période
-
-### Notes
-- **`valeur_numerique`** : Colonne principale (80% des cas) - utilisée pour ML
-- **`valeur_texte`** : Utilisée pour données qualitatives (rares)
-- **`metadata`** : Champs variables selon type (ex: taux normalisés, comparaisons temporelles)
-- **`fiabilite`** : Règle métier RG-06 pour qualifier la source
-
-### Exemples de données
-
-| id_indicateur | id_territoire | id_type | annee | periode | valeur_numerique | fiabilite |
-|---------------|---------------|---------|-------|---------|------------------|-----------|
-| 1 | `33063` | 1 | 2022 | NULL | 504.0 | CONFIRME |
-| 2 | `33063` | 3 | 2022 | T1 | 8.5 | ESTIME |
-| 3 | `IRIS_330630101` | 4 | 2021 | NULL | 5000.0 | CONFIRME |
+| 1 | `id_commune` | VARCHAR(5) | Non | PK | Code INSEE commune | `'33063'` |
+| 2 | `id_departement` | VARCHAR(3) | Non | FK -> departement, CASCADE | Departement parent | `'33'` |
+| 3 | `code_insee` | VARCHAR(5) | Non | UNIQUE | Code INSEE unique | `'33063'` |
+| 4 | `nom_commune` | VARCHAR(100) | Non | | Nom de la commune | `'Bordeaux'` |
+| 5 | `population` | INTEGER | Oui | | Population totale | `257068` |
+| 6 | `superficie_km2` | DECIMAL(10,2) | Oui | | Superficie en km2 | `49.36` |
+| 7 | `created_at` | TIMESTAMP | Non | DEFAULT NOW() | Date de creation | `'2026-02-12 10:00:00'` |
+| 8 | `updated_at` | TIMESTAMP | Non | DEFAULT NOW() | Derniere modification | `'2026-02-12 10:00:00'` |
 
 ---
 
-## Table 4 : `election_result`
+### Table `canton`
 
-**Description :** Résultats électoraux présidentielles 2017 & 2022 (1er et 2nd tours). Table spécialisée pour performance et intégrité.
+**Description :** Cantons, rattaches a un departement via FK.
 
 | # | Colonne | Type | Null | Contrainte | Description | Exemple |
 |---|---------|------|------|------------|-------------|---------|
-| 1 | `id_result` | BIGSERIAL | ✗ | PK | Identifiant auto-incrémenté | `1`, `2`, `3` |
-| 2 | `id_territoire` | VARCHAR(20) | ✗ | FK → territoire | Référence au bureau de vote ou IRIS | `'BV_33063_001'`, `'IRIS_330630101'` |
-| 3 | `annee` | INTEGER | ✗ | [2000,2100] | Année de l'élection | `2017`, `2022` |
-| 4 | `tour` | INTEGER | ✗ | {1, 2} | Numéro du tour (1 ou 2) | `1`, `2` |
-| 5 | `candidat` | VARCHAR(100) | ✗ | | Nom complet du candidat | `'Emmanuel MACRON'`, `'Marine LE PEN'` |
-| 6 | `parti` | VARCHAR(50) | ✓ | | Parti politique (sigle) | `'LREM'`, `'RN'`, `'LFI'`, `'LR'` |
-| 7 | `nombre_voix` | INTEGER | ✗ | ≥ 0 | Nombre de voix obtenues | `1250`, `450` |
-| 8 | `pourcentage_voix` | DECIMAL(5,2) | ✗ | [0,100] | Pourcentage des voix exprimées | `28.45`, `20.22` |
-| 9 | `nombre_inscrits` | INTEGER | ✗ | ≥ 0 | Nombre d'inscrits au bureau | `4500` |
-| 10 | `nombre_votants` | INTEGER | ✗ | ≥ 0 | Nombre de votants (participations) | `3390` |
-| 11 | `nombre_exprimes` | INTEGER | ✗ | ≥ 0 | Nombre de voix exprimées (votes valides) | `3300` |
-| 12 | `taux_participation` | DECIMAL(5,2) | ✗ | [0,100] | Taux de participation (%) | `75.33`, `78.50` |
-| 13 | `metadata` | JSONB | ✓ | | Métadonnées additionnelles (nuance, étiquette, etc.) | `{"nuance": "EXG", "candidat_sortant": true}` |
-| 14 | `created_at` | TIMESTAMP | ✓ | DEFAULT NOW() | Date d'insertion de l'enregistrement | `'2026-02-10 12:00:00'` |
-
-### Contrainte d'unicité
-**UK :** `(id_territoire, annee, tour, candidat)`
-- 1 seule ligne par candidat/bureau/tour (règle métier RG-02)
-
-### Notes
-- **Cohérence votes (RG-03) :** `nombre_voix ≤ nombre_exprimes ≤ nombre_votants ≤ nombre_inscrits`
-  - Validé en applicatif (trigger optionnel en v3.0)
-- **`candidat`** : Nom complet en MAJUSCULES (standardisé)
-- **`parti`** : Sigle officiel ou `NULL` si candidat sans étiquette
-
-### Exemples de données
-
-| id_result | id_territoire | annee | tour | candidat | parti | nombre_voix | pourcentage_voix | taux_participation |
-|-----------|---------------|-------|------|----------|-------|-------------|------------------|--------------------|
-| 1 | `BV_33063_001` | 2022 | 1 | Emmanuel MACRON | LREM | 450 | 28.45 | 75.33 |
-| 2 | `BV_33063_001` | 2022 | 1 | Marine LE PEN | RN | 320 | 20.22 | 75.33 |
-| 3 | `BV_33063_001` | 2022 | 2 | Emmanuel MACRON | LREM | 625 | 58.74 | 78.50 |
+| 1 | `id_canton` | VARCHAR(10) | Non | PK | Identifiant canton | `'3301'` |
+| 2 | `id_departement` | VARCHAR(3) | Non | FK -> departement, CASCADE | Departement parent | `'33'` |
+| 3 | `code_canton` | VARCHAR(10) | Non | | Code du canton | `'3301'` |
+| 4 | `numero_canton` | INTEGER | Oui | | Numero du canton | `1` |
+| 5 | `nom_canton` | VARCHAR(100) | Non | | Nom du canton | `'Bordeaux-1'` |
+| 6 | `population` | INTEGER | Oui | | Population totale | `45000` |
+| 7 | `created_at` | TIMESTAMP | Non | DEFAULT NOW() | Date de creation | `'2026-02-12 10:00:00'` |
 
 ---
 
-## Table 5 : `prediction`
+### Table `arrondissement`
 
-**Description :** Prédictions électorales 2027 générées par les modèles Machine Learning. Traçabilité complète (modèle, version, métriques).
+**Description :** Arrondissements municipaux, rattaches a une commune via FK.
 
 | # | Colonne | Type | Null | Contrainte | Description | Exemple |
 |---|---------|------|------|------------|-------------|---------|
-| 1 | `id_prediction` | BIGSERIAL | ✗ | PK | Identifiant auto-incrémenté | `1`, `2`, `3` |
-| 2 | `id_territoire` | VARCHAR(20) | ✗ | FK → territoire | Référence au territoire de prédiction | `'IRIS_330630101'`, `'BV_33063_001'` |
-| 3 | `candidat` | VARCHAR(100) | ✗ | | Nom du candidat prédit | `'Emmanuel MACRON'`, `'Marine LE PEN'` |
-| 4 | `parti` | VARCHAR(50) | ✓ | | Parti politique anticipé | `'RE'`, `'RN'`, `'LFI'` |
-| 5 | `annee_prediction` | INTEGER | ✓ | [2025,2050] | Année de l'élection prédite | `2027`, `2032` |
-| 6 | `tour` | INTEGER | ✗ | {1, 2} | Tour prédit (1 ou 2) | `1`, `2` |
-| 7 | `pourcentage_predit` | DECIMAL(5,2) | ✗ | [0,100] | Pourcentage de voix prédit | `32.15`, `25.30` |
-| 8 | `intervalle_confiance_inf` | DECIMAL(5,2) | ✓ | [0,100] | Borne inférieure intervalle confiance 95% | `29.80`, `23.10` |
-| 9 | `intervalle_confiance_sup` | DECIMAL(5,2) | ✓ | [0,100] | Borne supérieure intervalle confiance 95% | `34.50`, `27.50` |
-| 10 | `modele_utilise` | VARCHAR(50) | ✗ | | Nom de l'algorithme ML | `'RandomForest'`, `'XGBoost'`, `'LinearRegression'` |
-| 11 | `version_modele` | VARCHAR(20) | ✓ | | Version du modèle (semantic versioning) | `'v1.2.0'`, `'v2.0.0-beta'` |
-| 12 | `metriques_modele` | JSONB | ✓ | | Métriques de performance (R², MAE, RMSE, etc.) | `{"r2": 0.72, "mae": 2.3, "rmse": 3.1}` |
-| 13 | `features_utilisees` | JSONB | ✓ | | Liste des features ML utilisées | `["taux_chomage", "criminalite_totale", "population"]` |
-| 14 | `date_generation` | TIMESTAMP | ✓ | DEFAULT NOW() | Date/heure de génération de la prédiction | `'2026-02-10 15:00:00'` |
-
-### Contrainte d'unicité
-**UK :** `(id_territoire, candidat, tour, annee_prediction, version_modele)`
-- Permet versioning des prédictions (plusieurs modèles/versions)
-
-### Notes
-- **Traçabilité (RG-05) :** Toutes prédictions référencent le modèle et ses métriques
-- **`intervalle_confiance_*`** : Calculé selon `confidence_level` du modèle (95% standard)
-- **`metriques_modele`** : Métriques calculées sur jeu de test (cross-validation)
-- **`features_utilisees`** : Permet audit des variables explicatives
-
-### Exemples de données
-
-| id_prediction | id_territoire | candidat | tour | pourcentage_predit | IC_inf | IC_sup | modele_utilise | version | R² |
-|---------------|---------------|----------|------|--------------------|--------|--------|----------------|---------|-----|
-| 1 | `IRIS_330630101` | Emmanuel MACRON | 1 | 32.15 | 29.80 | 34.50 | RandomForest | v1.2.0 | 0.72 |
-| 2 | `IRIS_330630101` | Marine LE PEN | 1 | 25.30 | 23.10 | 27.50 | RandomForest | v1.2.0 | 0.72 |
-| 3 | `IRIS_330630101` | Emmanuel MACRON | 2 | 58.20 | 55.00 | 61.40 | XGBoost | v2.0.0 | 0.78 |
+| 1 | `id_arrondissement` | VARCHAR(10) | Non | PK | Identifiant arrondissement | `'33063_01'` |
+| 2 | `id_commune` | VARCHAR(5) | Non | FK -> commune, CASCADE | Commune parente | `'33063'` |
+| 3 | `numero_arrondissement` | INTEGER | Oui | | Numero de l'arrondissement | `1` |
+| 4 | `nom_arrondissement` | VARCHAR(100) | Oui | | Nom de l'arrondissement | `'Bordeaux Centre'` |
+| 5 | `population` | INTEGER | Oui | | Population totale | `40000` |
+| 6 | `created_at` | TIMESTAMP | Non | DEFAULT NOW() | Date de creation | `'2026-02-12 10:00:00'` |
 
 ---
 
-## Types de Données PostgreSQL
+### Table `bureau_vote`
+
+**Description :** Bureaux de vote, rattaches a une commune et optionnellement a un arrondissement.
+
+| # | Colonne | Type | Null | Contrainte | Description | Exemple |
+|---|---------|------|------|------------|-------------|---------|
+| 1 | `id_bureau` | VARCHAR(15) | Non | PK | Identifiant unique bureau | `'33063_001'` |
+| 2 | `id_commune` | VARCHAR(5) | Non | FK -> commune, CASCADE | Commune de rattachement | `'33063'` |
+| 3 | `id_arrondissement` | VARCHAR(10) | Oui | FK -> arrondissement, SET NULL | Arrondissement (si applicable) | `'33063_01'` |
+| 4 | `code_bureau` | VARCHAR(10) | Non | | Code du bureau | `'001'` |
+| 5 | `nom_bureau` | VARCHAR(200) | Oui | | Nom du bureau | `'Ecole Gambetta'` |
+| 6 | `adresse` | TEXT | Oui | | Adresse du bureau | `'12 rue Gambetta, Bordeaux'` |
+| 7 | `nombre_inscrits` | INTEGER | Oui | | Nombre d'inscrits | `1200` |
+| 8 | `created_at` | TIMESTAMP | Non | DEFAULT NOW() | Date de creation | `'2026-02-12 10:00:00'` |
+| 9 | `updated_at` | TIMESTAMP | Non | DEFAULT NOW() | Derniere modification | `'2026-02-12 10:00:00'` |
+
+**Contrainte d'unicite :** `(id_commune, code_bureau)`
+
+---
+
+## 2. References Electorales
+
+### Table `type_election`
+
+**Description :** Types d'elections supportes (presidentielle, legislative, municipale, etc.).
+
+| # | Colonne | Type | Null | Contrainte | Description | Exemple |
+|---|---------|------|------|------------|-------------|---------|
+| 1 | `id_type_election` | SERIAL | Non | PK | Identifiant auto-incremente | `1` |
+| 2 | `code_type` | VARCHAR(20) | Non | UNIQUE, CHECK IN | Code du type d'election | `'PRES'` |
+| 3 | `nom_type` | VARCHAR(100) | Non | | Nom complet | `'Presidentielle'` |
+| 4 | `mode_scrutin` | VARCHAR(50) | Oui | | Mode de scrutin | `'Uninominal majoritaire'` |
+| 5 | `niveau_geographique` | VARCHAR(50) | Oui | | Niveau geographique | `'National'` |
+| 6 | `description` | TEXT | Oui | | Description detaillee | `'Election du president...'` |
+| 7 | `created_at` | TIMESTAMP | Non | DEFAULT NOW() | Date de creation | `'2026-02-12 10:00:00'` |
+
+**Check :** `code_type IN ('PRES', 'LEG', 'MUN', 'EUR', 'REG', 'DEP', 'SENAT')`
+
+---
+
+### Table `election`
+
+**Description :** Instances d'elections specifiques (annee, dates, nombre de tours).
+
+| # | Colonne | Type | Null | Contrainte | Description | Exemple |
+|---|---------|------|------|------------|-------------|---------|
+| 1 | `id_election` | SERIAL | Non | PK | Identifiant auto-incremente | `1` |
+| 2 | `id_type_election` | INTEGER | Non | FK -> type_election, CASCADE | Type d'election | `1` |
+| 3 | `annee` | INTEGER | Non | CHECK [1900-2100] | Annee de l'election | `2022` |
+| 4 | `date_tour1` | DATE | Non | | Date du premier tour | `'2022-04-10'` |
+| 5 | `date_tour2` | DATE | Oui | CHECK > date_tour1 | Date du second tour | `'2022-04-24'` |
+| 6 | `nombre_tours` | INTEGER | Non | CHECK IN (1,2), DEFAULT 1 | Nombre de tours | `2` |
+| 7 | `contexte` | TEXT | Oui | | Contexte politique | `'Post-COVID'` |
+| 8 | `metadata_` | JSON | Oui | | Metadonnees flexibles | `{"source": "MI"}` |
+| 9 | `created_at` | TIMESTAMP | Non | DEFAULT NOW() | Date de creation | `'2026-02-12 10:00:00'` |
+
+**Contrainte d'unicite :** `(id_type_election, annee, date_tour1)`
+
+---
+
+## 3. References Politiques
+
+### Table `parti`
+
+**Description :** Partis et nuances politiques avec positionnement ideologique.
+
+| # | Colonne | Type | Null | Contrainte | Description | Exemple |
+|---|---------|------|------|------------|-------------|---------|
+| 1 | `id_parti` | SERIAL | Non | PK | Identifiant auto-incremente | `1` |
+| 2 | `code_parti` | VARCHAR(20) | Non | UNIQUE | Code / nuance politique | `'REM'` |
+| 3 | `nom_officiel` | VARCHAR(200) | Non | | Nom officiel complet | `'La Republique En Marche'` |
+| 4 | `nom_court` | VARCHAR(100) | Oui | | Nom abrege | `'LREM'` |
+| 5 | `classification_ideologique` | VARCHAR(50) | Oui | CHECK IN | Classification politique | `'centre'` |
+| 6 | `position_economique` | DECIMAL(3,2) | Oui | CHECK [-1.0, 1.0] | Axe economique (-1=gauche, 1=droite) | `0.30` |
+| 7 | `position_sociale` | DECIMAL(3,2) | Oui | CHECK [-1.0, 1.0] | Axe social (-1=progressiste, 1=conservateur) | `-0.20` |
+| 8 | `couleur_hex` | VARCHAR(7) | Oui | | Couleur officielle | `'#FFD700'` |
+| 9 | `logo_url` | VARCHAR(500) | Oui | | URL du logo | |
+| 10 | `date_creation` | DATE | Oui | | Date de creation du parti | `'2016-04-06'` |
+| 11 | `date_dissolution` | DATE | Oui | CHECK >= date_creation | Date de dissolution | |
+| 12 | `successeur_id` | INTEGER | Oui | FK -> parti (self), SET NULL | Parti successeur | |
+| 13 | `metadata_` | JSON | Oui | | Metadonnees flexibles | |
+| 14 | `created_at` | TIMESTAMP | Non | DEFAULT NOW() | Date de creation | `'2026-02-12 10:00:00'` |
+
+**Check classification :** `IN ('extreme_gauche', 'gauche', 'centre_gauche', 'centre', 'centre_droit', 'droite', 'extreme_droite', 'autre')`
+
+---
+
+### Table `candidat`
+
+**Description :** Candidats uniques avec profil.
+
+| # | Colonne | Type | Null | Contrainte | Description | Exemple |
+|---|---------|------|------|------------|-------------|---------|
+| 1 | `id_candidat` | SERIAL | Non | PK | Identifiant auto-incremente | `1` |
+| 2 | `nom` | VARCHAR(100) | Non | | Nom de famille | `'MACRON'` |
+| 3 | `prenom` | VARCHAR(100) | Non | | Prenom | `'Emmanuel'` |
+| 4 | `nom_complet` | VARCHAR(200) | Non | Computed | Nom complet genere | `'Emmanuel MACRON'` |
+| 5 | `date_naissance` | DATE | Oui | CHECK <= CURRENT_DATE | Date de naissance | `'1977-12-21'` |
+| 6 | `profession` | VARCHAR(200) | Oui | | Profession | `'Haut fonctionnaire'` |
+| 7 | `biographie` | TEXT | Oui | | Biographie | |
+| 8 | `photo_url` | VARCHAR(500) | Oui | | URL de la photo | |
+| 9 | `metadata_` | JSON | Oui | | Metadonnees flexibles | |
+| 10 | `created_at` | TIMESTAMP | Non | DEFAULT NOW() | Date de creation | `'2026-02-12 10:00:00'` |
+
+**Note :** `nom_complet` est une colonne calculee : `prenom || ' ' || nom`
+
+---
+
+### Table `candidat_parti`
+
+**Description :** Table d'association N:N entre candidats et partis (affiliations avec historique temporel).
+
+| # | Colonne | Type | Null | Contrainte | Description | Exemple |
+|---|---------|------|------|------------|-------------|---------|
+| 1 | `id_affiliation` | SERIAL | Non | PK | Identifiant auto-incremente | `1` |
+| 2 | `id_candidat` | INTEGER | Non | FK -> candidat, CASCADE | Candidat affilie | `1` |
+| 3 | `id_parti` | INTEGER | Non | FK -> parti, CASCADE | Parti d'affiliation | `1` |
+| 4 | `date_debut` | DATE | Non | | Debut de l'affiliation | `'2016-04-06'` |
+| 5 | `date_fin` | DATE | Oui | CHECK >= date_debut | Fin de l'affiliation | |
+| 6 | `fonction` | VARCHAR(200) | Oui | | Fonction dans le parti | `'President'` |
+| 7 | `created_at` | TIMESTAMP | Non | DEFAULT NOW() | Date de creation | `'2026-02-12 10:00:00'` |
+
+**Contrainte d'unicite :** `(id_candidat, id_parti, date_debut)`
+
+---
+
+## 4. Resultats Electoraux
+
+### Table `election_territoire`
+
+**Description :** Table pivot liant une election a un territoire. Sert de reference pour les resultats (participation et candidats). Utilise le **systeme polymorphe** `(id_territoire, type_territoire)`.
+
+| # | Colonne | Type | Null | Contrainte | Description | Exemple |
+|---|---------|------|------|------------|-------------|---------|
+| 1 | `id_election_territoire` | SERIAL | Non | PK | Identifiant auto-incremente | `1` |
+| 2 | `id_election` | INTEGER | Non | FK -> election, CASCADE | Election concernee | `1` |
+| 3 | `id_territoire` | VARCHAR(15) | Non | | ID du territoire (polymorphe) | `'33063'` |
+| 4 | `type_territoire` | VARCHAR(20) | Non | CHECK IN | Type de territoire | `'COMMUNE'` |
+| 5 | `granularite_source` | VARCHAR(20) | Non | | Granularite des donnees source | `'COMMUNE'` |
+| 6 | `date_import` | TIMESTAMP | Non | DEFAULT NOW() | Date d'import des donnees | |
+| 7 | `source_fichier` | VARCHAR(500) | Oui | | Fichier source | `'participation_gironde.csv'` |
+| 8 | `nombre_resultats_attendus` | INTEGER | Oui | | Nombre de resultats attendus | `10` |
+| 9 | `nombre_resultats_charges` | INTEGER | Oui | >= 0 | Nombre de resultats charges | `10` |
+| 10 | `statut_validation` | VARCHAR(20) | Non | CHECK IN, DEFAULT 'EN_COURS' | Statut de validation | `'VALIDE'` |
+| 11 | `metadata_` | JSON | Oui | | Metadonnees flexibles | |
+| 12 | `created_at` | TIMESTAMP | Non | DEFAULT NOW() | Date de creation | |
+| 13 | `updated_at` | TIMESTAMP | Non | DEFAULT NOW() | Derniere modification | |
+
+**Contrainte d'unicite :** `(id_election, id_territoire, type_territoire)`
+**Check type_territoire :** `IN ('BUREAU', 'CANTON', 'COMMUNE', 'ARRONDISSEMENT', 'DEPARTEMENT', 'REGION', 'NATIONAL', 'CIRCONSCRIPTION')`
+**Check statut_validation :** `IN ('EN_COURS', 'VALIDE', 'ERREUR', 'INCOMPLET')`
+
+---
+
+### Table `resultat_participation`
+
+**Description :** Donnees de participation par election, territoire et tour. Inclut des colonnes calculees pour les pourcentages.
+
+| # | Colonne | Type | Null | Contrainte | Description | Exemple |
+|---|---------|------|------|------------|-------------|---------|
+| 1 | `id_resultat_part` | BIGSERIAL | Non | PK | Identifiant auto-incremente | `1` |
+| 2 | `id_election` | INTEGER | Non | FK composite | Election concernee | `1` |
+| 3 | `id_territoire` | VARCHAR(15) | Non | FK composite | ID territoire (polymorphe) | `'33063'` |
+| 4 | `type_territoire` | VARCHAR(20) | Non | FK composite, CHECK IN | Type de territoire | `'COMMUNE'` |
+| 5 | `tour` | INTEGER | Non | CHECK IN (1,2) | Tour de l'election | `1` |
+| 6 | `nombre_inscrits` | INTEGER | Non | >= 0 | Nombre d'inscrits | `130000` |
+| 7 | `nombre_abstentions` | INTEGER | Non | >= 0 | Nombre d'abstentions | `30000` |
+| 8 | `nombre_votants` | INTEGER | Non | >= 0 | Nombre de votants | `100000` |
+| 9 | `nombre_blancs_nuls` | INTEGER | Non | >= 0 | Blancs + nuls | `2000` |
+| 10 | `nombre_exprimes` | INTEGER | Non | >= 0 | Suffrages exprimes | `98000` |
+| 11 | `pourcentage_abstentions` | DECIMAL(5,2) | Oui | Computed | % abstentions / inscrits | `23.08` |
+| 12 | `pourcentage_votants` | DECIMAL(5,2) | Oui | Computed | % votants / inscrits | `76.92` |
+| 13 | `pourcentage_blancs_nuls_inscrits` | DECIMAL(5,2) | Oui | Computed | % blancs-nuls / inscrits | `1.54` |
+| 14 | `pourcentage_blancs_nuls_votants` | DECIMAL(5,2) | Oui | Computed | % blancs-nuls / votants | `2.00` |
+| 15 | `pourcentage_exprimes_inscrits` | DECIMAL(5,2) | Oui | Computed | % exprimes / inscrits | `75.38` |
+| 16 | `pourcentage_exprimes_votants` | DECIMAL(5,2) | Oui | Computed | % exprimes / votants | `98.00` |
+| 17 | `metadata_` | JSON | Oui | | Metadonnees flexibles | |
+| 18 | `created_at` | TIMESTAMP | Non | DEFAULT NOW() | Date de creation | |
+
+**FK composite :** `(id_election, id_territoire, type_territoire) -> election_territoire` (CASCADE)
+**Contrainte d'unicite :** `(id_election, id_territoire, type_territoire, tour)`
+**Check coherence :** `nombre_votants + nombre_abstentions = nombre_inscrits` ET `nombre_exprimes + nombre_blancs_nuls = nombre_votants`
+
+---
+
+### Table `resultat_candidat`
+
+**Description :** Voix obtenues par chaque candidat, par election, territoire et tour.
+
+| # | Colonne | Type | Null | Contrainte | Description | Exemple |
+|---|---------|------|------|------------|-------------|---------|
+| 1 | `id_resultat_cand` | BIGSERIAL | Non | PK | Identifiant auto-incremente | `1` |
+| 2 | `id_election` | INTEGER | Non | FK composite | Election concernee | `1` |
+| 3 | `id_candidat` | INTEGER | Non | FK -> candidat, CASCADE | Candidat concerne | `1` |
+| 4 | `id_territoire` | VARCHAR(15) | Non | FK composite | ID territoire (polymorphe) | `'33063'` |
+| 5 | `type_territoire` | VARCHAR(20) | Non | FK composite, CHECK IN | Type de territoire | `'COMMUNE'` |
+| 6 | `tour` | INTEGER | Non | CHECK IN (1,2) | Tour de l'election | `1` |
+| 7 | `nombre_voix` | INTEGER | Non | >= 0 | Nombre de voix obtenues | `45000` |
+| 8 | `pourcentage_voix_inscrits` | DECIMAL(5,2) | Oui | CHECK [0, 100] | % voix / inscrits | `34.62` |
+| 9 | `pourcentage_voix_exprimes` | DECIMAL(5,2) | Oui | CHECK [0, 100] | % voix / exprimes | `45.92` |
+| 10 | `metadata_` | JSON | Oui | | Metadonnees flexibles | |
+| 11 | `created_at` | TIMESTAMP | Non | DEFAULT NOW() | Date de creation | |
+
+**FK composite :** `(id_election, id_territoire, type_territoire) -> election_territoire` (CASCADE)
+**Contrainte d'unicite :** `(id_election, id_candidat, id_territoire, type_territoire, tour)`
+
+---
+
+## 5. Indicateurs Socio-Economiques
+
+### Table `type_indicateur`
+
+**Description :** Catalogue des types d'indicateurs socio-economiques (securite, emploi, demographie, etc.). Pattern EAV.
+
+| # | Colonne | Type | Null | Contrainte | Description | Exemple |
+|---|---------|------|------|------------|-------------|---------|
+| 1 | `id_type` | SERIAL | Non | PK | Identifiant auto-incremente | `1` |
+| 2 | `code_type` | VARCHAR(50) | Non | UNIQUE | Code identifiant unique | `'CRIMINALITE_TOTALE'` |
+| 3 | `categorie` | VARCHAR(50) | Non | | Categorie macro | `'SECURITE'` |
+| 4 | `nom_affichage` | VARCHAR(100) | Non | | Libelle pour l'interface | `'Criminalite totale'` |
+| 5 | `description` | TEXT | Oui | | Description detaillee | `'Total des faits de delinquance'` |
+| 6 | `unite_mesure` | VARCHAR(50) | Oui | | Unite de mesure | `'nombre'` |
+| 7 | `source_officielle` | VARCHAR(100) | Oui | | Organisme source | `'SSMSI'` |
+| 8 | `frequence` | VARCHAR(20) | Oui | | Periodicite | `'ANNUEL'` |
+| 9 | `date_debut_disponibilite` | DATE | Oui | | Premiere date disponible | `'2016-01-01'` |
+| 10 | `actif` | BOOLEAN | Non | DEFAULT TRUE | Indicateur actif (soft delete) | `TRUE` |
+| 11 | `schema_metadata` | JSONB | Oui | | Schema JSON de validation | `{"type": "object"}` |
+| 12 | `created_at` | TIMESTAMP | Non | DEFAULT NOW() | Date de creation | |
+
+### Types pre-charges (POC Bordeaux)
+
+| id_type | code_type | categorie | nom_affichage | source |
+|---------|-----------|-----------|---------------|--------|
+| 1 | `CRIMINALITE_TOTALE` | SECURITE | Criminalite totale | SSMSI |
+| 2 | `VOLS_SANS_VIOLENCE` | SECURITE | Vols sans violence | SSMSI |
+| 3 | `VOLS_AVEC_VIOLENCE` | SECURITE | Vols avec violence | SSMSI |
+| 4 | `ATTEINTES_AUX_BIENS` | SECURITE | Atteintes aux biens | SSMSI |
+| 5 | `ATTEINTES_AUX_PERSONNES` | SECURITE | Atteintes aux personnes | SSMSI |
+
+---
+
+### Table `indicateur`
+
+**Description :** Table generique stockant TOUS les indicateurs socio-economiques. Pattern EAV polymorphe permettant l'ajout de nouvelles sources sans modification de schema.
+
+| # | Colonne | Type | Null | Contrainte | Description | Exemple |
+|---|---------|------|------|------------|-------------|---------|
+| 1 | `id_indicateur` | BIGSERIAL | Non | PK | Identifiant auto-incremente | `1` |
+| 2 | `id_territoire` | VARCHAR(15) | Non | | ID territoire (polymorphe) | `'33063'` |
+| 3 | `type_territoire` | VARCHAR(20) | Non | CHECK IN | Type de territoire | `'COMMUNE'` |
+| 4 | `id_type` | INTEGER | Non | FK -> type_indicateur, RESTRICT | Type d'indicateur | `1` |
+| 5 | `annee` | INTEGER | Non | CHECK [2000, 2100] | Annee de reference | `2022` |
+| 6 | `periode` | VARCHAR(20) | Oui | | Periode infra-annuelle | `'T1'`, `NULL` |
+| 7 | `valeur_numerique` | DECIMAL(15,4) | Oui | | Valeur principale | `23971.0` |
+| 8 | `valeur_texte` | TEXT | Oui | | Valeur qualitative | |
+| 9 | `metadata_` | JSONB | Oui | GIN index | Metadonnees flexibles | `{"taux_pour_1000_hab": 2.0}` |
+| 10 | `source_detail` | VARCHAR(200) | Oui | | Source precise | `'SSMSI_2024'` |
+| 11 | `fiabilite` | VARCHAR(20) | Non | CHECK IN, DEFAULT 'CONFIRME' | Niveau de fiabilite | `'CONFIRME'` |
+| 12 | `created_at` | TIMESTAMP | Non | DEFAULT NOW() | Date de creation | |
+
+**Contrainte d'unicite :** `(id_territoire, type_territoire, id_type, annee, periode)`
+**Check fiabilite :** `IN ('CONFIRME', 'ESTIME', 'PROVISOIRE', 'REVISION')`
+**Check type_territoire :** `IN ('BUREAU', 'CANTON', 'COMMUNE', 'ARRONDISSEMENT', 'DEPARTEMENT', 'REGION', 'NATIONAL')`
+
+### Exemples de donnees (POC Bordeaux)
+
+| id_indicateur | id_territoire | type_territoire | id_type | annee | valeur_numerique | fiabilite |
+|---------------|---------------|-----------------|---------|-------|------------------|-----------|
+| 1 | `33063` | COMMUNE | 1 | 2022 | 23971.0 | CONFIRME |
+| 2 | `33063` | COMMUNE | 2 | 2022 | 16181.0 | CONFIRME |
+| 3 | `33063` | COMMUNE | 3 | 2022 | 1079.0 | CONFIRME |
+
+---
+
+## 6. Predictions ML
+
+### Table `prediction`
+
+**Description :** Predictions electorales 2027 generees par les modeles Machine Learning. Tracabilite complete (modele, version, metriques).
+
+| # | Colonne | Type | Null | Contrainte | Description | Exemple |
+|---|---------|------|------|------------|-------------|---------|
+| 1 | `id_prediction` | BIGSERIAL | Non | PK | Identifiant auto-incremente | `1` |
+| 2 | `id_territoire` | VARCHAR(15) | Non | | ID territoire (polymorphe) | `'33063'` |
+| 3 | `type_territoire` | VARCHAR(20) | Non | CHECK IN | Type de territoire | `'COMMUNE'` |
+| 4 | `candidat` | VARCHAR(100) | Non | | Nom du candidat predit | `'Emmanuel MACRON'` |
+| 5 | `parti` | VARCHAR(50) | Oui | | Parti politique | `'RE'` |
+| 6 | `annee_prediction` | INTEGER | Oui | CHECK [2025, 2050], DEFAULT 2027 | Annee de l'election predite | `2027` |
+| 7 | `tour` | INTEGER | Non | CHECK IN (1, 2) | Tour predit | `1` |
+| 8 | `pourcentage_predit` | DECIMAL(5,2) | Non | CHECK [0, 100] | % de voix predit | `32.15` |
+| 9 | `intervalle_confiance_inf` | DECIMAL(5,2) | Oui | CHECK [0, 100] | Borne inferieure IC 95% | `29.80` |
+| 10 | `intervalle_confiance_sup` | DECIMAL(5,2) | Oui | CHECK [0, 100] | Borne superieure IC 95% | `34.50` |
+| 11 | `modele_utilise` | VARCHAR(50) | Non | | Algorithme ML | `'RandomForest'` |
+| 12 | `version_modele` | VARCHAR(20) | Oui | | Version du modele | `'v1.0.0'` |
+| 13 | `metriques_modele` | JSONB | Oui | | Metriques de performance | `{"r2": 0.72, "mae": 2.3}` |
+| 14 | `features_utilisees` | JSONB | Oui | | Features ML utilisees | `["criminalite_totale", ...]` |
+| 15 | `date_generation` | TIMESTAMP | Non | DEFAULT NOW() | Date de generation | |
+
+**Contrainte d'unicite :** `(id_territoire, type_territoire, candidat, tour, annee_prediction, version_modele)`
+
+---
+
+## Types de Donnees PostgreSQL
 
 ### Types Scalaires
 
 | Type SQL | Description | Exemple |
 |----------|-------------|---------|
-| `VARCHAR(n)` | Chaîne de caractères variable (max n) | `'Bordeaux'` |
-| `INTEGER` | Entier 32 bits (-2B à +2B) | `252040` |
-| `BIGINT` | Entier 64 bits | `9223372036854775807` |
-| `SERIAL` | Auto-incrémenté INTEGER | `1, 2, 3...` |
-| `BIGSERIAL` | Auto-incrémenté BIGINT | `1, 2, 3...` |
-| `DECIMAL(p,s)` | Nombre décimal (précision p, échelle s) | `28.45` (DECIMAL(5,2)) |
-| `BOOLEAN` | Booléen | `TRUE`, `FALSE` |
-| `DATE` | Date | `'2017-01-01'` |
-| `TIMESTAMP` | Date + heure | `'2026-02-10 10:30:00'` |
+| `VARCHAR(n)` | Chaine de caracteres variable (max n) | `'Bordeaux'` |
+| `INTEGER` | Entier 32 bits | `252040` |
+| `BIGINT` / `BIGSERIAL` | Entier 64 bits (auto-incremente) | `1, 2, 3...` |
+| `SERIAL` | Auto-incremente INTEGER | `1, 2, 3...` |
+| `DECIMAL(p,s)` | Nombre decimal (precision p, echelle s) | `28.45` |
+| `NUMERIC(p,s)` | Alias de DECIMAL | `0.30` |
+| `BOOLEAN` | Booleen | `TRUE`, `FALSE` |
+| `DATE` | Date | `'2022-04-10'` |
+| `TIMESTAMP` | Date + heure | `'2026-02-12 10:00:00'` |
+| `TEXT` | Texte sans limite | Description longue |
 
-### Types Avancés
+### Types Avances
 
-| Type SQL | Description | Extension | Exemple |
-|----------|-------------|-----------|---------|
-| `JSONB` | JSON binaire indexable | Core | `{"key": "value"}` |
-| `GEOMETRY(POLYGON, 4326)` | Géométrie polygonale WGS84 | PostGIS | `POLYGON((...))` |
+| Type SQL | Description | Exemple |
+|----------|-------------|---------|
+| `JSON` | JSON standard | `{"key": "value"}` |
+| `JSONB` | JSON binaire indexable (GIN) | `{"key": "value"}` |
 
 ---
 
 ## Conventions de Nommage
 
-### Tables
-- **Format :** `snake_case` (minuscules + underscores)
-- **Exemples :** `territoire`, `election_result`, `type_indicateur`
-
-### Colonnes
-- **Format :** `snake_case`
-- **Exemples :** `id_territoire`, `pourcentage_voix`, `created_at`
-
-### Clés étrangères
-- **Préfixe :** `id_` + nom table référencée
-- **Exemples :** `id_territoire`, `id_type`
-
-### Contraintes
-- **PK :** `pk_<table>`
-- **FK :** `fk_<table_enfant>_<table_parent>`
-- **UK :** `uk_<table>_<colonnes>`
-- **CK :** `ck_<table>_<colonne>`
+| Element | Convention | Exemples |
+|---------|-----------|----------|
+| Tables | `snake_case` | `resultat_candidat`, `type_indicateur` |
+| Colonnes | `snake_case` | `id_territoire`, `pourcentage_voix_exprimes` |
+| Cles primaires | `id_<entite>` | `id_election`, `id_candidat` |
+| Cles etrangeres | `id_<table_parent>` | `id_region`, `id_type_election` |
+| Contraintes PK | `pk_<table>` | `pk_commune` |
+| Contraintes FK | `fk_<enfant>_<parent>` | `fk_commune_departement` |
+| Contraintes UK | `uk_<table>_<colonnes>` | `uk_election_type_annee` |
+| Contraintes CK | `ck_<table>_<colonne>` | `ck_election_annee` |
 
 ---
 
-## Métadonnées JSONB - Exemples
+## Volumetrie (POC Bordeaux - Resultats reels)
 
-### Table `territoire.metadata`
-```json
-{
-  "superficie_km2": 49.36,
-  "densite_hab_km2": 5103,
-  "arrondissement_parent": "Bordeaux Centre",
-  "code_iris_complet": "330630101"
-}
-```
-
-### Table `indicateur.metadata`
-```json
-{
-  "taux_pour_1000_hab": 2.0,
-  "evolution_annee_precedente": -5.2,
-  "rang_national": 45,
-  "confiance_estimation": "HAUTE"
-}
-```
-
-### Table `election_result.metadata`
-```json
-{
-  "nuance": "EXG",
-  "candidat_sortant": true,
-  "nombre_blancs": 50,
-  "nombre_nuls": 40
-}
-```
-
-### Table `prediction.metriques_modele`
-```json
-{
-  "r2": 0.72,
-  "mae": 2.3,
-  "rmse": 3.1,
-  "cv_score_mean": 0.68,
-  "cv_score_std": 0.05,
-  "train_score": 0.85
-}
-```
-
-### Table `prediction.features_utilisees`
-```json
-[
-  "taux_chomage_2022",
-  "criminalite_totale_2022",
-  "population_2021",
-  "densite_hab_km2",
-  "evolution_demographique_5ans",
-  "macron_2022_tour1_pct"
-]
-```
+| Table | Lignes | Description |
+|-------|--------|-------------|
+| `region` | 1 | Nouvelle-Aquitaine |
+| `departement` | 1 | Gironde |
+| `commune` | ~535 | Communes de Gironde |
+| `canton` | 0 | Non charge dans le POC |
+| `arrondissement` | 0 | Non charge dans le POC |
+| `bureau_vote` | 0 | Non charge dans le POC |
+| `type_election` | 1 | Presidentielle |
+| `election` | 2 | 2017, 2022 |
+| `candidat` | ~25 | Candidats uniques |
+| `parti` | ~15 | Nuances politiques |
+| `candidat_parti` | ~25 | Affiliations |
+| `election_territoire` | ~2 140 | Elections x communes x tours |
+| `resultat_participation` | ~2 140 | Participation par commune/tour |
+| `resultat_candidat` | ~14 484 | Voix par candidat/commune/tour |
+| `type_indicateur` | 5 | Categories securite |
+| `indicateur` | ~45 | Bordeaux 2016-2024 |
+| `prediction` | 0 | En attente Phase 4 (ML) |
+| **TOTAL** | **~17 262** | |
 
 ---
 
-**Prochaine étape :** Consulter les [Règles de Gestion](04-regles-gestion.md) pour comprendre les règles métier implémentées.
+**Prochaine etape :** Consulter les [Regles de Gestion](04-regles-gestion.md) pour comprendre les regles metier implementees.
