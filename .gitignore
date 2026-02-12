@@ -38,7 +38,6 @@ uv.lock
 
 # Jupyter Notebook
 .ipynb_checkpoints
-*.ipynb
 
 # IPython
 profile_default/
@@ -89,6 +88,9 @@ htmlcov/
 # Documentation
 site/
 docs/_build/
+
+# Figures generees par notebooks (regenerables)
+docs/figures/**/*.png
 
 # Temporary files
 *.tmp
