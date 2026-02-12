@@ -1,4 +1,4 @@
-"""Package d'utilitaires pour le module Load ETL."""
+"""Package d'utilitaires pour le module Load ETL v3.0."""
 
 from .validators import (
     validate_csv_exists,
@@ -10,7 +10,9 @@ from .validators import (
     validate_percentage_range,
     validate_unique_key,
     validate_elections_data,
+    validate_participation_data,
     validate_indicateurs_data,
+    validate_geographie_data,
 )
 
 __all__ = [
@@ -23,5 +25,7 @@ __all__ = [
     "validate_percentage_range",
     "validate_unique_key",
     "validate_elections_data",
+    "validate_participation_data",
     "validate_indicateurs_data",
+    "validate_geographie_data",
 ]

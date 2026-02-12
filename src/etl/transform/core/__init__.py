@@ -1,19 +1,20 @@
 """
 Package core pour la transformation de données.
 
-Contient la logique métier pour la transformation de chaque source de données.
-
 Modules:
-    - elections.py : Transformation des élections présidentielles
-    - securite.py : Transformation des données SSMSI
+    - geographie.py : Transformation hiérarchie géographique
+    - elections.py : Transformation élections (dataset agrégé)
+    - securite.py : Transformation données SSMSI
 
 Auteur: @de (Data Engineer)
 """
 
+from .geographie import transform_geographie
 from .elections import transform_elections
 from .securite import transform_securite
 
 __all__ = [
+    "transform_geographie",
     "transform_elections",
     "transform_securite",
 ]

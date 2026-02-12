@@ -1,9 +1,17 @@
-"""Package de configuration pour le module Load ETL."""
+"""Package de configuration pour le module Load ETL v3.0."""
 
 from .settings import (
     # Chemins
-    ELECTIONS_CSV,
+    REGIONS_CSV,
+    DEPARTEMENTS_CSV,
+    COMMUNES_CSV,
+    PARTICIPATION_CSV,
+    CANDIDATS_CSV,
+    REFERENTIEL_CANDIDATS_CSV,
+    REFERENTIEL_PARTIS_CSV,
+    NUANCES_CSV,
     SECURITE_CSV,
+    ELECTIONS_CSV,
     # Territoire
     CODE_COMMUNE,
     NOM_COMMUNE,
@@ -11,6 +19,11 @@ from .settings import (
     POPULATION_BORDEAUX,
     # Types indicateurs
     TYPES_INDICATEURS,
+    # Élections
+    TYPE_ELECTION_PRES,
+    ELECTIONS_CONFIG,
+    NUANCE_CLASSIFICATION,
+    CANDIDAT_PARTI_MAP,
     # Batch
     BATCH_SIZE,
     VERBOSE,
@@ -21,13 +34,25 @@ from .settings import (
 )
 
 __all__ = [
-    "ELECTIONS_CSV",
+    "REGIONS_CSV",
+    "DEPARTEMENTS_CSV",
+    "COMMUNES_CSV",
+    "PARTICIPATION_CSV",
+    "CANDIDATS_CSV",
+    "REFERENTIEL_CANDIDATS_CSV",
+    "REFERENTIEL_PARTIS_CSV",
+    "NUANCES_CSV",
     "SECURITE_CSV",
+    "ELECTIONS_CSV",
     "CODE_COMMUNE",
     "NOM_COMMUNE",
     "TYPE_TERRITOIRE",
     "POPULATION_BORDEAUX",
     "TYPES_INDICATEURS",
+    "TYPE_ELECTION_PRES",
+    "ELECTIONS_CONFIG",
+    "NUANCE_CLASSIFICATION",
+    "CANDIDAT_PARTI_MAP",
     "BATCH_SIZE",
     "VERBOSE",
     "ANNEES_ELECTIONS_VALIDES",
