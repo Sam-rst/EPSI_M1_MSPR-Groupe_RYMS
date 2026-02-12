@@ -183,90 +183,68 @@ def _transform_candidats() -> Optional[pd.DataFrame]:
         logger.error("  Aucune donnée candidat après filtrage")
         return None
 
-    # Mapper les colonnes vers le format attendu
-    all_records = []
-    for _, row in df_filtered.iterrows():
-        election_id = str(row.get(col_election, "")).strip() if col_election else ""
-        annee, tour = ELECTION_ID_MAP.get(election_id, (0, 0))
+    # Résoudre les noms de colonnes une seule fois (pas dans une boucle)
+    def _find_col(df: pd.DataFrame, candidates: List[str]) -> Optional[str]:
+        for c in candidates:
+            if c in df.columns:
+                return c
+        return None
 
-        # Construire id_commune
-        code_dept = str(row.get(col_dept, "")).strip().zfill(2) if col_dept else CODE_DEPARTEMENT
-        # Chercher la colonne commune
-        code_commune_val = ""
-        for c in ["code_commune", "code_de_la_commune", "code_com"]:
-            if c in row.index:
-                code_commune_val = str(row[c]).strip().zfill(3)
-                break
-        id_commune = code_dept + code_commune_val
+    col_commune = _find_col(df_filtered, ["code_commune", "code_de_la_commune", "code_com"])
+    col_nom = _find_col(df_filtered, ["nom", "nom_candidat", "nom_du_candidat"])
+    col_prenom = _find_col(df_filtered, ["prenom", "prenom_candidat", "prenom_du_candidat"])
+    col_sexe = _find_col(df_filtered, ["sexe", "sexe_candidat"])
+    col_nuance = _find_col(df_filtered, ["nuance", "code_nuance", "nuance_candidat"])
+    col_voix = _find_col(df_filtered, ["voix", "nb_voix", "nombre_voix"])
+    col_pct_ins = _find_col(df_filtered, ["pourcentage_voix_inscrits", "pct_voix_inscrits", "ratio_voix_inscrits", "voix_ins"])
+    col_pct_exp = _find_col(df_filtered, ["pourcentage_voix_exprimes", "pct_voix_exprimes", "ratio_voix_exprimes", "voix_exp"])
 
-        # Nom, prénom du candidat
-        nom = ""
-        prenom = ""
-        for c in ["nom", "nom_candidat", "nom_du_candidat"]:
-            if c in row.index and pd.notna(row[c]):
-                nom = str(row[c]).strip()
-                break
-        for c in ["prenom", "prenom_candidat", "prenom_du_candidat"]:
-            if c in row.index and pd.notna(row[c]):
-                prenom = str(row[c]).strip()
-                break
+    # Mapper vectorisé election_id → (annee, tour)
+    df_work = df_filtered.copy()
+    if col_election:
+        df_work["_election_id"] = df_work[col_election].astype(str).str.strip()
+        df_work["annee"] = df_work["_election_id"].map(lambda x: ELECTION_ID_MAP.get(x, (0, 0))[0])
+        df_work["tour"] = df_work["_election_id"].map(lambda x: ELECTION_ID_MAP.get(x, (0, 0))[1])
+    else:
+        df_work["_election_id"] = ""
+        df_work["annee"] = 0
+        df_work["tour"] = 0
 
-        # Sexe
-        sexe = ""
-        for c in ["sexe", "sexe_candidat"]:
-            if c in row.index and pd.notna(row[c]):
-                sexe = str(row[c]).strip()
-                break
+    # Construire id_territoire vectorisé
+    code_dept_series = df_work[col_dept].astype(str).str.strip().str.zfill(2) if col_dept else pd.Series(CODE_DEPARTEMENT, index=df_work.index)
+    code_commune_series = df_work[col_commune].astype(str).str.strip().str.zfill(3) if col_commune else pd.Series("", index=df_work.index)
+    df_work["id_territoire"] = code_dept_series + code_commune_series
+    df_work["type_territoire"] = "COMMUNE"
 
-        # Nuance politique
-        nuance = ""
-        for c in ["nuance", "code_nuance", "nuance_candidat"]:
-            if c in row.index and pd.notna(row[c]):
-                nuance = str(row[c]).strip()
-                break
+    # Extraire colonnes vectorisé (fillna avant astype pour Arrow/pd.NA)
+    df_work["nom"] = df_work[col_nom].fillna("").astype(str).str.strip() if col_nom else ""
+    df_work["prenom"] = df_work[col_prenom].fillna("").astype(str).str.strip() if col_prenom else ""
+    df_work["sexe"] = df_work[col_sexe].fillna("").astype(str).str.strip() if col_sexe else ""
+    df_work["nuance"] = df_work[col_nuance].fillna("").astype(str).str.strip() if col_nuance else ""
+    df_work["nombre_voix"] = pd.to_numeric(df_work[col_voix], errors="coerce").fillna(0).astype(int) if col_voix else 0
+    if col_pct_ins:
+        pct_ins_raw = pd.to_numeric(df_work[col_pct_ins], errors="coerce").fillna(0.0)
+        # Si les valeurs sont des ratios (0-1), convertir en pourcentages (0-100)
+        if pct_ins_raw.max() <= 1.0:
+            pct_ins_raw = pct_ins_raw * 100
+        df_work["pourcentage_voix_inscrits"] = pct_ins_raw.round(2)
+    else:
+        df_work["pourcentage_voix_inscrits"] = 0.0
 
-        # Voix
-        voix = 0
-        for c in ["voix", "nb_voix", "nombre_voix"]:
-            if c in row.index and pd.notna(row[c]):
-                voix = _parse_int(row[c])
-                break
+    if col_pct_exp:
+        pct_exp_raw = pd.to_numeric(df_work[col_pct_exp], errors="coerce").fillna(0.0)
+        if pct_exp_raw.max() <= 1.0:
+            pct_exp_raw = pct_exp_raw * 100
+        df_work["pourcentage_voix_exprimes"] = pct_exp_raw.round(2)
+    else:
+        df_work["pourcentage_voix_exprimes"] = 0.0
 
-        # Pourcentages
-        pct_ins = 0.0
-        for c in ["pourcentage_voix_inscrits", "pct_voix_inscrits", "voix_ins"]:
-            if c in row.index and pd.notna(row[c]):
-                try:
-                    pct_ins = float(str(row[c]).replace(",", "."))
-                except ValueError:
-                    pass
-                break
-
-        pct_exp = 0.0
-        for c in ["pourcentage_voix_exprimes", "pct_voix_exprimes", "voix_exp"]:
-            if c in row.index and pd.notna(row[c]):
-                try:
-                    pct_exp = float(str(row[c]).replace(",", "."))
-                except ValueError:
-                    pass
-                break
-
-        all_records.append({
-            "id_election_code": election_id,
-            "annee": annee,
-            "tour": tour,
-            "id_territoire": id_commune,
-            "type_territoire": "COMMUNE",
-            "nom": nom,
-            "prenom": prenom,
-            "sexe": sexe,
-            "nuance": nuance,
-            "nombre_voix": voix,
-            "pourcentage_voix_inscrits": round(pct_ins, 2),
-            "pourcentage_voix_exprimes": round(pct_exp, 2),
-        })
-
-    df_result = pd.DataFrame(all_records)
+    result_cols = [
+        "_election_id", "annee", "tour", "id_territoire", "type_territoire",
+        "nom", "prenom", "sexe", "nuance", "nombre_voix",
+        "pourcentage_voix_inscrits", "pourcentage_voix_exprimes",
+    ]
+    df_result = df_work[result_cols].rename(columns={"_election_id": "id_election_code"})
 
     # Agréger par commune (sommer les bureaux)
     df_agg = df_result.groupby(
@@ -360,7 +338,7 @@ def transform_elections() -> bool:
         nuances_path = DATA_RAW_ELECTIONS / FICHIERS_ELECTIONS_V3.get("nuances_csv", "")
         if nuances_path.exists():
             try:
-                df_nuances = pd.read_csv(nuances_path, encoding='utf-8', sep=None, engine='python')
+                df_nuances = pd.read_csv(nuances_path, encoding='utf-8', sep=';')
                 output_nuances = DATA_PROCESSED_ELECTIONS / "nuances_politiques.csv"
                 df_nuances.to_csv(output_nuances, index=False, encoding='utf-8')
                 logger.info(f"  [OK] {output_nuances.name} ({len(df_nuances)} nuances)")

@@ -9,6 +9,7 @@ Auteur: @de (Data Engineer)
 from typing import Dict, Any
 import pandas as pd
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import IntegrityError
 
 from src.database.models import Region, Departement, Commune
 from src.database.config import get_session
@@ -38,7 +39,11 @@ def load_regions(session: Session) -> int:
         session.add(region)
         inserted += 1
 
-    session.commit()
+    try:
+        session.commit()
+    except IntegrityError:
+        session.rollback()
+        raise
     return inserted
 
 
@@ -67,7 +72,11 @@ def load_departements(session: Session) -> int:
         session.add(dept)
         inserted += 1
 
-    session.commit()
+    try:
+        session.commit()
+    except IntegrityError:
+        session.rollback()
+        raise
     return inserted
 
 
@@ -97,7 +106,11 @@ def load_communes(session: Session) -> int:
             session.add(commune)
             batch_inserted += 1
 
-        session.commit()
+        try:
+            session.commit()
+        except IntegrityError:
+            session.rollback()
+            raise
         total_inserted += batch_inserted
 
         if VERBOSE:

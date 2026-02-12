@@ -139,7 +139,7 @@ def run_extract() -> Tuple[bool, Dict[str, Any]]:
         else:
             print("\n  [WARN] Extraction avec avertissements")
 
-        return True, stats
+        return success, stats
 
     except Exception as e:
         print(f"\n  [ERREUR] Erreur Extract: {e}")
@@ -189,7 +189,7 @@ def run_transform() -> Tuple[bool, Dict[str, Any]]:
             stats["securite_rows"] = len(df)
             print(f"  [OK] Securite: {len(df)} lignes")
 
-        return True, stats
+        return success, stats
 
     except Exception as e:
         print(f"  [ERREUR] Erreur Transform: {e}")
@@ -259,11 +259,27 @@ def validate_results() -> Tuple[bool, Dict[str, Any]]:
             ("indicateur", "Indicateurs"),
         ]
 
+        # Whitelist des tables autorisées pour validation
+        allowed_tables = {t for t, _ in tables_to_check}
+
         for table_name, label in tables_to_check:
+            if table_name not in allowed_tables:
+                continue
             try:
                 with engine.connect() as conn:
-                    result = conn.execute(text(f"SELECT COUNT(*) FROM {table_name}"))
-                    count = result.fetchone()[0]
+                    result = conn.execute(
+                        text("SELECT COUNT(*) FROM information_schema.tables "
+                             "WHERE table_schema = 'public' AND table_name = :tbl"),
+                        {"tbl": table_name},
+                    )
+                    exists = result.fetchone()[0] > 0
+                    if exists:
+                        count_result = conn.execute(
+                            text(f'SELECT COUNT(*) FROM "{table_name}"')
+                        )
+                        count = count_result.fetchone()[0]
+                    else:
+                        count = 0
                     details[table_name] = count
                     status = "[OK]" if count > 0 else "[WARN]"
                     print(f"  {status} {label}: {count:,}")
@@ -285,8 +301,8 @@ def validate_results() -> Tuple[bool, Dict[str, Any]]:
                 ))
                 for row in result:
                     print(f"    - {row[0]} Tour {row[1]}: {row[2]} territoires")
-        except Exception:
-            pass
+        except Exception as e:
+            print(f"  [WARN] Détail résultats indisponible: {e}")
 
         return all_ok, details
 

@@ -99,7 +99,14 @@ def download_file(url: str, output_path: Path, description: str) -> bool:
 
     except requests.exceptions.RequestException as e:
         logger.error(f"  [ERREUR] Téléchargement échoué: {e}")
+        # Nettoyer le fichier partiel
+        if output_path.exists():
+            output_path.unlink()
+            logger.info(f"  [NETTOYAGE] Fichier partiel supprimé: {output_path.name}")
         return False
     except Exception as e:
         logger.error(f"  [ERREUR] {e}", exc_info=True)
+        if output_path.exists():
+            output_path.unlink()
+            logger.info(f"  [NETTOYAGE] Fichier partiel supprimé: {output_path.name}")
         return False

@@ -28,13 +28,14 @@ Architecture:
 Auteur: @de (Data Engineer)
 """
 
-from .core import transform_elections, transform_securite
+from .core import transform_geographie, transform_elections, transform_securite
 from .main import main
 from .utils import parse_french_number
 
 __all__ = [
     "main",
     "parse_french_number",
+    "transform_geographie",
     "transform_elections",
     "transform_securite",
 ]

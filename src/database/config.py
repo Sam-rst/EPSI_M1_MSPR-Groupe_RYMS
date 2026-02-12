@@ -12,12 +12,13 @@ Usage:
 """
 
 import os
+import re
 from pathlib import Path
 from typing import Optional
 from urllib.parse import quote_plus
 
 from dotenv import load_dotenv
-from sqlalchemy import create_engine, Engine
+from sqlalchemy import create_engine, text, Engine
 from sqlalchemy.orm import sessionmaker, Session
 from sqlalchemy.pool import NullPool
 
@@ -38,7 +39,8 @@ class DatabaseConfig:
     PORT: int = int(os.getenv("POSTGRES_PORT", "5432"))
     DATABASE: str = os.getenv("POSTGRES_DB", "electio_analytics")
     USER: str = os.getenv("POSTGRES_USER", "admin")
-    PASSWORD: str = os.getenv("POSTGRES_PASSWORD", "secure_password")
+    _password_raw: Optional[str] = os.getenv("POSTGRES_PASSWORD")
+    PASSWORD: str = _password_raw if _password_raw else "secure_password"
 
     # Options connexion
     ECHO_SQL: bool = os.getenv("DB_ECHO_SQL", "False").lower() == "true"
@@ -85,7 +87,7 @@ class DatabaseConfig:
                 echo=False
             )
             with engine.connect() as conn:
-                conn.execute("SELECT 1")
+                conn.execute(text("SELECT 1"))
             return True
         except Exception as e:
             print(f"❌ Échec connexion PostgreSQL : {e}")
@@ -96,57 +98,57 @@ class DatabaseConfig:
 # Factory Functions
 # ============================================================================
 
+_engine: Optional[Engine] = None
+
+
 def get_engine(echo: Optional[bool] = None) -> Engine:
     """
-    Crée un moteur SQLAlchemy avec pool de connexions.
+    Retourne un moteur SQLAlchemy singleton avec pool de connexions.
 
     Args:
         echo: Si True, affiche les requêtes SQL (debug)
               Si None, utilise DatabaseConfig.ECHO_SQL
 
     Returns:
-        SQLAlchemy Engine
-
-    Example:
-        >>> engine = get_engine()
-        >>> df = pd.read_sql("SELECT * FROM territoire LIMIT 10", engine)
+        SQLAlchemy Engine (singleton)
     """
+    global _engine
     echo_sql = echo if echo is not None else DatabaseConfig.ECHO_SQL
 
-    engine = create_engine(
-        DatabaseConfig.get_database_url(),
-        echo=echo_sql,
-        pool_size=DatabaseConfig.POOL_SIZE,
-        max_overflow=DatabaseConfig.MAX_OVERFLOW,
-        pool_timeout=DatabaseConfig.POOL_TIMEOUT,
-        pool_pre_ping=True,  # Vérifie la connexion avant utilisation
-        pool_recycle=3600,   # Recycle connexions après 1h
-    )
+    if _engine is None:
+        _engine = create_engine(
+            DatabaseConfig.get_database_url(),
+            echo=echo_sql,
+            pool_size=DatabaseConfig.POOL_SIZE,
+            max_overflow=DatabaseConfig.MAX_OVERFLOW,
+            pool_timeout=DatabaseConfig.POOL_TIMEOUT,
+            pool_pre_ping=True,
+            pool_recycle=3600,
+        )
 
-    return engine
+    return _engine
+
+
+_SessionFactory: Optional[sessionmaker] = None
 
 
 def get_session() -> Session:
     """
-    Crée une session SQLAlchemy ORM.
+    Crée une session SQLAlchemy ORM via factory singleton.
 
     Returns:
         SQLAlchemy Session (context manager)
-
-    Example:
-        >>> with get_session() as session:
-        ...     territoires = session.query(Territoire).limit(10).all()
-        ...     for t in territoires:
-        ...         print(t.nom_territoire)
     """
-    engine = get_engine()
-    SessionLocal = sessionmaker(
-        bind=engine,
-        autocommit=False,
-        autoflush=False,
-        expire_on_commit=False
-    )
-    return SessionLocal()
+    global _SessionFactory
+    if _SessionFactory is None:
+        engine = get_engine()
+        _SessionFactory = sessionmaker(
+            bind=engine,
+            autocommit=False,
+            autoflush=False,
+            expire_on_commit=False,
+        )
+    return _SessionFactory()
 
 
 # ============================================================================
@@ -171,16 +173,15 @@ def test_connection() -> None:
         # Afficher version PostgreSQL
         engine = get_engine(echo=False)
         with engine.connect() as conn:
-            result = conn.execute("SELECT version()")
+            result = conn.execute(text("SELECT version()"))
             version = result.fetchone()[0]
             print(f"   PostgreSQL Version: {version.split(',')[0]}")
 
             # Compter les tables
-            result = conn.execute("""
-                SELECT COUNT(*)
-                FROM information_schema.tables
-                WHERE table_schema = 'public'
-            """)
+            result = conn.execute(text(
+                "SELECT COUNT(*) FROM information_schema.tables "
+                "WHERE table_schema = 'public'"
+            ))
             nb_tables = result.fetchone()[0]
             print(f"   Nombre de tables : {nb_tables}")
     else:
@@ -198,7 +199,10 @@ def create_database_if_not_exists() -> None:
     Note:
         Nécessite connexion à la base 'postgres' avec privilèges CREATE DATABASE
     """
-    from sqlalchemy import text
+    # Valider le nom de la base (alphanumérique + underscore uniquement)
+    db_name = DatabaseConfig.DATABASE
+    if not re.match(r'^[a-zA-Z_][a-zA-Z0-9_]*$', db_name):
+        raise ValueError(f"Nom de base de données invalide: {db_name}")
 
     # Connexion à la base système 'postgres'
     temp_config_url = (
@@ -210,18 +214,21 @@ def create_database_if_not_exists() -> None:
     engine = create_engine(temp_config_url, isolation_level="AUTOCOMMIT")
 
     with engine.connect() as conn:
-        # Vérifier existence
-        result = conn.execute(text(
-            f"SELECT 1 FROM pg_database WHERE datname = '{DatabaseConfig.DATABASE}'"
-        ))
+        # Vérifier existence avec requête paramétrée
+        result = conn.execute(
+            text("SELECT 1 FROM pg_database WHERE datname = :dbname"),
+            {"dbname": db_name},
+        )
         exists = result.fetchone()
 
         if not exists:
-            print(f"📦 Création base de données '{DatabaseConfig.DATABASE}'...")
-            conn.execute(text(f"CREATE DATABASE {DatabaseConfig.DATABASE}"))
-            print("✅ Base de données créée")
+            print(f"Creation base de donnees '{db_name}'...")
+            # CREATE DATABASE ne supporte pas les bind params,
+            # mais db_name est validé par regex ci-dessus
+            conn.execute(text(f'CREATE DATABASE "{db_name}"'))
+            print("Base de donnees creee")
         else:
-            print(f"✅ Base de données '{DatabaseConfig.DATABASE}' existe déjà")
+            print(f"Base de donnees '{db_name}' existe deja")
 
 
 # ============================================================================

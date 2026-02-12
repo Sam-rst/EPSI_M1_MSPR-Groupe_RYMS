@@ -9,6 +9,7 @@ Auteur: @de (Data Engineer)
 from typing import Dict, Any
 import pandas as pd
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import IntegrityError
 
 from src.database.models import Indicateur, TypeIndicateur
 from src.database.config import get_session
@@ -116,7 +117,11 @@ def load_indicateurs_from_csv(session: Session, csv_path) -> Dict[str, Any]:
 
         inserted = load_indicateurs_batch(session, batch_df, type_mapping)
         total_inserted += inserted
-        session.commit()
+        try:
+            session.commit()
+        except IntegrityError:
+            session.rollback()
+            raise
 
         if VERBOSE:
             print(f"  [OK] Batch {batch_num}: {inserted} insérées")

@@ -62,8 +62,11 @@ def load_types_indicateurs(session: Session) -> int:
         if VERBOSE:
             print(f"[OK] Inséré : {type_data['code_type']} ({type_data['nom_affichage']})")
 
-    # Commit tous les types en une seule transaction
-    session.commit()
+    try:
+        session.commit()
+    except IntegrityError:
+        session.rollback()
+        raise
 
     return inserted_count
 

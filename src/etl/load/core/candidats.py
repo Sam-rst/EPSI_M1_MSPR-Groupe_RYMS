@@ -10,6 +10,7 @@ from datetime import date
 from typing import Dict, Any, Optional
 import pandas as pd
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import IntegrityError
 
 from src.database.models import TypeElection, Election, Candidat, Parti, CandidatParti
 from src.database.config import get_session
@@ -96,8 +97,16 @@ def load_candidats(session: Session) -> int:
         return 0
 
     df = pd.read_csv(REFERENTIEL_CANDIDATS_CSV)
-    inserted = 0
+    if df.empty:
+        print("  [WARN] Fichier référentiel candidats vide")
+        return 0
 
+    # Charger les candidats existants pour éviter N+1 queries
+    existing_candidats = {
+        (c.nom, c.prenom) for c in session.query(Candidat).all()
+    }
+
+    inserted = 0
     for _, row in df.iterrows():
         nom = str(row["nom"]).strip()
         prenom = str(row["prenom"]).strip()
@@ -105,23 +114,19 @@ def load_candidats(session: Session) -> int:
         if not nom or not prenom:
             continue
 
-        # Vérifier si le candidat existe déjà (par nom + prénom)
-        existing = session.query(Candidat).filter(
-            Candidat.nom == nom,
-            Candidat.prenom == prenom,
-        ).first()
-
-        if existing:
+        if (nom, prenom) in existing_candidats:
             continue
 
-        candidat = Candidat(
-            nom=nom,
-            prenom=prenom,
-        )
+        candidat = Candidat(nom=nom, prenom=prenom)
         session.add(candidat)
+        existing_candidats.add((nom, prenom))
         inserted += 1
 
-    session.commit()
+    try:
+        session.commit()
+    except IntegrityError:
+        session.rollback()
+        raise
     if VERBOSE:
         print(f"  [OK] {inserted} candidat(s) inséré(s)")
     return inserted
@@ -151,7 +156,11 @@ def load_partis(session: Session) -> int:
         session.add(parti)
         inserted += 1
 
-    session.commit()
+    try:
+        session.commit()
+    except IntegrityError:
+        session.rollback()
+        raise
     if VERBOSE:
         print(f"  [OK] {inserted} parti(s) inséré(s)")
     return inserted
@@ -159,43 +168,52 @@ def load_partis(session: Session) -> int:
 
 def load_candidat_parti(session: Session) -> int:
     """Crée les affiliations candidat ↔ parti via le mapping statique."""
-    # Récupérer tous les candidats en base
+    # Récupérer tous les candidats et partis en base (éviter N+1)
     all_candidats = session.query(Candidat).all()
+    partis_cache = {p.code_parti: p.id_parti for p in session.query(Parti).all()}
+    existing_affiliations = {
+        (cp.id_candidat, cp.id_parti, cp.date_debut)
+        for cp in session.query(CandidatParti).all()
+    }
+
     inserted = 0
+    unmapped_count = 0
 
     for candidat in all_candidats:
         nom_upper = candidat.nom.upper()
         code_parti = CANDIDAT_PARTI_MAP.get(nom_upper)
         if not code_parti:
-            if VERBOSE:
-                print(f"  [WARN] Pas de parti pour {candidat.prenom} {candidat.nom}")
+            unmapped_count += 1
+            print(f"  [WARN] Pas de parti mappé pour {candidat.prenom} {candidat.nom}")
             continue
 
-        parti = session.query(Parti).filter(Parti.code_parti == code_parti).first()
-        if not parti:
+        id_parti = partis_cache.get(code_parti)
+        if not id_parti:
+            print(f"  [WARN] Parti {code_parti} introuvable en base")
             continue
 
-        # Date d'affiliation = 1er janvier (convention)
+        # Date d'affiliation = 1er janvier de la première élection
         date_debut = date(2017, 1, 1)
-        existing = session.query(CandidatParti).filter(
-            CandidatParti.id_candidat == candidat.id_candidat,
-            CandidatParti.id_parti == parti.id_parti,
-            CandidatParti.date_debut == date_debut,
-        ).first()
-
-        if existing:
+        if (candidat.id_candidat, id_parti, date_debut) in existing_affiliations:
             continue
 
         affiliation = CandidatParti(
             id_candidat=candidat.id_candidat,
-            id_parti=parti.id_parti,
+            id_parti=id_parti,
             date_debut=date_debut,
             fonction="Candidat",
         )
         session.add(affiliation)
         inserted += 1
 
-    session.commit()
+    if unmapped_count > 0:
+        print(f"  [INFO] {unmapped_count} candidat(s) sans mapping parti")
+
+    try:
+        session.commit()
+    except IntegrityError:
+        session.rollback()
+        raise
     if VERBOSE:
         print(f"  [OK] {inserted} affiliation(s) insérée(s)")
     return inserted

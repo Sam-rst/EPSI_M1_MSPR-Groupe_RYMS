@@ -28,13 +28,14 @@ Architecture:
 Auteur: @de (Data Engineer)
 """
 
-from .core import download_elections, download_securite
+from .core import download_geographie, download_elections, download_securite
 from .main import main
 from .utils import download_file
 
 __all__ = [
     "main",
     "download_file",
+    "download_geographie",
     "download_elections",
     "download_securite",
 ]
