@@ -1,184 +1,170 @@
-# Electio-Analytics - POC Predictions Electorales
+<div align="center">
 
-- **Projet MSPR - M1 EPSI**
-- **Groupe RYMS**
-- **Membres du groupe :**
-    - Samuel RESSIOT
-    - Yassine ZOUITNI
-    - Rudolph ATTISSO
-    - Marc-Alex NEZOUT
+# MSPR : Electio-Analytics
 
+**Outil de prediction des tendances electorales par croisement de donnees historiques et d'indicateurs socio-economiques**
 
+[![Python](https://img.shields.io/badge/Python-3.11+-3776AB?logo=python&logoColor=white)](https://python.org)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-4169E1?logo=postgresql&logoColor=white)](https://postgresql.org)
+[![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)](https://docker.com)
+[![UV](https://img.shields.io/badge/UV-Package_Manager-DE5FE9?logo=astral&logoColor=white)](https://docs.astral.sh/uv/)
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/Sam-rst/EPSI_M1_MSPR-Groupe_RYMS)
 
-## Contexte
-
-Preuve de Concept (POC) pour la startup "Electio-Analytics" : outil de prediction des tendances electorales a moyen terme (1-3 ans) en croisant des donnees historiques avec des indicateurs socio-economiques.
-
-**Perimetre :**
-- **Zone :** Bordeaux (Gironde - 33)
-- **Elections :** Presidentielles 2017 & 2022 (1er et 2nd tours)
-- **Prediction :** Presidentielles 2027
-- **Indicateurs :** Criminalite (SSMSI)
+</div>
 
 ---
 
-## Quick Start
+## Presentation
+
+Electio-Analytics est une Preuve de Concept (POC) qui vise a predire les tendances electorales a moyen terme (1-3 ans) en croisant des donnees de votes historiques avec des indicateurs socio-economiques tels que la criminalite.
+
+Le projet s'appuie sur un pipeline ETL complet, une base de donnees relationnelle normalisee et des modeles de Machine Learning pour produire des predictions exploitables.
+
+| | Details |
+|---|---|
+| **Zone geographique** | Bordeaux (Gironde - 33) |
+| **Elections analysees** | Presidentielles 2017 & 2022 (1er et 2nd tours) |
+| **Prediction cible** | Presidentielles 2027 |
+| **Indicateurs** | Criminalite (SSMSI - 2016-2024) |
+
+---
+
+## Demarrage rapide
 
 ### Prerequis
 
-- **Docker Desktop** installe et demarre
-- **UV** (gestionnaire de paquets Python) : `pip install uv`
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) installe et demarre
+- [UV](https://docs.astral.sh/uv/) (gestionnaire de paquets Python) : `pip install uv`
 
 ### Installation
 
 ```bash
-# 1. Cloner le repository
-git clone <repository-url>
-cd EPSI_M1_MSPR-Groupe_RYMS
+# Cloner le repository
+git clone https://github.com/Sam-rst/EPSI_M1_MSPR-Groupe_RYMS_original.git
+cd EPSI_M1_MSPR-Groupe_RYMS_original
 
-# 2. Installer les dependances
+# Installer les dependances
 uv sync --all-extras
 
-# 3. Configurer l'environnement
+# Configurer l'environnement
 cp .env.example .env
-# Editer .env avec votre mot de passe PostgreSQL
+# Editer .env avec vos identifiants PostgreSQL
 
-# 4. Demarrer PostgreSQL
+# Demarrer PostgreSQL
 docker compose up -d
 
-# 5. Creer le schema (17 tables v3.0)
+# Creer le schema de base de donnees
 uv run alembic -c src/database/alembic.ini upgrade head
 
-# 6. Lancer le pipeline ETL complet
+# Lancer le pipeline ETL complet
 uv run python -m src.etl.main
 ```
 
-**Resultat : 17 262 lignes chargees (~130s)**
-
-**Documentation detaillee :**
-- [Setup UV](docs/04-setup-installation/SETUP_UV.md)
-- [Setup Base de donnees](docs/04-setup-installation/SETUP_DATABASE.md)
+> Guides detailles : [Setup UV](docs/04-setup-installation/SETUP_UV.md) | [Setup Base de donnees](docs/04-setup-installation/SETUP_DATABASE.md)
 
 ---
 
-## Structure du Projet
+## Architecture
 
 ```
-EPSI_M1_MSPR-Groupe_RYMS/
-├── data/
-│   ├── raw/                          # Donnees brutes (~300 MB)
-│   │   ├── geographie/              # JSON geo.api.gouv.fr
-│   │   ├── elections/               # JSON + Parquet data.gouv.fr
-│   │   └── securite/                # CSV SSMSI
-│   └── processed/                   # Donnees transformees
-│       ├── geographie/              # 1 region, 1 dept, 534 communes
-│       ├── elections/               # 2 146 participations, 14 484 candidats
-│       └── indicateurs/             # 45 indicateurs securite
+electio-analytics/
 │
-├── docs/                            # Documentation complete
-│   ├── 01-project-management/      # ROADMAP, planning
-│   ├── 02-architecture/            # MCD, MLD, ARCHITECTURE, ADRs
-│   ├── 03-data-sources/            # Sources de donnees
-│   ├── 04-setup-installation/      # Guides d'installation
-│   └── 05-reports/                 # Rapports et analyses
+├── data/
+│   ├── raw/                     # Donnees brutes (API, Parquet, CSV)
+│   └── processed/               # Donnees transformees (CSV normalises)
 │
 ├── src/
-│   ├── etl/                         # Pipeline ETL v3.0
-│   │   ├── extract/                # Extraction (API → raw)
-│   │   ├── transform/              # Transformation (raw → CSV)
-│   │   ├── load/                   # Chargement (CSV → PostgreSQL)
-│   │   └── main.py                 # Orchestrateur
-│   └── database/                    # Schema v3.0
-│       ├── models/                  # 17 modeles ORM SQLAlchemy
-│       ├── migrations/              # Alembic (4 migrations)
-│       └── config.py               # Connexion PostgreSQL
+│   ├── etl/                     # Pipeline ETL
+│   │   ├── extract/             # Extraction depuis les APIs
+│   │   ├── transform/           # Nettoyage et transformation
+│   │   ├── load/                # Chargement en base
+│   │   └── main.py              # Orchestrateur
+│   └── database/                # Schema et migrations
+│       ├── models/              # 17 modeles ORM (SQLAlchemy)
+│       └── migrations/          # Versioning Alembic
 │
-├── notebooks/                       # Jupyter notebooks
-├── docker-compose.yml               # PostgreSQL 15 + PostGIS
-├── pyproject.toml                   # Configuration UV + dependances
-└── README.md                        # CE FICHIER
+├── notebooks/                   # Exploration et modelisation ML
+├── docs/                        # Documentation technique
+└── docker-compose.yml           # Infrastructure PostgreSQL + PostGIS
 ```
 
 ---
 
-## Stack Technique
+## Stack technique
 
-- **Python :** 3.11+
-- **Gestionnaire :** UV
-- **Data :** Pandas, NumPy, PyArrow
-- **Database :** PostgreSQL 15 + PostGIS (Docker)
-- **ORM :** SQLAlchemy 2.0 + Alembic
-- **ML :** Scikit-Learn, XGBoost
-- **Viz :** Matplotlib, Seaborn, Plotly, Folium
+| Categorie | Technologies |
+|---|---|
+| **Langage** | Python 3.11+ |
+| **Gestion des dependances** | UV |
+| **Traitement de donnees** | Pandas, NumPy, PyArrow |
+| **Base de donnees** | PostgreSQL 15, PostGIS |
+| **ORM & Migrations** | SQLAlchemy 2.0, Alembic |
+| **Machine Learning** | Scikit-Learn, XGBoost |
+| **Visualisation** | Matplotlib, Seaborn, Plotly, Folium |
+| **Infrastructure** | Docker Compose |
 
 ---
 
-## Pipeline ETL v3.0
+## Pipeline ETL
 
-### Commande unique
+Le pipeline s'execute en une seule commande ou etape par etape :
 
 ```bash
+# Execution complete
 uv run python -m src.etl.main
 ```
 
-### Etapes individuelles
-
 ```bash
-# 1. Extraction (API → data/raw/)
-uv run python -m src.etl.extract.main
-
-# 2. Transformation (data/raw/ → data/processed/)
-uv run python -m src.etl.transform.main
-
-# 3. Chargement (data/processed/ → PostgreSQL)
-uv run python -m src.etl.load.main
+# Ou etape par etape
+uv run python -m src.etl.extract.main      # Extraction   (APIs → data/raw/)
+uv run python -m src.etl.transform.main     # Transformation (raw → data/processed/)
+uv run python -m src.etl.load.main          # Chargement     (processed → PostgreSQL)
 ```
 
 ### Sources de donnees
 
-| Source | API | Donnees |
-|--------|-----|---------|
+| Source | Origine | Description |
+|---|---|---|
 | **Geographie** | geo.api.gouv.fr | Regions, departements, communes |
-| **Elections** | tabular-api.data.gouv.fr + Parquet | Participation + candidats par bureau |
-| **Securite** | data.gouv.fr (SSMSI) | Delinquance Bordeaux 2016-2024 |
+| **Elections** | data.gouv.fr (API tabulaire + Parquet) | Participation et resultats par bureau de vote |
+| **Securite** | data.gouv.fr (SSMSI) | Indicateurs de delinquance - Bordeaux |
 
-**Documentation ETL :** [src/etl/README.md](src/etl/README.md)
-
----
-
-## Avancement (14h/25h - 56%)
-
-| Phase | Statut | Duree |
-|-------|--------|-------|
-| Phase 1 : Cadrage | TERMINEE | 1h |
-| Phase 2 : Architecture | TERMINEE | 5h |
-| Phase 3 : Data Engineering | TERMINEE | 8h |
-| Phase 4 : Data Science | PROCHAINE | 6h |
-| Phase 5 : Visualisation | EN ATTENTE | 4h |
-| Phase 6 : Revue Qualite | EN ATTENTE | 1h |
+> Documentation complete du pipeline : [src/etl/README.md](src/etl/README.md)
 
 ---
 
 ## Documentation
 
-**Index complet :** [docs/README.md](docs/README.md)
+L'ensemble de la documentation technique est disponible dans le repertoire [`docs/`](docs/).
 
-**Documents principaux :**
-- [ROADMAP](docs/01-project-management/ROADMAP.md) - Planning 25h
-- [ARCHITECTURE](docs/02-architecture/ARCHITECTURE.md) - Pipeline ETL v3.0
-- [MCD](docs/02-architecture/database/01-mcd.md) - Modele conceptuel (17 entites)
-- [MLD](docs/02-architecture/database/02-mld.md) - Schema relationnel + SQL
-- [Dictionnaire de donnees](docs/02-architecture/database/03-dictionnaire-donnees.md)
-- [Sources de donnees](docs/03-data-sources/SOURCES_DONNEES.md)
+| Document | Description |
+|---|---|
+| [Architecture](docs/02-architecture/ARCHITECTURE.md) | Vue d'ensemble du pipeline et des composants |
+| [MCD](docs/02-architecture/database/01-mcd.md) | Modele Conceptuel de Donnees (17 entites) |
+| [MLD](docs/02-architecture/database/02-mld.md) | Schema relationnel et requetes SQL |
+| [Dictionnaire de donnees](docs/02-architecture/database/03-dictionnaire-donnees.md) | Description de chaque attribut |
+| [Sources de donnees](docs/01-project-management/SOURCES_DONNEES.md) | Referentiel des jeux de donnees utilises |
+| [Roadmap](docs/01-project-management/ROADMAP.md) | Planning et phases du projet |
 
-**ADRs :**
-- [ADR-001](docs/02-architecture/adr/ADR-001-choix-bdd.md) - Choix PostgreSQL
-- [ADR-002](docs/02-architecture/adr/ADR-002-choix-algo-ml.md) - Choix Random Forest
-- [ADR-003](docs/02-architecture/adr/ADR-003-architecture-modulaire-etl.md) - Architecture ETL modulaire
-- [ADR-004](docs/02-architecture/adr/ADR-004-enrichissement-schema-bd.md) - Schema v3.0
+### Architecture Decision Records (ADR)
+
+| ADR | Decision |
+|---|---|
+| [ADR-001](docs/02-architecture/adr/ADR-001-choix-bdd.md) | PostgreSQL comme SGBD principal |
+| [ADR-002](docs/02-architecture/adr/ADR-002-choix-algo-ml.md) | Random Forest pour la prediction |
+| [ADR-003](docs/02-architecture/adr/ADR-003-architecture-modulaire-etl.md) | Architecture ETL modulaire |
+| [ADR-004](docs/02-architecture/adr/ADR-004-enrichissement-schema-bd.md) | Enrichissement du schema v3.0 |
+| [ADR-005](docs/02-architecture/adr/ADR-005-choix-perimetre-geographique.md) | Perimetre geographique Bordeaux |
 
 ---
 
-## Support
+## Equipe
 
-Consulter l'[index de la documentation](docs/README.md) ou contacter l'equipe projet.
+**Groupe RYMS** - Projet MSPR, M1 EPSI
+
+| Membre |
+|---|
+| Samuel RESSIOT |
+| Yassine ZOUITNI |
+| Rudolph ATTISSO |
+| Marc-Alex NEZOUT |
