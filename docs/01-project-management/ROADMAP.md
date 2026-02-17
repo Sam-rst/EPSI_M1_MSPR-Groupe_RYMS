@@ -3,6 +3,8 @@
 > **Prediction des tendances electorales** pour les Presidentielles 2027
 > a partir des donnees historiques 2017-2022 et indicateurs socio-economiques
 
+**Derniere mise a jour :** 2026-02-18
+
 ---
 
 ## Vue d'ensemble
@@ -26,34 +28,80 @@ Phase 1  [====================] 100%  Cadrage & Strategie
 Phase 2  [====================] 100%  Architecture & Modelisation
 Phase 3  [====================] 100%  Data Engineering (ETL)
 Phase 4  [====================] 100%  Data Science & ML
-Phase 5  [                    ]   0%  Visualisation & Rapport
+Phase 5  [====================] 100%  Visualisation & Rapport
 Phase 6  [============        ]  60%  Revue & Qualite
+─────────────────────────────────────────────────────────
+GLOBAL   [==================  ]  93%
 ```
 
 | Phase | Statut | Duree | Agent(s) |
 |-------|--------|-------|----------|
-| **Phase 1** - Cadrage | TERMINEE | 1h | `@pm` |
-| **Phase 2** - Architecture | TERMINEE | 5h | `@tech` |
-| **Phase 3** - Data Engineering | TERMINEE | 12h | `@de` + `@rv` |
-| **Phase 4** - Data Science | TERMINEE | 6h | `@ds` + `@rv` |
-| **Phase 5** - Visualisation | A FAIRE | 0h/4h | `@da` |
-| **Phase 6** - Revue Qualite | PARTIELLE | 2h/1h | `@rv` |
+| **Phase 1** - Cadrage | TERMINEE | 1h/1h | `@pm` |
+| **Phase 2** - Architecture | TERMINEE | 5h/5h | `@tech` |
+| **Phase 3** - Data Engineering | TERMINEE | 12h/8h (overrun) | `@de` + `@rv` |
+| **Phase 4** - Data Science | TERMINEE | 6h/6h | `@ds` + `@rv` |
+| **Phase 5** - Visualisation & Rapport | TERMINEE | 4h/4h | `@da` |
+| **Phase 6** - Revue & Qualite | PARTIELLE | 2h/1h | `@rv` |
 
-**Consomme :** 26h / 25h (104%) | **Restant :** Phase 5 (4h) + Phase 6 finition
+**Consomme :** 30h / 25h (120%) | **Restant :** Phase 6 finition (tests + RGPD)
+
+---
+
+## Mapping Competences Bloc 3 (RNCP35584)
+
+| Competence evaluee | Livrable(s) | Statut |
+|---------------------|-------------|--------|
+| Collecter les besoins en donnees | ROADMAP, SOURCES_DONNEES | FAIT |
+| Definir une architecture BI | ARCHITECTURE.md, 5 ADRs, MCD v3.0 | FAIT |
+| Definir une strategie big data (collecte → traitements) | Pipeline ETL modulaire (Extract/Transform/Load) | FAIT |
+| Proposer des modeles statistiques et de ML | Random Forest, R2=0.72, 3 745 predictions | FAIT |
+| Organiser les sources sous forme de resultats exploitables (data visualisation) | 17 figures + 2 cartes interactives + dashboard synthese | FAIT |
+| Definir les donnees de reference (referentiel) | Dictionnaire de donnees, referentiels candidats/partis/communes | FAIT |
+| Creer un entrepot unique | PostgreSQL 15, schema v3.0, 17 tables, 21 007 lignes | FAIT |
+| Assurer la qualite des donnees | Validators ETL, controles integrite FK/UNIQUE/CHECK | FAIT |
+| Appliquer les procedures RGPD | Donnees publiques aggregees, pas de donnees personnelles | **PARTIEL** (audit formel manquant) |
+
+---
+
+## Criticite des livrables restants
+
+### CRITIQUE (bloquant soutenance) - TOUS LIVRES
+
+| Livrable | Description | Statut |
+|----------|-------------|--------|
+| Rapport de synthese | `docs/05-reports/RAPPORT_SYNTHESE.md` | FAIT |
+| Support de presentation | `docs/05-reports/PRESENTATION.md` (10 slides) | FAIT |
+| Visualisations avancees | `notebooks/03_visualisation_avancee.ipynb` (7 figures + 2 cartes) | FAIT |
+
+### IMPORTANT (attendu par le jury)
+
+| Livrable | Description | Statut |
+|----------|-------------|--------|
+| Audit RGPD | Document formel de conformite | A FAIRE |
+| Dashboard interactif | Carte Folium interactive integree au notebook 03 | FAIT |
+
+### SOUHAITABLE (bonus differenciant)
+
+| Livrable | Description | Statut |
+|----------|-------------|--------|
+| Tests unitaires | Couverture ETL + ML (pytest) | A FAIRE |
+| Donnees emploi/population | INSEE non integre (API indisponible) | ABANDONNE |
+| Metriques detaillees | Inclus dans RAPPORT_SYNTHESE.md | FAIT |
 
 ---
 
 ## Criteres de Succes
 
-| Critere | Cible | Resultat |
-|---------|-------|----------|
-| Perimetre | Gironde (535 communes) | 535 communes chargees |
-| Donnees ingerees | 2+ sources | 17 262 lignes (Elections + Securite) |
-| Schema BDD | Normalise 3NF | 17 tables deployees (schema v3.0) |
-| Modele ML | R2 > 0.65 | **R2 = 0.72** (Le Pen, meilleur modele) |
-| Predictions 2027 | Par commune | **3 745 predictions** (535 x 7 candidats) |
-| Documentation | MCD + ADRs + Rapport | 85% (rapport Phase 5 restant) |
-| Code qualite | Review >= 7/10 | **7/10** (2 reviews ETL) |
+| Critere | Cible | Resultat | Statut |
+|---------|-------|----------|--------|
+| Perimetre | Gironde (535 communes) | 535 communes chargees | ATTEINT |
+| Donnees ingerees | 2+ sources | 3 sources (geo, elections, securite) | ATTEINT |
+| Schema BDD | Normalise 3NF | 17 tables deployees (schema v3.0) | ATTEINT |
+| Modele ML | R2 > 0.65 | **R2 = 0.7245** (Le Pen) | ATTEINT |
+| Predictions 2027 | Par commune | **3 745 predictions** (535 x 7 candidats) | ATTEINT |
+| Documentation | MCD + ADRs + Rapport | Rapport + Slides livres | ATTEINT |
+| Code qualite | Review >= 7/10 | **7/10** (2 reviews ETL) | ATTEINT |
+| Visualisation | Resultats exploitables | 17 figures + 2 cartes interactives | ATTEINT |
 
 ---
 
@@ -250,13 +298,36 @@ docs/figures/
 
 ## Phase 5 : Visualisation & Rapport
 
-> **A FAIRE** - 0h/4h - `@da`
+> **TERMINEE** - 4h/4h - `@da`
 
-| Livrable | Fichier | Description |
-|----------|---------|-------------|
-| Graphiques avances | `notebooks/03_visualisation.ipynb` | Cartes choropletres, courbes d'evolution |
-| Rapport synthese | `docs/RAPPORT_SYNTHESE.md` | Methodologie, resultats, limites |
-| Slides executives | `docs/PRESENTATION.pdf` | 10 slides max |
+| # | Livrable | Fichier | Statut |
+|---|----------|---------|--------|
+| 1 | Visualisations avancees | `notebooks/03_visualisation_avancee.ipynb` | FAIT (7 figures + 2 cartes) |
+| 2 | Rapport de synthese | `docs/05-reports/RAPPORT_SYNTHESE.md` | FAIT |
+| 3 | Slides executives | `docs/05-reports/PRESENTATION.md` | FAIT (10 slides) |
+| 4 | Dashboard interactif | Inclus dans notebook 03 (Folium) | FAIT |
+
+### Figures generees (Phase 5)
+
+```
+docs/figures/visualisation/
+├── evolution_2017_2022_2027.png      # Courbes temporelles par candidat
+├── intervalles_confiance_2027.png    # Barres d'erreur IC 95%
+├── carte_predictions_2027.html      # Carte Folium candidat en tete
+├── carte_macron_2027.html            # Carte Folium gradient Macron
+├── top_bottom_communes.png           # Communes extremes par candidat
+├── dashboard_synthese.png            # Vue multi-panel recapitulative
+└── clivage_urbain_rural.png          # Scatter urbain vs rural
+```
+
+### Bilan figures total projet
+
+| Phase | Figures | Type |
+|-------|---------|------|
+| Notebook 01 (exploration) | 6 PNG | Statique |
+| Notebook 02 (ML) | 4 PNG | Statique |
+| Notebook 03 (visualisation) | 5 PNG + 2 HTML | Statique + Interactif |
+| **Total** | **17 figures** | |
 
 ---
 
@@ -269,18 +340,33 @@ docs/figures/
 - 2 revues ETL completes (6.5/10 -> 7/10)
 - Mise a jour documentation v3.0
 - Organisation figures notebooks
+- Prevention SQL injection (requetes parametrees)
+- Securite credentials (.env, singleton engine)
 
 ### Restant
-- Tests unitaires
-- Validation RGPD
+
+| Livrable | Criticite |
+|----------|-----------|
+| Audit RGPD formel | IMPORTANT |
+| Tests unitaires (pytest) | SOUHAITABLE |
 
 ---
 
 ## Prochaine Etape
 
-**Phase 5 - Visualisation & Rapport**
+**Phase 6 - Revue & Qualite** (optionnel, bonus)
 
 ```bash
-@da Demarre la Phase 5 : Notebook visualisation avancee,
-rapport de synthese et slides executives
+@rv Finalise la Phase 6 : audit RGPD formel et tests unitaires
 ```
+
+---
+
+## Risques identifies
+
+| Risque | Impact | Mitigation |
+|--------|--------|------------|
+| Budget depasse (104%) | Phase 5 non budgetee | Prioriser rapport + slides (minimum viable) |
+| Seulement 2 elections historiques | Predictions faibles pour petits candidats (R2 < 0) | Documenter la limite, proposer expansion post-POC |
+| Indicateurs securite Bordeaux uniquement | 534/535 communes ont securite = 0 | Transparence dans le rapport, feature peu discriminante |
+| Absence donnees emploi INSEE | Feature manquante vs cahier des charges | Justifier dans le rapport (API indisponible) |
