@@ -29,9 +29,9 @@ Phase 2  [====================] 100%  Architecture & Modelisation
 Phase 3  [====================] 100%  Data Engineering (ETL)
 Phase 4  [====================] 100%  Data Science & ML
 Phase 5  [====================] 100%  Visualisation & Rapport
-Phase 6  [============        ]  60%  Revue & Qualite
+Phase 6  [=================   ]  85%  Revue & Qualite
 ─────────────────────────────────────────────────────────
-GLOBAL   [==================  ]  93%
+GLOBAL   [=================== ]  97%
 ```
 
 | Phase | Statut | Duree | Agent(s) |
@@ -59,7 +59,7 @@ GLOBAL   [==================  ]  93%
 | Definir les donnees de reference (referentiel) | Dictionnaire de donnees, referentiels candidats/partis/communes | FAIT |
 | Creer un entrepot unique | PostgreSQL 15, schema v3.0, 17 tables, 21 007 lignes | FAIT |
 | Assurer la qualite des donnees | Validators ETL, controles integrite FK/UNIQUE/CHECK | FAIT |
-| Appliquer les procedures RGPD | Donnees publiques aggregees, pas de donnees personnelles | **PARTIEL** (audit formel manquant) |
+| Appliquer les procedures RGPD | Audit RGPD formel (`docs/05-reports/AUDIT_RGPD.md`) | FAIT |
 
 ---
 
@@ -77,7 +77,7 @@ GLOBAL   [==================  ]  93%
 
 | Livrable | Description | Statut |
 |----------|-------------|--------|
-| Audit RGPD | Document formel de conformite | A FAIRE |
+| Audit RGPD | `docs/05-reports/AUDIT_RGPD.md` | FAIT |
 | Dashboard interactif | Carte Folium interactive integree au notebook 03 | FAIT |
 
 ### SOUHAITABLE (bonus differenciant)
@@ -333,7 +333,7 @@ docs/figures/visualisation/
 
 ## Phase 6 : Revue & Qualite
 
-> **PARTIELLE** - 2h/1h - `@rv`
+> **QUASI TERMINEE** - 3h/1h - `@rv`
 
 ### Realise
 - Structure documentation code review (`docs/03-code-review/`)
@@ -342,23 +342,21 @@ docs/figures/visualisation/
 - Organisation figures notebooks
 - Prevention SQL injection (requetes parametrees)
 - Securite credentials (.env, singleton engine)
+- **Audit RGPD formel** (`docs/05-reports/AUDIT_RGPD.md`)
 
 ### Restant
 
 | Livrable | Criticite |
 |----------|-----------|
-| Audit RGPD formel | IMPORTANT |
 | Tests unitaires (pytest) | SOUHAITABLE |
 
 ---
 
 ## Prochaine Etape
 
-**Phase 6 - Revue & Qualite** (optionnel, bonus)
+**Tous les livrables CRITIQUES et IMPORTANTS sont livres.**
 
-```bash
-@rv Finalise la Phase 6 : audit RGPD formel et tests unitaires
-```
+Optionnel restant : tests unitaires (bonus differenciant).
 
 ---
 
