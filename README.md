@@ -1,9 +1,14 @@
 # Electio-Analytics - POC Predictions Electorales
 
-**Projet MSPR - M1 EPSI**
-**Groupe RYMS**
+- **Projet MSPR - M1 EPSI**
+- **Groupe RYMS**
+- **Membres du groupe :**
+    - Samuel RESSIOT
+    - Yassine ZOUITNI
+    - Rudolph ATTISSO
+    - Marc-Alex NEZOUT
 
----
+
 
 ## Contexte
 

@@ -1,6 +1,7 @@
 # Documentation Electio-Analytics
 
 **Projet MSPR - M1 EPSI - Groupe RYMS**
+**Membres :** Samuel RESSIOT, Yassine ZOUITNI, Rudolph ATTISSO, Marc-Alex NEZOUT
 **Dernière mise à jour :** 2026-02-11
 
 ---

@@ -6,7 +6,10 @@ readme = "README.md"
 requires-python = ">=3.9,<3.13"
 license = {text = "MIT"}
 authors = [
-    {name = "Groupe RYMS", email = "contact@electio-analytics.fr"}
+    {name = "Samuel RESSIOT"},
+    {name = "Yassine ZOUITNI"},
+    {name = "Rudolph ATTISSO"},
+    {name = "Marc-Alex NEZOUT"},
 ]
 keywords = ["elections", "machine-learning", "predictions", "data-science"]
 
