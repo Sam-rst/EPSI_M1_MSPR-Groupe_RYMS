@@ -17,7 +17,50 @@
 | ORM | SQLAlchemy 2.x |
 | Migrations | Alembic (4 versions) |
 
-## 2. Referentiels definis
+## 2. MCD simplifie (v3.0)
+
+```mermaid
+erDiagram
+    REGION ||--o{ DEPARTEMENT : contient
+    DEPARTEMENT ||--o{ COMMUNE : contient
+    COMMUNE ||--o{ RESULTAT_PARTICIPATION : "id_territoire"
+    COMMUNE ||--o{ RESULTAT_CANDIDAT : "id_territoire"
+    COMMUNE ||--o{ INDICATEUR : "id_territoire"
+    COMMUNE ||--o{ PREDICTION : "id_territoire"
+
+    ELECTION ||--o{ RESULTAT_PARTICIPATION : concerne
+    ELECTION ||--o{ RESULTAT_CANDIDAT : concerne
+    CANDIDAT ||--o{ RESULTAT_CANDIDAT : obtient
+    CANDIDAT ||--o{ CANDIDAT_PARTI : appartient
+    PARTI ||--o{ CANDIDAT_PARTI : regroupe
+    TYPE_INDICATEUR ||--o{ INDICATEUR : categorise
+    TYPE_ELECTION ||--o{ ELECTION : type
+
+    COMMUNE {
+        varchar id_commune PK
+        varchar nom_commune
+        int population
+    }
+    CANDIDAT {
+        int id_candidat PK
+        varchar nom
+        varchar prenom
+    }
+    PREDICTION {
+        bigint id_prediction PK
+        numeric pourcentage_predit
+        numeric ic_inf
+        numeric ic_sup
+        jsonb metriques_modele
+    }
+    RESULTAT_CANDIDAT {
+        bigint id PK
+        int nombre_voix
+        numeric pourcentage_voix
+    }
+```
+
+## 3. Referentiels definis
 
 ### Referentiel geographique
 

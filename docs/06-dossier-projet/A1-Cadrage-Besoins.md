@@ -38,9 +38,11 @@ Electio-Analytics est une start-up de conseil strategique pour campagnes elector
 
 ## 5. Strategie data globale
 
-```
-Donnees publiques    →    Pipeline ETL    →    Entrepot PostgreSQL    →    ML + Visualisation
-(3 sources API)           (Python)              (17 tables, 3NF)           (Predictions 2027)
+```mermaid
+flowchart LR
+    A["Donnees publiques\n(3 sources API)"] --> B["Pipeline ETL\n(Python)"]
+    B --> C["Entrepot PostgreSQL\n(17 tables, 3NF)"]
+    C --> D["ML + Visualisation\n(Predictions 2027)"]
 ```
 
 **Fichiers de reference :**

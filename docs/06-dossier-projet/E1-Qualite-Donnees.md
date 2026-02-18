@@ -6,12 +6,16 @@
 
 ## 1. Strategie qualite
 
-```
-SOURCES             VALIDATION ETL           BDD                  CODE REVIEW
-───────             ──────────────           ───                  ───────────
-APIs publiques  →   14 validators Python  →  Contraintes SQL  →  2 revues (7/10)
-(data.gouv.fr)      (colonnes, types,        (FK, UNIQUE,
-                     bornes, unicite)          CHECK 0-100%)
+```mermaid
+flowchart LR
+    A["SOURCES\nAPIs publiques\ndata.gouv.fr"] --> B["VALIDATION ETL\n14 validators Python\ncolonnes, types,\nbornes, unicite"]
+    B --> C["CONTRAINTES BDD\nFK, UNIQUE,\nCHECK 0-100%"]
+    C --> D["CODE REVIEW\n2 revues\n7/10"]
+
+    style A fill:#3498db,color:#fff
+    style B fill:#f39c12,color:#fff
+    style C fill:#2ecc71,color:#fff
+    style D fill:#9b59b6,color:#fff
 ```
 
 ## 2. Validation ETL (14 fonctions)

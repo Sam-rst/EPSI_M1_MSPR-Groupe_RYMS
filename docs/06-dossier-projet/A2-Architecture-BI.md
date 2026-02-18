@@ -16,21 +16,40 @@
 
 ## 2. Architecture globale
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                    ARCHITECTURE BI                            │
-├──────────────┬──────────────────┬───────────────────────────┤
-│   SOURCES    │    TRAITEMENT    │       RESTITUTION          │
-│              │                  │                             │
-│ geo.api ─────┤                  │  Notebook exploration ──── │
-│              │  EXTRACT ────────┤  Notebook ML ───────────── │
-│ data.gouv ──┤  TRANSFORM ──────┤  Notebook visualisation ── │
-│              │  LOAD ──────────┤  Cartes Folium ──────────── │
-│ SSMSI ──────┤                  │  Rapport de synthese ───── │
-│              │  PostgreSQL 15   │                             │
-│              │  (17 tables)     │  Predictions 2027          │
-│              │  Docker Compose  │  (3 745 lignes)            │
-└──────────────┴──────────────────┴───────────────────────────┘
+```mermaid
+flowchart LR
+    subgraph SOURCES
+        S1[geo.api.gouv.fr]
+        S2[data.gouv.fr]
+        S3[SSMSI]
+    end
+
+    subgraph TRAITEMENT
+        E[Extract]
+        T[Transform]
+        L[Load]
+        DB[(PostgreSQL 15\n17 tables\nDocker Compose)]
+        E --> T --> L --> DB
+    end
+
+    subgraph RESTITUTION
+        N1[Notebook exploration]
+        N2[Notebook ML]
+        N3[Notebook visualisation]
+        C[Cartes Folium]
+        R[Rapport de synthese]
+        P[Predictions 2027\n3 745 lignes]
+    end
+
+    S1 --> E
+    S2 --> E
+    S3 --> E
+    DB --> N1
+    DB --> N2
+    DB --> N3
+    DB --> C
+    DB --> R
+    DB --> P
 ```
 
 ## 3. Schema de donnees (MCD v3.0)

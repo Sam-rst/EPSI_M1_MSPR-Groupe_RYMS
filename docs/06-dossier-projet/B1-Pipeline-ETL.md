@@ -6,19 +6,27 @@
 
 ## 1. Strategie collecte → traitement
 
-```
-EXTRACT                    TRANSFORM                  LOAD
-─────────────────          ─────────────────          ─────────────────
-3 APIs publiques      →    Nettoyage/Normalisation →  PostgreSQL 15
+```mermaid
+flowchart LR
+    subgraph EXTRACT
+        G["geo.api.gouv.fr\nREST JSON, 200 KB"]
+        D["data.gouv.fr\nJSON+Parquet, 151 MB"]
+        S["SSMSI\nCSV gzip, 34 MB"]
+    end
 
-geo.api.gouv.fr            JSON → CSV communes        17 tables
-(REST JSON, 200 KB)        (534 lignes)               Schema v3.0
+    subgraph TRANSFORM
+        TG["JSON → CSV communes\n534 lignes"]
+        TD["Parquet → CSV agrege\nparticipation + candidats"]
+        TS["CSV → CSV filtre\nBordeaux 2016-2024"]
+    end
 
-data.gouv.fr               Parquet → CSV agrege       21 007 lignes
-(JSON+Parquet, 151 MB)     (participation + candidats)
+    subgraph LOAD
+        PG[("PostgreSQL 15\n17 tables - Schema v3.0\n21 007 lignes\nFK, UNIQUE, CHECK")]
+    end
 
-SSMSI                      CSV → CSV filtre           Contraintes FK
-(CSV gzip, 34 MB)          (Bordeaux 2016-2024)       UNIQUE, CHECK
+    G --> TG --> PG
+    D --> TD --> PG
+    S --> TS --> PG
 ```
 
 ## 2. Architecture modulaire (ADR-003)
