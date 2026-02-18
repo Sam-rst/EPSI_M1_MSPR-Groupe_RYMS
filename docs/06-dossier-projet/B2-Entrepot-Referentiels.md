@@ -19,44 +19,156 @@
 
 ## 2. MCD simplifie (v3.0)
 
+## Diagramme Relationnel
+
 ```mermaid
 erDiagram
-    REGION ||--o{ DEPARTEMENT : contient
-    DEPARTEMENT ||--o{ COMMUNE : contient
-    COMMUNE ||--o{ RESULTAT_PARTICIPATION : "id_territoire"
-    COMMUNE ||--o{ RESULTAT_CANDIDAT : "id_territoire"
-    COMMUNE ||--o{ INDICATEUR : "id_territoire"
-    COMMUNE ||--o{ PREDICTION : "id_territoire"
+    region ||--o{ departement : "contient"
+    departement ||--o{ canton : "contient"
+    departement ||--o{ commune : "contient"
+    commune ||--o{ arrondissement : "contient"
+    commune ||--o{ bureau_vote : "contient"
+    arrondissement ||--o{ bureau_vote : "optionnel"
 
-    ELECTION ||--o{ RESULTAT_PARTICIPATION : concerne
-    ELECTION ||--o{ RESULTAT_CANDIDAT : concerne
-    CANDIDAT ||--o{ RESULTAT_CANDIDAT : obtient
-    CANDIDAT ||--o{ CANDIDAT_PARTI : appartient
-    PARTI ||--o{ CANDIDAT_PARTI : regroupe
-    TYPE_INDICATEUR ||--o{ INDICATEUR : categorise
-    TYPE_ELECTION ||--o{ ELECTION : type
+    type_election ||--o{ election : "categorise"
+    election ||--o{ election_territoire : "declare"
+    election_territoire ||--o{ resultat_participation : "mesure"
+    election_territoire ||--o{ resultat_candidat : "mesure"
 
-    COMMUNE {
-        varchar id_commune PK
-        varchar nom_commune
-        int population
+    candidat ||--o{ candidat_parti : "affilie"
+    parti ||--o{ candidat_parti : "accueille"
+    candidat ||--o{ resultat_candidat : "obtient"
+    parti ||--o| parti : "succede"
+
+    type_indicateur ||--o{ indicateur : "categorise"
+
+    region {
+        varchar id_region PK
+        varchar nom_region
+        integer population
     }
-    CANDIDAT {
-        int id_candidat PK
+
+    departement {
+        varchar id_departement PK
+        varchar id_region FK
+        varchar nom_departement
+        integer population
+    }
+
+    commune {
+        varchar id_commune PK
+        varchar id_departement FK
+        varchar code_insee UK
+        varchar nom_commune
+        integer population
+    }
+
+    canton {
+        varchar id_canton PK
+        varchar id_departement FK
+        varchar nom_canton
+    }
+
+    arrondissement {
+        varchar id_arrondissement PK
+        varchar id_commune FK
+        varchar nom_arrondissement
+    }
+
+    bureau_vote {
+        varchar id_bureau PK
+        varchar id_commune FK
+        varchar id_arrondissement FK
+        varchar code_bureau
+    }
+
+    type_election {
+        serial id_type_election PK
+        varchar code_type UK
+        varchar nom_type
+    }
+
+    election {
+        serial id_election PK
+        integer id_type_election FK
+        integer annee
+        date date_tour1
+        date date_tour2
+    }
+
+    election_territoire {
+        serial id_election_territoire PK
+        integer id_election FK
+        varchar id_territoire
+        varchar type_territoire
+    }
+
+    resultat_participation {
+        bigserial id_resultat_part PK
+        integer id_election FK
+        varchar id_territoire
+        varchar type_territoire
+        integer tour
+        integer nombre_inscrits
+        integer nombre_votants
+        integer nombre_exprimes
+    }
+
+    resultat_candidat {
+        bigserial id_resultat_cand PK
+        integer id_election FK
+        integer id_candidat FK
+        varchar id_territoire
+        varchar type_territoire
+        integer tour
+        integer nombre_voix
+    }
+
+    candidat {
+        serial id_candidat PK
         varchar nom
         varchar prenom
+        varchar nom_complet
     }
-    PREDICTION {
-        bigint id_prediction PK
-        numeric pourcentage_predit
-        numeric ic_inf
-        numeric ic_sup
-        jsonb metriques_modele
+
+    parti {
+        serial id_parti PK
+        varchar code_parti UK
+        varchar nom_officiel
+        varchar classification_ideologique
     }
-    RESULTAT_CANDIDAT {
-        bigint id PK
-        int nombre_voix
-        numeric pourcentage_voix
+
+    candidat_parti {
+        serial id_affiliation PK
+        integer id_candidat FK
+        integer id_parti FK
+        date date_debut
+    }
+
+    type_indicateur {
+        serial id_type PK
+        varchar code_type UK
+        varchar categorie
+        varchar nom_affichage
+    }
+
+    indicateur {
+        bigserial id_indicateur PK
+        varchar id_territoire
+        varchar type_territoire
+        integer id_type FK
+        integer annee
+        decimal valeur_numerique
+    }
+
+    prediction {
+        bigserial id_prediction PK
+        varchar id_territoire
+        varchar type_territoire
+        varchar candidat
+        integer tour
+        decimal pourcentage_predit
+        varchar modele_utilise
     }
 ```
 
