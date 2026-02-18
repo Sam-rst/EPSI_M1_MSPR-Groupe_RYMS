@@ -40,8 +40,8 @@ Le projet s'appuie sur un pipeline ETL complet, une base de donnees relationnell
 
 ```bash
 # Cloner le repository
-git clone https://github.com/Sam-rst/EPSI_M1_MSPR-Groupe_RYMS_original.git
-cd EPSI_M1_MSPR-Groupe_RYMS_original
+git clone https://github.com/Sam-rst/EPSI_M1_MSPR-Groupe_RYMS.git
+cd EPSI_M1_MSPR-Groupe_RYMS
 
 # Installer les dependances
 uv sync --all-extras
