@@ -17,7 +17,7 @@
 | ORM | SQLAlchemy 2.x |
 | Migrations | Alembic (4 versions) |
 
-## 2. MCD simplifie (v3.0)
+## 2. MLD (v3.0)
 
 ## Diagramme Relationnel
 
