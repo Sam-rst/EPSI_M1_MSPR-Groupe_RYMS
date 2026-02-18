@@ -1,0 +1,72 @@
+site_name: "Electio-Analytics - Dossier Projet"
+site_description: "MSPR Bloc 3 - Big Data & Business Intelligence (RNCP35584)"
+site_author: "Groupe RYMS"
+
+docs_dir: docs/06-dossier-projet
+site_dir: site
+
+theme:
+  name: material
+  language: fr
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: deep purple
+      toggle:
+        icon: material/brightness-7
+        name: Mode sombre
+    - scheme: slate
+      primary: indigo
+      accent: deep purple
+      toggle:
+        icon: material/brightness-4
+        name: Mode clair
+  font:
+    text: Inter
+    code: JetBrains Mono
+  features:
+    - navigation.instant
+    - navigation.tabs
+    - navigation.sections
+    - navigation.top
+    - toc.integrate
+    - content.code.copy
+
+nav:
+  - Accueil: 00-INDEX.md
+  - "A - Cadrage & Architecture":
+      - "A1 - Cadrage & Besoins (C1)": A1-Cadrage-Besoins.md
+      - "A2 - Architecture BI (C2)": A2-Architecture-BI.md
+  - "B - Donnees & ETL":
+      - "B1 - Pipeline ETL (C3)": B1-Pipeline-ETL.md
+      - "B2 - Entrepot & Referentiels (C6+C7)": B2-Entrepot-Referentiels.md
+  - "C - Machine Learning":
+      - "C1 - Modeles ML (C4)": C1-Modeles-ML.md
+  - "D - Visualisation":
+      - "D1 - Visualisations (C5)": D1-Visualisations.md
+  - "E - Qualite & Securite":
+      - "E1 - Qualite des Donnees (C8)": E1-Qualite-Donnees.md
+      - "E2 - Securite & RGPD (C9)": E2-Securite-RGPD.md
+
+markdown_extensions:
+  - tables
+  - admonition
+  - pymdownx.details
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - attr_list
+  - md_in_html
+  - toc:
+      permalink: true
+
+extra:
+  generator: false
