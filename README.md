@@ -8,7 +8,7 @@
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-4169E1?logo=postgresql&logoColor=white)](https://postgresql.org)
 [![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)](https://docker.com)
 [![UV](https://img.shields.io/badge/UV-Package_Manager-DE5FE9?logo=astral&logoColor=white)](https://docs.astral.sh/uv/)
-[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/Sam-rst/EPSI_M1_MSPR-Groupe_RYMS)
+[![Documentation](https://img.shields.io/badge/Docs-Dossier_Projet-blue?logo=materialformkdocs&logoColor=white)](https://sam-rst.github.io/EPSI_M1_MSPR-Groupe_RYMS/00-INDEX/)
 
 </div>
 
@@ -135,7 +135,11 @@ uv run python -m src.etl.load.main          # Chargement     (processed → Post
 
 ## Documentation
 
-L'ensemble de la documentation technique est disponible dans le repertoire [`docs/`](docs/).
+> **Dossier projet en ligne :** [https://sam-rst.github.io/EPSI_M1_MSPR-Groupe_RYMS/00-INDEX/](https://sam-rst.github.io/EPSI_M1_MSPR-Groupe_RYMS/00-INDEX/)
+>
+> Le dossier projet complet (9 competences Bloc 3) est deploye automatiquement via GitHub Actions avec MkDocs Material.
+
+L'ensemble de la documentation technique est egalement disponible dans le repertoire [`docs/`](docs/).
 
 | Document | Description |
 |---|---|
