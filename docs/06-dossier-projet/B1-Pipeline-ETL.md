@@ -1,10 +1,10 @@
-# B1 - Pipeline ETL (Strategie Big Data)
+# B1 - Pipeline ETL (Stratégie Big Data)
 
-> **Competence C3 :** Definir une strategie big data (de la collecte aux traitements des donnees) afin d'aider l'entreprise a mieux comprendre ses clients et a creer de nouveaux services.
+> **Compétence C3 :** Définir une stratégie big data (de la collecte aux traitements des données) afin d'aider l'entreprise à mieux comprendre ses clients et à créer de nouveaux services.
 
 ---
 
-## 1. Strategie collecte → traitement
+## 1. Stratégie collecte → traitement
 
 ```mermaid
 flowchart LR
@@ -16,12 +16,12 @@ flowchart LR
 
     subgraph TRANSFORM
         TG["JSON → CSV communes\n534 lignes"]
-        TD["Parquet → CSV agrege\nparticipation + candidats"]
-        TS["CSV → CSV filtre\nBordeaux 2016-2024"]
+        TD["Parquet → CSV agrégé\nparticipation + candidats"]
+        TS["CSV → CSV filtré\nBordeaux 2016-2024"]
     end
 
     subgraph LOAD
-        PG[("PostgreSQL 15\n17 tables - Schema v3.0\n21 007 lignes\nFK, UNIQUE, CHECK")]
+        PG[("PostgreSQL 15\n17 tables - Schéma v3.0\n21 007 lignes\nFK, UNIQUE, CHECK")]
     end
 
     G --> TG --> PG
@@ -45,10 +45,10 @@ src/etl/
 ├── transform/                  # Phase 2 : Nettoyage
 │   ├── config/settings.py      # Chemins, mappings colonnes
 │   ├── core/
-│   │   ├── geographie.py       # JSON → CSV (regions, depts, communes)
-│   │   ├── elections.py        # Agregation participation, pivot candidats
+│   │   ├── geographie.py       # JSON → CSV (régions, dépts, communes)
+│   │   ├── elections.py        # Agrégation participation, pivot candidats
 │   │   └── securite.py         # Filtrage Gironde, mapping types
-│   ├── utils/parsing.py        # Parsing nombres francais (1.234,56)
+│   ├── utils/parsing.py        # Parsing nombres français (1.234,56)
 │   └── main.py                 # Orchestrateur transform
 │
 ├── load/                       # Phase 3 : Chargement BDD
@@ -56,7 +56,7 @@ src/etl/
 │   ├── core/
 │   │   ├── geographie.py       # Region, Departement, Commune
 │   │   ├── candidats.py        # Candidat, Parti, CandidatParti
-│   │   ├── elections.py        # ElectionTerritoire, Resultats
+│   │   ├── elections.py        # ElectionTerritoire, Résultats
 │   │   └── indicateurs.py      # Batch loading (1000 lignes/batch)
 │   ├── utils/validators.py     # 14 fonctions de validation
 │   └── main.py                 # Orchestrateur load (respect ordre FK)
@@ -66,27 +66,27 @@ src/etl/
 
 **Principe** : chaque source = 1 fichier dans `core/`. Ajout d'une nouvelle source = 1 fichier, sans toucher aux autres.
 
-## 3. Traitements appliques
+## 3. Traitements appliqués
 
-| Etape | Traitement | Exemple |
+| Étape | Traitement | Exemple |
 |-------|-----------|---------|
-| Parsing | Nombres francais → float | `1.234,56` → `1234.56` |
+| Parsing | Nombres français → float | `1.234,56` → `1234.56` |
 | Normalisation | IDs territoire 7 chars → 5 chars | `33XXXXX` → `XXXXX` |
 | Gestion NULL | Pourcentages manquants → 0% | 745 lignes avec 0 voix |
-| Agregation | Somme voix par commune/candidat | Bureau → Commune |
-| Validation | Colonnes, types, bornes, unicite | 14 validators |
+| Agrégation | Somme voix par commune/candidat | Bureau → Commune |
+| Validation | Colonnes, types, bornes, unicité | 14 validators |
 
-## 4. Resultats
+## 4. Résultats
 
-| Metrique | Valeur |
+| Métrique | Valeur |
 |----------|--------|
-| Donnees brutes collectees | 185 MB (3 sources) |
-| Donnees nettoyees | 3 MB (8 fichiers CSV) |
-| Lignes chargees en BDD | 21 007 |
-| Tables alimentees | 17 |
-| Temps d'execution ETL | ~5 min |
+| Données brutes collectées | 185 MB (3 sources) |
+| Données nettoyées | 3 MB (8 fichiers CSV) |
+| Lignes chargées en BDD | 21 007 |
+| Tables alimentées | 17 |
+| Temps d'exécution ETL | ~5 min |
 
-**Fichiers de reference :**
+**Fichiers de référence :**
 - Code ETL : `src/etl/`
 - Documentation : `src/etl/README.md`
 - ADR architecture : `docs/02-architecture/adr/ADR-003-architecture-modulaire-etl.md`

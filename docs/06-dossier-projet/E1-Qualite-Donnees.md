@@ -1,14 +1,14 @@
-# E1 - Qualite des Donnees
+# E1 - Qualité des Données
 
-> **Competence C8 :** Assurer la qualite des donnees en utilisant les outils de gestion de la qualite pour garantir l'exactitude, la coherence, la synchronisation et la tracabilite des donnees.
+> **Compétence C8 :** Assurer la qualité des données en utilisant les outils de gestion de la qualité pour garantir l'exactitude, la cohérence, la synchronisation et la traçabilité des données.
 
 ---
 
-## 1. Strategie qualite
+## 1. Stratégie qualité
 
 ```mermaid
 flowchart LR
-    A["SOURCES\nAPIs publiques\ndata.gouv.fr"] --> B["VALIDATION ETL\n14 validators Python\ncolonnes, types,\nbornes, unicite"]
+    A["SOURCES\nAPIs publiques\ndata.gouv.fr"] --> B["VALIDATION ETL\n14 validators Python\ncolonnes, types,\nbornes, unicité"]
     B --> C["CONTRAINTES BDD\nFK, UNIQUE,\nCHECK 0-100%"]
     C --> D["CODE REVIEW\n2 revues\n7/10"]
 
@@ -20,24 +20,24 @@ flowchart LR
 
 ## 2. Validation ETL (14 fonctions)
 
-Implementees dans `src/etl/load/utils/validators.py` :
+Implémentées dans `src/etl/load/utils/validators.py` :
 
 | Validation | Garantie |
 |------------|----------|
 | `validate_csv_exists` | Le fichier source existe |
 | `validate_dataframe_not_empty` | Le dataset n'est pas vide |
-| `validate_required_columns` | Toutes les colonnes attendues sont presentes |
+| `validate_required_columns` | Toutes les colonnes attendues sont présentes |
 | `validate_no_nulls` | Pas de valeurs NULL sur les colonnes obligatoires |
-| `validate_year_range` | Annees dans les bornes attendues |
-| `validate_positive_values` | Valeurs numeriques positives |
+| `validate_year_range` | Années dans les bornes attendues |
+| `validate_positive_values` | Valeurs numériques positives |
 | `validate_percentage_range` | Pourcentages entre 0 et 100 |
-| `validate_unique_key` | Cles primaires uniques (pas de doublons) |
-| `validate_elections_data` | Coherence donnees electorales |
+| `validate_unique_key` | Clés primaires uniques (pas de doublons) |
+| `validate_elections_data` | Cohérence données électorales |
 | `validate_participation_data` | Somme votants + abstentions = inscrits |
-| `validate_indicateurs_data` | Indicateurs securite coherents |
+| `validate_indicateurs_data` | Indicateurs sécurité cohérents |
 | `validate_geographie_data` | Codes INSEE valides |
 
-## 3. Contraintes en base de donnees
+## 3. Contraintes en base de données
 
 | Type | Nombre | Exemples |
 |------|--------|---------|
@@ -48,34 +48,34 @@ Implementees dans `src/etl/load/utils/validators.py` :
 | NOT NULL | ~50 | Colonnes obligatoires |
 | INDEX | 15 | Composites sur `(id_territoire, type_territoire)` |
 
-## 4. Traitements qualite appliques
+## 4. Traitements qualité appliqués
 
-| Probleme detecte | Traitement | Impact |
+| Problème détecté | Traitement | Impact |
 |-------------------|-----------|--------|
-| IDs territoire 7 chars vs 5 chars | Normalisation `str[2:]` | 14 484 lignes corrigees |
+| IDs territoire 7 chars vs 5 chars | Normalisation `str[2:]` | 14 484 lignes corrigées |
 | Pourcentages NULL (0 voix) | `fillna(0)` | 745 lignes |
-| Nombres format francais | Parsing `1.234,56` → `1234.56` | Indicateurs securite |
-| Doublons potentiels | Contraintes UNIQUE en BDD | Prevention automatique |
+| Nombres format français | Parsing `1.234,56` → `1234.56` | Indicateurs sécurité |
+| Doublons potentiels | Contraintes UNIQUE en BDD | Prévention automatique |
 
 ## 5. Revues de code
 
-| Revue | Score | Problemes | Resolution |
+| Revue | Score | Problèmes | Résolution |
 |-------|-------|-----------|------------|
-| Review 1 | 6.5/10 | 15 CRITICAL + 35 MAJOR | Corrections appliquees |
-| Review 2 | **7/10** | Tous CRITICAL/MAJOR resolus | Valide |
+| Review 1 | 6.5/10 | 15 CRITICAL + 35 MAJOR | Corrections appliquées |
+| Review 2 | **7/10** | Tous CRITICAL/MAJOR résolus | Validé |
 
-Corrections majeures : requetes parametrees (SQL injection), singleton engine, transaction safety, vectorisation transform.
+Corrections majeures : requêtes paramétrées (SQL injection), singleton engine, transaction safety, vectorisation transform.
 
-## 6. Tracabilite
+## 6. Traçabilité
 
-| Element | Mecanisme |
+| Élément | Mécanisme |
 |---------|-----------|
-| Sources de donnees | Documentees dans `SOURCES_DONNEES.md` avec URLs et licences |
-| Versions schema | 4 migrations Alembic tracees |
-| Predictions ML | Version modele (`v1.0.0`), metriques et features en JSONB |
+| Sources de données | Documentées dans `SOURCES_DONNEES.md` avec URLs et licences |
+| Versions schéma | 4 migrations Alembic tracées |
+| Prédictions ML | Version modèle (`v1.0.0`), métriques et features en JSONB |
 | Modifications code | Git (historique complet des commits) |
 
-**Fichiers de reference :**
+**Fichiers de référence :**
 - Validators : `src/etl/load/utils/validators.py`
 - Contraintes : `docs/02-architecture/database/05-contraintes-integrite.md`
 - Code review : `docs/03-code-review/`

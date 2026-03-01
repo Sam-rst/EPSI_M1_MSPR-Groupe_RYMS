@@ -1,16 +1,16 @@
-# B2 - Entrepot de Donnees & Referentiels
+# B2 - Entrepôt de Données & Référentiels
 
-> **Competence C6 :** Definir les donnees de reference a partir des donnees utilisees pour creer un referentiel afin d'assurer la mise a disposition de donnees coherentes.
-> **Competence C7 :** Creer un entrepot unique a partir du referentiel pour centraliser les informations strategiques et repondre rapidement aux besoins metiers.
+> **Compétence C6 :** Définir les données de référence à partir des données utilisées pour créer un référentiel afin d'assurer la mise à disposition de données cohérentes.
+> **Compétence C7 :** Créer un entrepôt unique à partir du référentiel pour centraliser les informations stratégiques et répondre rapidement aux besoins métiers.
 
 ---
 
-## 1. Entrepot unique : PostgreSQL 15
+## 1. Entrepôt unique : PostgreSQL 15
 
-| Parametre | Valeur |
+| Paramètre | Valeur |
 |-----------|--------|
 | SGBD | PostgreSQL 15 + PostGIS |
-| Schema | v3.0 normalise 3NF |
+| Schéma | v3.0 normalisé 3NF |
 | Tables | 17 |
 | Lignes totales | ~21 000 |
 | Infrastructure | Docker Compose |
@@ -30,17 +30,17 @@ erDiagram
     commune ||--o{ bureau_vote : "contient"
     arrondissement ||--o{ bureau_vote : "optionnel"
 
-    type_election ||--o{ election : "categorise"
-    election ||--o{ election_territoire : "declare"
+    type_election ||--o{ election : "catégorise"
+    election ||--o{ election_territoire : "déclare"
     election_territoire ||--o{ resultat_participation : "mesure"
     election_territoire ||--o{ resultat_candidat : "mesure"
 
-    candidat ||--o{ candidat_parti : "affilie"
+    candidat ||--o{ candidat_parti : "affilié"
     parti ||--o{ candidat_parti : "accueille"
     candidat ||--o{ resultat_candidat : "obtient"
-    parti ||--o| parti : "succede"
+    parti ||--o| parti : "succède"
 
-    type_indicateur ||--o{ indicateur : "categorise"
+    type_indicateur ||--o{ indicateur : "catégorise"
 
     region {
         varchar id_region PK
@@ -172,72 +172,72 @@ erDiagram
     }
 ```
 
-## 3. Referentiels definis
+## 3. Référentiels définis
 
-### Referentiel geographique
+### Référentiel géographique
 
-| Table | Cle | Exemples | Lignes |
+| Table | Clé | Exemples | Lignes |
 |-------|-----|----------|--------|
 | `region` | id_region | Nouvelle-Aquitaine | 1 |
 | `departement` | id_departement | Gironde (33) | 1 |
-| `commune` | id_commune | Bordeaux (33063), Merignac (33281)... | 534 |
+| `commune` | id_commune | Bordeaux (33063), Mérignac (33281)... | 534 |
 
-### Referentiel candidats & partis
+### Référentiel candidats & partis
 
-| Table | Cle | Exemples | Lignes |
+| Table | Clé | Exemples | Lignes |
 |-------|-----|----------|--------|
-| `candidat` | id_candidat | Macron, Le Pen, Melenchon... | 16 |
+| `candidat` | id_candidat | Macron, Le Pen, Mélenchon... | 16 |
 | `parti` | id_parti | RE, RN, LFI... | 15 |
 | `candidat_parti` | (id_candidat, id_parti) | Association candidat-parti | 25 |
 
-### Referentiel elections
+### Référentiel élections
 
-| Table | Cle | Exemples | Lignes |
+| Table | Clé | Exemples | Lignes |
 |-------|-----|----------|--------|
-| `type_election` | id_type | Presidentielle | 1 |
+| `type_election` | id_type | Présidentielle | 1 |
 | `election` | id_election | 2017, 2022 | 2 |
 
-### Referentiel indicateurs
+### Référentiel indicateurs
 
-| Table | Cle | Exemples | Lignes |
+| Table | Clé | Exemples | Lignes |
 |-------|-----|----------|--------|
-| `type_indicateur` | id_type | Criminalite totale, Vols, Atteintes... | 5 |
+| `type_indicateur` | id_type | Criminalité totale, Vols, Atteintes... | 5 |
 
-## 3. Contraintes d'integrite
+## 4. Contraintes d'intégrité
 
 | Type | Nombre | Exemple |
 |------|--------|---------|
-| Cles primaires | 17 | `commune.id_commune` |
-| Cles etrangeres | 12 | `commune.id_departement → departement` |
+| Clés primaires | 17 | `commune.id_commune` |
+| Clés étrangères | 12 | `commune.id_departement → departement` |
 | UNIQUE | 8 | `(id_territoire, candidat, tour, annee, version)` |
 | CHECK | 10 | `pourcentage BETWEEN 0 AND 100` |
 | NOT NULL | ~50 | Colonnes obligatoires |
 
-## 4. Historique des versions
+## 5. Historique des versions
 
 | Version | Date | Changement |
 |---------|------|-----------|
-| v1.0 | 2026-02-09 | Schema initial (8 tables) |
-| v2.0 | 2026-02-10 | Separation participation/resultats |
-| v3.0 | 2026-02-12 | Systeme polymorphe, 17 tables, table prediction |
+| v1.0 | 2026-02-09 | Schéma initial (8 tables) |
+| v2.0 | 2026-02-10 | Séparation participation/résultats |
+| v3.0 | 2026-02-12 | Système polymorphe, 17 tables, table prediction |
 
-## 5. Dictionnaire de donnees
+## 6. Dictionnaire de données
 
-Extrait pour les tables cles :
+Extrait pour les tables clés :
 
 | Table.Colonne | Type | Description |
 |---------------|------|-------------|
 | `commune.id_commune` | VARCHAR(5) | Code INSEE (ex: 33063) |
 | `commune.population` | INTEGER | Population municipale |
 | `resultat_candidat.pourcentage_voix_exprimes` | NUMERIC(5,2) | % voix (0-100) |
-| `prediction.pourcentage_predit` | NUMERIC(5,2) | % predit ML (0-100) |
+| `prediction.pourcentage_predit` | NUMERIC(5,2) | % prédit ML (0-100) |
 | `prediction.intervalle_confiance_inf` | NUMERIC(5,2) | Borne inf IC 95% |
 | `prediction.metriques_modele` | JSONB | {r2, mae, rmse, feature_importance} |
 
-**Fichiers de reference :**
-- Modeles ORM : `src/database/models/`
+**Fichiers de référence :**
+- Modèles ORM : `src/database/models/`
 - MCD : `docs/02-architecture/database/01-mcd.md`
 - MLD : `docs/02-architecture/database/02-mld.md`
 - Dictionnaire complet : `docs/02-architecture/database/03-dictionnaire-donnees.md`
-- Regles de gestion : `docs/02-architecture/database/04-regles-gestion.md`
+- Règles de gestion : `docs/02-architecture/database/04-regles-gestion.md`
 - Contraintes : `docs/02-architecture/database/05-contraintes-integrite.md`

@@ -1,18 +1,18 @@
 # A2 - Architecture Business Intelligence
 
-> **Competence C2 :** Definir une architecture business intelligence a partir des orientations strategiques afin de mettre a disposition des utilisateurs metiers les donnees structurees d'un SI.
+> **Compétence C2 :** Définir une architecture business intelligence à partir des orientations stratégiques afin de mettre à disposition des utilisateurs métiers les données structurées d'un SI.
 
 ---
 
 ## 1. Choix technologiques (5 ADRs)
 
-| ADR | Decision | Alternative ecartee | Justification |
+| ADR | Décision | Alternative écartée | Justification |
 |-----|----------|---------------------|---------------|
-| ADR-001 | **PostgreSQL** | MongoDB, SQLite | SQL avance, integrite ACID, PostGIS, compatibilite Pandas |
-| ADR-002 | **Random Forest** | XGBoost, LSTM, SVM | Non-lineaire, feature importance, peu de tuning, POC 25h |
-| ADR-003 | **ETL modulaire (Option 3)** | Fichiers plats, Option 1/2 | Separation config/core/utils, testabilite, standards enterprise |
-| ADR-004 | **Schema v3.0** | Schema v1/v2 | Systeme polymorphe de territoire, normalisation 3NF |
-| ADR-005 | **Perimetre Gironde** | Bordeaux seul, National | Volume maitrisable (534 communes), richesse statistique |
+| ADR-001 | **PostgreSQL** | MongoDB, SQLite | SQL avancé, intégrité ACID, PostGIS, compatibilité Pandas |
+| ADR-002 | **Random Forest** | XGBoost, LSTM, SVM | Non-linéaire, feature importance, peu de tuning, POC 25h |
+| ADR-003 | **ETL modulaire (Option 3)** | Fichiers plats, Option 1/2 | Séparation config/core/utils, testabilité, standards enterprise |
+| ADR-004 | **Schéma v3.0** | Schéma v1/v2 | Système polymorphe de territoire, normalisation 3NF |
+| ADR-005 | **Périmètre Gironde** | Bordeaux seul, National | Volume maîtrisable (534 communes), richesse statistique |
 
 ## 2. Architecture globale
 
@@ -37,8 +37,8 @@ flowchart LR
         N2[Notebook ML]
         N3[Notebook visualisation]
         C[Cartes Folium]
-        R[Rapport de synthese]
-        P[Predictions 2027\n3 745 lignes]
+        R[Rapport de synthèse]
+        P[Prédictions 2027\n3 745 lignes]
     end
 
     S1 --> E
@@ -52,20 +52,20 @@ flowchart LR
     DB --> P
 ```
 
-## 3. Schema de donnees (MCD v3.0)
+## 3. Schéma de données (MCD v3.0)
 
-**17 tables** organisees en 5 domaines :
+**17 tables** organisées en 5 domaines :
 
 | Domaine | Tables | Lignes |
 |---------|--------|--------|
-| Geographie | Region, Departement, Commune, Canton, Arrondissement, Bureau | 537 |
+| Géographie | Region, Departement, Commune, Canton, Arrondissement, Bureau | 537 |
 | Candidats | Candidat, Parti, CandidatParti | 56 |
-| Elections | TypeElection, Election, ElectionTerritoire | 1 076 |
-| Resultats | ResultatParticipation, ResultatCandidat | 16 630 |
+| Élections | TypeElection, Election, ElectionTerritoire | 1 076 |
+| Résultats | ResultatParticipation, ResultatCandidat | 16 630 |
 | Indicateurs + ML | TypeIndicateur, Indicateur, Prediction | 3 795 |
 | **Total** | **17 tables** | **~21 000** |
 
-**Innovation architecturale** : systeme polymorphe `(id_territoire, type_territoire)` permettant de stocker resultats, indicateurs et predictions a n'importe quel niveau geographique sans jointures multiples.
+**Innovation architecturale** : système polymorphe `(id_territoire, type_territoire)` permettant de stocker résultats, indicateurs et prédictions à n'importe quel niveau géographique sans jointures multiples.
 
 ## 4. Stack technique
 
@@ -80,8 +80,8 @@ flowchart LR
 | Infrastructure | Docker Compose | - |
 | Packages | UV | - |
 
-**Fichiers de reference :**
-- Architecture complete : `docs/02-architecture/ARCHITECTURE.md`
-- ADRs : `docs/02-architecture/adr/ADR-001` a `ADR-005`
+**Fichiers de référence :**
+- Architecture complète : `docs/02-architecture/ARCHITECTURE.md`
+- ADRs : `docs/02-architecture/adr/ADR-001` à `ADR-005`
 - MCD/MLD : `docs/02-architecture/database/01-mcd.md`, `02-mld.md`
 - Dictionnaire : `docs/02-architecture/database/03-dictionnaire-donnees.md`
