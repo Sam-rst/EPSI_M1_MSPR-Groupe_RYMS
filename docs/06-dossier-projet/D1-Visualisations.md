@@ -92,21 +92,7 @@ Fonctionnalités : zoom, tooltip au survol (détail par candidat), légende coul
 
 ---
 
-## 6. Guide de présentation orale
-
-Fil conducteur suggéré pour la soutenance (section D1, ~5-7 min) :
-
-1. **Accrocher** — Montrer la carte interactive (fig. 13), laisser le jury explorer 30 sec. *"Voici la Gironde en 2027 selon notre modèle."*
-2. **Contextualiser** — Revenir en arrière avec la comparaison 2017/2022 (fig. 4). *"Avant de prédire, on a observé les dynamiques réelles."*
-3. **Légitimer** — Montrer le barplot LR vs RF (fig. 8) et la feature importance (fig. 9). *"Notre modèle n'est pas une boîte noire : voici ce qui le fait fonctionner."*
-4. **Projeter** — Présenter les courbes d'évolution (fig. 11) avec le passage réel → prédiction. *"Les pointillés, c'est notre projection."*
-5. **Nuancer** — Afficher les intervalles de confiance (fig. 12). *"On est honnêtes : certaines prédictions sont plus fiables que d'autres."*
-6. **Approfondir** — Scatter urbain/rural (fig. 17). *"Au-delà des chiffres, un clivage structurel se dessine."*
-7. **Conclure** — Dashboard synthèse (fig. 16). *"En un visuel, tout ce qu'il faut retenir."*
-
----
-
-## 7. Aide à la décision
+## 6. Aide à la décision
 
 | Question du client | Réponse visuelle | Figures |
 |---------------------|-----------------|---------|
