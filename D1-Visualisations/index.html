@@ -1,0 +1,1391 @@
+
+<!doctype html>
+<html lang="fr" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="MSPR Bloc 3 - Big Data & Business Intelligence (RNCP35584)">
+      
+      
+        <meta name="author" content="Groupe RYMS">
+      
+      
+      
+        <link rel="prev" href="../C1-Modeles-ML/">
+      
+      
+        <link rel="next" href="../E1-Qualite-Donnees/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.3">
+    
+    
+      
+        <title>D1 - Visualisations (C5) - Electio-Analytics - Dossier Projet</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,300i,400,400i,700,700i%7CJetBrains+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Inter";--md-code-font:"JetBrains Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="deep-purple">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#d1-resultats-exploitables-data-visualisation" class="md-skip">
+          Aller au contenu
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="En-tête">
+    <a href=".." title="Electio-Analytics - Dossier Projet" class="md-header__button md-logo" aria-label="Electio-Analytics - Dossier Projet" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Electio-Analytics - Dossier Projet
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              D1 - Visualisations (C5)
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="deep-purple"  aria-label="Mode sombre"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Mode sombre" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="deep-purple"  aria-label="Mode clair"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Mode clair" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Rechercher" placeholder="Rechercher" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Recherche">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Effacer" aria-label="Effacer" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initialisation de la recherche
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Onglets" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../00-INDEX/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Accueil
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../A1-Cadrage-Besoins/" class="md-tabs__link">
+          
+  
+  
+  A - Cadrage & Architecture
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../B1-Pipeline-ETL/" class="md-tabs__link">
+          
+  
+  
+  B - Donnees & ETL
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../C1-Modeles-ML/" class="md-tabs__link">
+          
+  
+  
+  C - Machine Learning
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="./" class="md-tabs__link">
+          
+  
+  
+  D - Visualisation
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../E1-Qualite-Donnees/" class="md-tabs__link">
+          
+  
+  
+  E - Qualite & Securite
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--lifted md-nav--integrated" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Electio-Analytics - Dossier Projet" class="md-nav__button md-logo" aria-label="Electio-Analytics - Dossier Projet" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Electio-Analytics - Dossier Projet
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../00-INDEX/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Accueil
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    A - Cadrage & Architecture
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    A - Cadrage & Architecture
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../A1-Cadrage-Besoins/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    A1 - Cadrage & Besoins (C1)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../A2-Architecture-BI/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    A2 - Architecture BI (C2)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    B - Donnees & ETL
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    B - Donnees & ETL
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../B1-Pipeline-ETL/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    B1 - Pipeline ETL (C3)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../B2-Entrepot-Referentiels/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    B2 - Entrepot & Referentiels (C6+C7)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    C - Machine Learning
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    C - Machine Learning
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../C1-Modeles-ML/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    C1 - Modeles ML (C4)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    D - Visualisation
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    D - Visualisation
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    D1 - Visualisations (C5)
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    D1 - Visualisations (C5)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table des matières">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table des matières
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-demarche-de-visualisation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Démarche de visualisation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-phase-1-comprendre-le-terrain-notebook-01" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Phase 1 — Comprendre le terrain (Notebook 01)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-phase-2-valider-le-modele-notebook-02" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Phase 2 — Valider le modèle (Notebook 02)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-phase-3-communiquer-les-predictions-notebook-03" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Phase 3 — Communiquer les prédictions (Notebook 03)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Phase 3 — Communiquer les prédictions (Notebook 03)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41-tendances-et-fiabilite" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1 Tendances et fiabilité
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#42-dimension-geographique" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.2 Dimension géographique
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#43-synthese-et-clivages" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.3 Synthèse et clivages
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-cartes-interactives" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Cartes interactives
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-aide-a-la-decision" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Aide à la décision
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    E - Qualite & Securite
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    E - Qualite & Securite
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../E1-Qualite-Donnees/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    E1 - Qualite des Donnees (C8)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../E2-Securite-RGPD/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    E2 - Securite & RGPD (C9)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="d1-resultats-exploitables-data-visualisation">D1 - Résultats Exploitables (Data Visualisation)<a class="headerlink" href="#d1-resultats-exploitables-data-visualisation" title="Permanent link">&para;</a></h1>
+<blockquote>
+<p><strong>Compétence C5 :</strong> Organiser les sources de données sous forme de résultats exploitables (data visualisation) pour alimenter les outils décisionnels et visualiser les résultats de façon compréhensible permettant d'aider les directions métiers à la prise de décision.</p>
+</blockquote>
+<hr />
+<h2 id="1-demarche-de-visualisation">1. Démarche de visualisation<a class="headerlink" href="#1-demarche-de-visualisation" title="Permanent link">&para;</a></h2>
+<p>Notre stratégie de visualisation suit le cheminement naturel d'une analyse prédictive : <strong>comprendre le passé, valider le modèle, puis présenter l'avenir</strong>. Chaque figure répond à une question précise et prépare la suivante. L'ensemble forme un récit cohérent pour le client Electio-Analytics.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a> PHASE 1                    PHASE 2                   PHASE 3
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a> Exploration                Modélisation               Communication
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a> &quot;De quoi dispose-t-on ?&quot;   &quot;Le modèle est-il fiable ?&quot; &quot;Que prédit-on pour 2027 ?&quot;
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a> ┌─────────────────┐        ┌─────────────────┐        ┌─────────────────┐
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a> │ 6 figures        │──────▶│ 4 figures        │──────▶│ 5 figures        │
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a> │ (Notebook 01)    │        │ (Notebook 02)    │        │ + 2 cartes       │
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a> └─────────────────┘        └─────────────────┘        │ (Notebook 03)    │
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>                                                        └─────────────────┘
+</code></pre></div>
+<hr />
+<h2 id="2-phase-1-comprendre-le-terrain-notebook-01">2. Phase 1 — Comprendre le terrain (Notebook 01)<a class="headerlink" href="#2-phase-1-comprendre-le-terrain-notebook-01" title="Permanent link">&para;</a></h2>
+<p><strong>Objectif :</strong> avant de prédire quoi que ce soit, il faut prouver au client que l'on maîtrise les données. Cette phase répond à la question : <em>"Sur quoi travaille-t-on exactement ?"</em></p>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Figure</th>
+<th>Type</th>
+<th>Pourquoi cette figure ?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Distribution des communes</td>
+<td>Histogramme + boxplot</td>
+<td><strong>Point de départ obligatoire.</strong> Montre l'hétérogénéité du territoire (41 à 268 000 hab.). Justifie le choix de pondérer les résultats par population dans la suite.</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Participation électorale</td>
+<td>Barplot + scatter</td>
+<td><strong>Indicateur de qualité des données.</strong> Un taux de ~77% au T1 confirme la représentativité des scrutins. La baisse 2017→2022 est un signal à surveiller.</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Top candidats T1</td>
+<td>Barplot horizontal</td>
+<td><strong>Vue d'ensemble par élection.</strong> Identifie les 3 candidats majeurs en Gironde (Macron, Mélenchon, Le Pen) qui concentreront l'analyse.</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Comparaison 2017 vs 2022</td>
+<td>Barplot côte-à-côte</td>
+<td><strong>Première dynamique temporelle.</strong> C'est ici que l'on voit les tendances : progression Mélenchon (+4 pts), stabilité Le Pen. C'est cette dynamique que le ML devra capter.</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Heatmap communes x candidats</td>
+<td>Heatmap</td>
+<td><strong>Zoom sur les disparités locales.</strong> Les 10 plus grandes communes votent différemment → le territoire n'est pas homogène. Un modèle par commune est justifié.</td>
+</tr>
+<tr>
+<td>6</td>
+<td>Indicateurs sécurité</td>
+<td>Lineplot</td>
+<td><strong>Validation de la donnée socio-économique.</strong> Confirme que les indicateurs SSMSI existent et ont une tendance lisible (hausse, sauf creux COVID 2020), mais uniquement pour Bordeaux.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Transition vers la Phase 2 :</strong> l'exploration confirme que les données sont cohérentes et qu'il existe des dynamiques temporelles et spatiales exploitables. On peut construire un modèle.</p>
+<hr />
+<h2 id="3-phase-2-valider-le-modele-notebook-02">3. Phase 2 — Valider le modèle (Notebook 02)<a class="headerlink" href="#3-phase-2-valider-le-modele-notebook-02" title="Permanent link">&para;</a></h2>
+<p><strong>Objectif :</strong> le client ne fait confiance à une prédiction que si on lui montre <em>pourquoi</em> le modèle fonctionne. Cette phase répond à : <em>"Peut-on faire confiance à votre algorithme ?"</em></p>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Figure</th>
+<th>Type</th>
+<th>Pourquoi cette figure ?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>7</td>
+<td>Corrélation des features</td>
+<td>Heatmap</td>
+<td><strong>Transparence sur les inputs.</strong> Montre que le vote précédent domine les corrélations (~0.7-0.9). Le client comprend que "le meilleur prédicteur du vote est... le vote précédent".</td>
+</tr>
+<tr>
+<td>8</td>
+<td>LR vs Random Forest (R²)</td>
+<td>Barplot comparatif</td>
+<td><strong>Justification du choix d'algorithme.</strong> Le Random Forest surpasse la Régression Linéaire sur tous les candidats. Ce n'est pas un choix arbitraire, c'est mesurable.</td>
+</tr>
+<tr>
+<td>9</td>
+<td>Feature importance</td>
+<td>Barplots par candidat</td>
+<td><strong>Explicabilité du modèle.</strong> Le % de voix précédent pèse 60-70%, suivi de la participation (~10-15%) et de la population (~5-10%). Le client comprend <em>ce qui fait bouger les prédictions</em>.</td>
+</tr>
+<tr>
+<td>10</td>
+<td>Prédictions brutes 2027</td>
+<td>Barplot + scatter</td>
+<td><strong>Premier aperçu des résultats.</strong> Macron ~28%, Mélenchon ~25%, Le Pen ~22%. Mais ce n'est qu'un chiffre brut — les visualisations avancées viendront le contextualiser.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Transition vers la Phase 3 :</strong> le modèle est validé (R² = 0.72 pour Le Pen, meilleur score) et explicable. On peut maintenant présenter les prédictions de façon actionnable.</p>
+<hr />
+<h2 id="4-phase-3-communiquer-les-predictions-notebook-03">4. Phase 3 — Communiquer les prédictions (Notebook 03)<a class="headerlink" href="#4-phase-3-communiquer-les-predictions-notebook-03" title="Permanent link">&para;</a></h2>
+<p><strong>Objectif :</strong> transformer des prédictions numériques en outils d'aide à la décision. Cette phase répond à : <em>"Concrètement, que doit retenir le client ?"</em></p>
+<h3 id="41-tendances-et-fiabilite">4.1 Tendances et fiabilité<a class="headerlink" href="#41-tendances-et-fiabilite" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Figure</th>
+<th>Type</th>
+<th>Pourquoi cette figure ?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>11</td>
+<td>Évolution 2017→2022→2027</td>
+<td>Courbes temporelles</td>
+<td><strong>Figure clé de la présentation.</strong> Trait plein = réel, pointillé = prédiction. Le client voit d'un coup d'œil les trajectoires et distingue le connu du projeté.</td>
+</tr>
+<tr>
+<td>12</td>
+<td>Intervalles de confiance</td>
+<td>Barres d'erreur IC 95%</td>
+<td><strong>Honnêteté scientifique.</strong> Code couleur R² (vert/orange/rouge) pour que le client sache immédiatement quels candidats ont des prédictions fiables et lesquels sont incertains.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="42-dimension-geographique">4.2 Dimension géographique<a class="headerlink" href="#42-dimension-geographique" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Figure</th>
+<th>Type</th>
+<th>Pourquoi cette figure ?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>13</td>
+<td>Carte candidat en tête</td>
+<td><strong>Folium interactif</strong></td>
+<td><strong>Visualisation la plus impactante.</strong> Chaque commune est colorée selon le candidat prédit en tête. Tooltip au survol avec le détail. Le client peut explorer librement.</td>
+</tr>
+<tr>
+<td>14</td>
+<td>Carte gradient Macron</td>
+<td><strong>Folium interactif</strong></td>
+<td><strong>Zoom sur un candidat.</strong> Gradient d'intensité montrant les bastions et les faiblesses de Macron, commune par commune. Applicable aux autres candidats.</td>
+</tr>
+<tr>
+<td>15</td>
+<td>Top/Bottom communes</td>
+<td>Barplots comparatifs</td>
+<td><strong>Identification des extrêmes.</strong> Pour chaque candidat majeur, les 10 communes les plus et les moins favorables. Utile pour cibler une stratégie de campagne locale.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="43-synthese-et-clivages">4.3 Synthèse et clivages<a class="headerlink" href="#43-synthese-et-clivages" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Figure</th>
+<th>Type</th>
+<th>Pourquoi cette figure ?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>16</td>
+<td>Dashboard synthèse</td>
+<td>Multi-panel (5 panneaux)</td>
+<td><strong>Figure de conclusion.</strong> Regroupe podium, R², intervalles de confiance, évolution et métriques clés. Un seul visuel pour tout résumer en soutenance.</td>
+</tr>
+<tr>
+<td>17</td>
+<td>Clivage urbain/rural</td>
+<td>Scatter + tendance</td>
+<td><strong>Insight stratégique final.</strong> Macron et Mélenchon performent en zone urbaine, Le Pen en zone rurale. Tendance linéaire visible. Donne au client un axe d'analyse supplémentaire.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="5-cartes-interactives">5. Cartes interactives<a class="headerlink" href="#5-cartes-interactives" title="Permanent link">&para;</a></h2>
+<p>Les 2 cartes Folium sont consultables dans un navigateur :</p>
+<ul>
+<li><code>docs/figures/visualisation/carte_predictions_2027.html</code> — candidat en tête par commune</li>
+<li><code>docs/figures/visualisation/carte_macron_2027.html</code> — gradient de vote Macron</li>
+</ul>
+<p>Fonctionnalités : zoom, tooltip au survol (détail par candidat), légende couleur.</p>
+<hr />
+<h2 id="6-aide-a-la-decision">6. Aide à la décision<a class="headerlink" href="#6-aide-a-la-decision" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Question du client</th>
+<th>Réponse visuelle</th>
+<th>Figures</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Qui est en tête en 2027 ?</td>
+<td>Podium + classement</td>
+<td>fig. 16 (dashboard)</td>
+</tr>
+<tr>
+<td>Quelles sont les tendances ?</td>
+<td>Trajectoires temporelles</td>
+<td>fig. 11 (évolution)</td>
+</tr>
+<tr>
+<td>Où sont les bastions de chaque candidat ?</td>
+<td>Carte colorée par commune</td>
+<td>fig. 13-14 (cartes)</td>
+</tr>
+<tr>
+<td>Peut-on faire confiance aux prédictions ?</td>
+<td>Barres d'erreur + code couleur R²</td>
+<td>fig. 12 (IC)</td>
+</tr>
+<tr>
+<td>Quel est le clivage urbain/rural ?</td>
+<td>Nuage de points + tendance</td>
+<td>fig. 17 (scatter)</td>
+</tr>
+<tr>
+<td>Quelles communes cibler en priorité ?</td>
+<td>Communes extrêmes par candidat</td>
+<td>fig. 15 (top/bottom)</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<p><strong>Fichiers de référence :</strong></p>
+<ul>
+<li>Notebooks : <code>notebooks/01_exploration.ipynb</code>, <code>02_feature_engineering_ml.ipynb</code>, <code>03_visualisation_avancee.ipynb</code></li>
+<li>Figures statiques : <code>docs/figures/exploration/</code>, <code>docs/figures/ml/</code></li>
+<li>Cartes interactives : <code>docs/figures/visualisation/</code></li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Retour en haut de la page
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.instant", "navigation.tabs", "navigation.sections", "navigation.top", "toc.integrate", "content.code.copy"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copi\u00e9 dans le presse-papier", "clipboard.copy": "Copier dans le presse-papier", "search.result.more.one": "1 de plus sur cette page", "search.result.more.other": "# de plus sur cette page", "search.result.none": "Aucun document trouv\u00e9", "search.result.one": "1 document trouv\u00e9", "search.result.other": "# documents trouv\u00e9s", "search.result.placeholder": "Taper pour d\u00e9marrer la recherche", "search.result.term.missing": "Non trouv\u00e9", "select.version": "S\u00e9lectionner la version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>
